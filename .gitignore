@@ -39,3 +39,15 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# devContaineer files
+.devcontainer/
+devcontainer.json
+.devcontainer.json
+devcontainer-lock.json
+
+
+# pnpm
+.pnpm-debug.log
+.pnpm-store/
+pnpm-lock.yaml
