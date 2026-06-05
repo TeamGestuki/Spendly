@@ -40,13 +40,6 @@ yarn-error.*
 /ios
 /android
 
-# devContaineer files
-.devcontainer/
-devcontainer.json
-.devcontainer.json
-devcontainer-lock.json
-
-
 # pnpm
 .pnpm-debug.log
 .pnpm-store/
