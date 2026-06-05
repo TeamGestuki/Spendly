@@ -43,4 +43,3 @@ yarn-error.*
 # pnpm
 .pnpm-debug.log
 .pnpm-store/
-pnpm-lock.yaml
