@@ -1,2 +1,9 @@
-# Spendly-front
-El frontend de la app Spendly, parte de un proyecto univercitario.
+# Spendly
+
+Es una app de gestión de gastos.
+
+## Funciones
+
+- Visulaización de gastos e ingresos
+- Ingreso de gastos a travez de fotos a los tikests
+- Intuituva UI
