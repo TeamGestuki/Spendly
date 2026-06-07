@@ -62,11 +62,16 @@ export default function LoginScreen({ navigation }) {
     Animated.spring(buttonScale, { toValue: 1, friction: 3, useNativeDriver: true }).start();
   }, [buttonScale]);
 
-  const handleLogin = useCallback(() => {
-    if (!email || !password || emailError) return;
-    setLoading(true);
-    setTimeout(() => setLoading(false), 1500);
-  }, [email, password, emailError]);
+ const handleLogin = useCallback(() => {
+  if (!email || !password || emailError) return;
+
+  setLoading(true);
+
+  setTimeout(() => {
+    setLoading(false);
+    navigation.replace('Home');
+  }, 1500);
+}, [email, password, emailError, navigation]);
 
   const isDisabled = !email || !password || !!emailError || loading;
 

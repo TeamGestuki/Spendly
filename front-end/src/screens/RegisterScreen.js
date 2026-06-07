@@ -98,10 +98,15 @@ export default function RegisterScreen({ navigation }) {
   }, [buttonScale]);
 
   const handleRegister = useCallback(() => {
-    if (!isFormValid) return;
-    setLoading(true);
-    setTimeout(() => setLoading(false), 1500);
-  }, [isFormValid]);
+  if (!isFormValid) return;
+
+  setLoading(true);
+
+  setTimeout(() => {
+    setLoading(false);
+    navigation.replace('Home');
+  }, 1500);
+}, [isFormValid, navigation]);
 
   return (
     <View style={styles.flex}>
