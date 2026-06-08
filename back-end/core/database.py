@@ -1,20 +1,27 @@
+import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Por ahora usaremos SQLite para probar rápido sin tener que instalar servidores.
-# Cuando el Integrante 2 tenga MariaDB listo, solo cambiaremos esta URL.
-SQLALCHEMY_DATABASE_URL = "sqlite:///./gastos_app.db"
+load_dotenv(override=True)
 
-# connect_args={"check_same_thread": False} es necesario solo para SQLite en FastAPI
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+SQLALCHEMY_DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "sqlite:///./gastos_app.db"
 )
+
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL,
+        connect_args={"check_same_thread": False}
+    )
+else:
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
-# Dependencia para obtener la sesión de la base de datos en los endpoints
 def get_db():
     db = SessionLocal()
     try:
