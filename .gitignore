@@ -31,7 +31,12 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
+
+# Python
+__pycache__/
+*.pyc
 
 # typescript
 *.tsbuildinfo
@@ -43,3 +48,9 @@ yarn-error.*
 # pnpm
 .pnpm-debug.log
 .pnpm-store/
+
+# pip
+back-end/.venv/
+back-end/.env/
+back-end/venv/
+back-end/env/
