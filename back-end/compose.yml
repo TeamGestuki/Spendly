@@ -1,0 +1,17 @@
+services:
+  db:
+    image: mariadb:11
+    container_name: spendly-mariadb
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: spendly
+      MARIADB_USER: spendly
+      MARIADB_PASSWORD: spendly
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+volumes:
+  mariadb_data:

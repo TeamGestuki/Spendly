@@ -51,6 +51,15 @@ __pycache__/
 
 # pip
 back-end/.venv/
-back-end/.env/
+back-end/.env
+back-end/.env.*
 back-end/venv/
-back-end/env/
+back-end/env
+
+Archivos de la Base de Datos local
+*.db
+*.sqlite3
+
+Archivos cacheados de Python
+back-end/pycache/
+*.pyc
