@@ -10,6 +10,5 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
     
-    # Relaciones inversas (Un usuario tiene listas de ingresos y gastos)
-    incomes = relationship("Income", back_populates="owner")
-    expenses = relationship("Expense", back_populates="owner")
+    # Relaciones inversas (Un usuario tiene una lista de transacciones)
+    transactions = relationship("Transaction", back_populates="owner")

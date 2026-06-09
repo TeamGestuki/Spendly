@@ -1,9 +1,9 @@
+import os
 from datetime import datetime, timedelta, timezone
 from jose import jwt
 from passlib.context import CryptContext
 
-# Configuración JWT (En el futuro, la SECRET_KEY debería ir oculta en un archivo .env)
-SECRET_KEY = "super-secreta-clave-para-app-gastos-utn" 
+SECRET_KEY = os.getenv("SECRET_KEY", "super-secreta-clave-para-app-gastos-utn")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 # El token durará 1 hora
 
