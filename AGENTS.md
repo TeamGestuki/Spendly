@@ -1,36 +1,48 @@
-# Spendly (front-end)
+# Spendly
+
+Monorepo with two independent packages: `front-end/` (Expo/React Native) and `back-end/` (Python/FastAPI).
+
+## Front-end (`front-end/`)
 
 Expo SDK 54 · React Native 0.81.5 · React 19.1 · JavaScript (no TypeScript)
 
-## Commands
-
-Run everything from `front-end/`:
-
 ```sh
-pnpm start        # Expo dev server
-pnpm web          # Expo dev server → web target
-pnpm ios          # Expo dev server → iOS simulator
-pnpm android      # Expo dev server → Android emulator
+npm start        # Expo dev server
+npm run web      # web target
+npm run ios      # iOS simulator
+npm run android  # Android emulator
 ```
 
-No lint, typecheck, formatter, or test infrastructure exists.
+- Entry: `index.js` → `registerRootComponent(App)` → `App.js` (native-stack navigator)
+- Screens in `src/screens/`, each is a self-contained JS file with inline `StyleSheet`
+- Navigation: `@react-navigation/native-stack`, `headerShown: false`, imperative `navigation.navigate()` (no Expo Router)
+- No lint, typecheck, formatter, or test infrastructure
+- UI language: Spanish; dark fintech palette (accent `#4ADE80`, bg `#0D0F14`)
+- Color constants are duplicated across every screen — **extract shared constants to a module instead of adding a third copy**
+- Backend calls are simulated (`setTimeout` stubs); no real API integration yet
+- Package manager: **npm** (lockfile: `package-lock.json`)
 
-## Structure
+## Back-end (`back-end/`)
 
-- `front-end/index.js` — app entry, delegates to `registerRootComponent(App)`
-- `front-end/App.js` — React Navigation stack container (native-stack), screens `Login` | `Register`
-- `front-end/src/screens/` — each screen is a self-contained JS file with inline `StyleSheet`
+Python 3 · FastAPI · SQLAlchemy · MariaDB (via Docker Compose) with SQLite fallback
 
-## Conventions
+```sh
+cd back-end/
+python -m venv .venv && source .venv/bin/activate  # first time only
+pip install -r requirements.txt
+# Start MariaDB (optional — falls back to SQLite if not running):
+docker compose up -d
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
 
-- UI language: Spanish (strings, comments, navigation labels)
-- Dark fintech palette (green accent `#4ADE80`, bg `#0D0F14`). Color constants are duplicated across every screen — **do not add a third copy**; extract shared constants to a module instead.
-- Backend calls are simulated (`setTimeout` stubs). No real API integration yet.
-- Navigation: `@react-navigation/native-stack` with `headerShown: false`. Screens receive `{ navigation }` prop.
-- Avoid Expo Router — this project uses imperative `navigation.navigate()`.
-- Package manager: **pnpm** (lockfile `front-end/pnpm-lock.yaml`).
+- Entry: `main.py` creates FastAPI app, calls `Base.metadata.create_all()` on startup
+- API routes under `/api/v1/auth/`, `/api/v1/income/`, `/api/v1/expense/`
+- Auth: JWT (HS256, 60 min expiry), bcrypt password hashing, OAuth2PasswordBearer
+- Most endpoints require `get_current_user` dependency (Bearer token)
+- No test, lint, or format infrastructure
+- DB: reads `DATABASE_URL` from `.env`; defaults to `sqlite:///./gastos_app.db` if unset
+- `.env` file (already present, tracked) with `DATABASE_URL`, `HOST`, `PORT`
 
-## Gotchas
+## Notes
 
-- When reading Expo docs, use the **Expo SDK 54** versioned docs: https://docs.expo.dev/versions/v54.0.0/
-- `Ionicons` and `MaterialCommunityIcons` are from `@expo/vector-icons` (no separate install needed).
+- `CLAUDE.md` references `AGENTS.md` via `@AGENTS.md`.
