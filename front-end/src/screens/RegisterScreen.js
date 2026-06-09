@@ -15,6 +15,7 @@ import {
   Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { registerUser } from '../services/authService';
 
 const COLORS = {
   bg:            '#0D0F14',
@@ -43,6 +44,7 @@ export default function RegisterScreen({ navigation }) {
   const [emailError, setEmailError]       = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmError, setConfirmError]   = useState('');
+  const [registerError, setRegisterError] = useState('');
 
   const buttonScale = useRef(new Animated.Value(1)).current;
 
@@ -97,16 +99,32 @@ export default function RegisterScreen({ navigation }) {
     Animated.spring(buttonScale, { toValue: 1, friction: 3, useNativeDriver: true }).start();
   }, [buttonScale]);
 
-  const handleRegister = useCallback(() => {
+const handleRegister = useCallback(async () => {
   if (!isFormValid) return;
 
-  setLoading(true);
+  try {
+    setLoading(true);
+    setRegisterError('');
 
-  setTimeout(() => {
+    await registerUser(email, password);
+
+    navigation.replace('Login');
+  } catch (error) {
+    if (
+      error.message?.includes('registrado')
+    ) {
+      setRegisterError(
+        'Usuario ya registrado'
+      );
+    } else {
+      setRegisterError(
+        'Error al registrar usuario'
+      );
+    }
+  } finally {
     setLoading(false);
-    navigation.replace('Home');
-  }, 1500);
-}, [isFormValid, navigation]);
+  }
+}, [isFormValid, email, password, navigation]);
 
   return (
     <View style={styles.flex}>
@@ -253,6 +271,13 @@ export default function RegisterScreen({ navigation }) {
               <Text style={styles.checkboxLink}>Política de privacidad</Text>
             </Text>
           </TouchableOpacity>
+
+          {/* ERROR REGISTER */}
+            {!!registerError && (
+              <Text style={styles.errorText}>
+                {registerError}
+              </Text>
+            )}
 
           {/* Botón */}
           <Animated.View style={{ transform: [{ scale: buttonScale }] }}>

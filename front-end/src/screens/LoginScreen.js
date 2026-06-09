@@ -15,6 +15,7 @@ import {
   Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { loginUser } from '../services/authService';
 
 const COLORS = {
   bg:            '#0D0F14',
@@ -37,6 +38,7 @@ export default function LoginScreen({ navigation }) {
   const [rememberSession, setRememberSession] = useState(false);
   const [emailError, setEmailError]           = useState('');
   const [loading, setLoading]                 = useState(false);
+  const [loginError, setLoginError] = useState('');
 
   const buttonScale = useRef(new Animated.Value(1)).current;
 
@@ -62,15 +64,21 @@ export default function LoginScreen({ navigation }) {
     Animated.spring(buttonScale, { toValue: 1, friction: 3, useNativeDriver: true }).start();
   }, [buttonScale]);
 
- const handleLogin = useCallback(() => {
+const handleLogin = useCallback(async () => {
   if (!email || !password || emailError) return;
 
-  setLoading(true);
+    try {
+      setLoading(true);
+      setLoginError('');
 
-  setTimeout(() => {
-    setLoading(false);
+    await loginUser(email, password);
+
     navigation.replace('Home');
-  }, 1500);
+  } catch (error) {
+    setLoginError(error.message || 'Email o contraseña incorrectos');
+  } finally {
+    setLoading(false);
+  }
 }, [email, password, emailError, navigation]);
 
   const isDisabled = !email || !password || !!emailError || loading;
@@ -134,30 +142,64 @@ export default function LoginScreen({ navigation }) {
             <View style={styles.labelRow}>
               <Text style={styles.label}>Contraseña</Text>
               <TouchableOpacity onPress={() => {}}>
-                <Text style={styles.forgotLink}>¿Olvidaste tu contraseña?</Text>
+                <Text style={styles.forgotLink}>
+                  ¿Olvidaste tu contraseña?
+                </Text>
               </TouchableOpacity>
             </View>
-            <View ref={passWrapperRef} style={styles.inputWrapper}>
+
+            <View
+              ref={passWrapperRef}
+              style={styles.inputWrapper}
+            >
               <TextInput
                 style={styles.input}
                 placeholder="••••••••"
                 placeholderTextColor={COLORS.textSecondary}
                 value={password}
                 onChangeText={setPassword}
-                onFocus={() => passWrapperRef.current?.setNativeProps({ style: [styles.inputWrapper, styles.inputWrapperFocused] })}
-                onBlur={() => passWrapperRef.current?.setNativeProps({ style: styles.inputWrapper })}
+                onFocus={() =>
+                  passWrapperRef.current?.setNativeProps({
+                    style: [
+                      styles.inputWrapper,
+                      styles.inputWrapperFocused,
+                    ],
+                  })
+                }
+                onBlur={() =>
+                  passWrapperRef.current?.setNativeProps({
+                    style: styles.inputWrapper,
+                  })
+                }
                 secureTextEntry={!showPassword}
                 returnKeyType="done"
                 onSubmitEditing={handleLogin}
               />
-              <TouchableOpacity onPress={() => setShowPassword(v => !v)} style={styles.eyeButton}>
+
+              <TouchableOpacity
+                onPress={() =>
+                  setShowPassword(v => !v)
+                }
+                style={styles.eyeButton}
+              >
                 <Ionicons
-                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  name={
+                    showPassword
+                      ? 'eye-off-outline'
+                      : 'eye-outline'
+                  }
                   size={18}
                   color="#64748B"
                 />
               </TouchableOpacity>
             </View>
+
+            {/* ERROR LOGIN */}
+            {!!loginError && (
+              <Text style={styles.errorText}>
+                {loginError}
+              </Text>
+            )}
           </View>
 
           {/* Recordar sesión */}
