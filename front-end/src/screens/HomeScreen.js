@@ -315,7 +315,7 @@ export default function HomeScreen({ navigation }) {
         {/* Perfil */}
         <TouchableOpacity
           style={styles.navItem}
-          onPress={() => setActiveTab('perfil')}
+         onPress={() => navigation.navigate('Profile')}
         >
           <AppIcon name={activeTab === 'perfil' ? 'person' : 'person-outline'} size={24} color={activeTab === 'perfil' ? COLORS.accent : COLORS.textMuted} />
           <Text style={[styles.navLabel, activeTab === 'perfil' && styles.navLabelActive]}>Perfil</Text>
