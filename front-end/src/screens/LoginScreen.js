@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { loginUser } from '../services/authService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const COLORS = {
   bg:            '#0D0F14',
@@ -73,7 +74,13 @@ const handleLogin = useCallback(async () => {
       setLoading(true);
       setLoginError('');
 
-    await loginUser(email, password);
+const data = await loginUser(email, password);
+
+if (rememberSession) {
+  await AsyncStorage.setItem('access_token', data.access_token);
+}
+
+navigation.replace('Home');
 
     navigation.replace('Home');
   } catch (error) {
@@ -284,14 +291,28 @@ const handleLogin = useCallback(async () => {
         </View>
 
         {/* Footer */}
-        <Text style={styles.footer}>
-          Al continuar aceptás los{' '}
-          <Text style={styles.footerLink}>Términos y condiciones</Text>
-          {' '}y la{' '}
-          <Text style={styles.footerLink}>Política de privacidad</Text>
-        </Text>
-      </ScrollView>
-    </View>
+          <Text style={styles.footer}>
+            Al continuar aceptás los{' '}
+
+            <Text
+              style={styles.footerLink}
+              onPress={() => navigation.navigate('Terms')}
+            >
+              Términos y condiciones
+            </Text>
+
+            {' '}y la{' '}
+
+            <Text
+              style={styles.footerLink}
+              onPress={() => navigation.navigate('Privacy')}
+            >
+              Política de privacidad
+            </Text>
+          </Text>
+
+          </ScrollView>
+          </View>
   );
 }
 
@@ -361,7 +382,14 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 11, color: COLORS.error, marginTop: 5, marginLeft: 2 },
 
   // Recordar sesión
-  rememberRow: { flexDirection: 'row', alignItems: 'center', marginTop: -2, marginBottom: 15 },
+  rememberRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginTop: -2,
+  marginBottom: 15,
+  alignSelf: 'flex-start',
+},
+
   checkbox: {
     width: 20, height: 20, borderRadius: 6,
     borderWidth: 1, borderColor: COLORS.border,

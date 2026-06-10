@@ -302,21 +302,35 @@ const handleRegister = useCallback(async () => {
               {!!confirmError && <Text style={styles.errorText}>{confirmError}</Text>}
             </View>
           {/* Términos */}
-          <TouchableOpacity
-            style={styles.checkboxRow}
-            onPress={() => setAcceptedTerms(v => !v)}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
-              {acceptedTerms && <Ionicons name="checkmark" size={13} color="#0D1A12" />}
+            <View style={styles.checkboxRow}>
+              <TouchableOpacity
+                onPress={() => setAcceptedTerms(v => !v)}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
+                  {acceptedTerms && (
+                    <Ionicons name="checkmark" size={13} color="#0D1A12" />
+                  )}
+                </View>
+              </TouchableOpacity>
+
+              <Text style={styles.checkboxLabel}>
+                Acepto los{' '}
+                <Text
+                  style={styles.checkboxLink}
+                  onPress={() => navigation.navigate('Terms')}
+                >
+                  Términos y condiciones
+                </Text>
+                {' '}y la{' '}
+                <Text
+                  style={styles.checkboxLink}
+                  onPress={() => navigation.navigate('Privacy')}
+                >
+                  Política de privacidad
+                </Text>
+              </Text>
             </View>
-            <Text style={styles.checkboxLabel}>
-              Acepto los{' '}
-              <Text style={styles.checkboxLink}>Términos y condiciones</Text>
-              {' '}y la{' '}
-              <Text style={styles.checkboxLink}>Política de privacidad</Text>
-            </Text>
-          </TouchableOpacity>
 
           {/* ERROR REGISTER */}
             {!!registerError && (
