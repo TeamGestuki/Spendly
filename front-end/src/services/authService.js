@@ -1,8 +1,16 @@
-
 const API_URL =
   "https://spendly-production-1793.up.railway.app/api/v1/auth";
 
-// Registrar usuario
+const parseResponse = async (response) => {
+  const text = await response.text();
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { detail: text };
+  }
+};
+
 export const registerUser = async (email, password) => {
   const response = await fetch(`${API_URL}/register`, {
     method: "POST",
@@ -15,20 +23,24 @@ export const registerUser = async (email, password) => {
     }),
   });
 
-  const data = await response.json();
+  const data = await parseResponse(response);
+
+  // Agrega logs para depuración
+  console.log("REGISTER STATUS:", response.status);
+  console.log("REGISTER DATA:", data);
 
   if (!response.ok) {
-    throw new Error(data.detail || "Error al registrar usuario");
+    throw new Error(
+      data.detail || "Tuvimos un problema, intentalo más tarde."
+    );
   }
 
   return data;
 };
 
-// Login usuario
 export const loginUser = async (email, password) => {
   const formData = new URLSearchParams();
 
-  // FastAPI OAuth2PasswordRequestForm
   formData.append("username", email);
   formData.append("password", password);
 
@@ -41,11 +53,16 @@ export const loginUser = async (email, password) => {
     body: formData.toString(),
   });
 
-  const data = await response.json();
+  const data = await parseResponse(response);
+
+
+  // Agrega logs para depuración
+  console.log("LOGIN STATUS:", response.status);
+  console.log("LOGIN DATA:", data);
 
   if (!response.ok) {
     throw new Error(
-      data.detail || "Este mail no esta registrado"
+      data.detail || "Email o contraseña incorrectos"
     );
   }
 

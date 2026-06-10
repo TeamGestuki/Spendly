@@ -48,6 +48,8 @@ export default function LoginScreen({ navigation }) {
 
   const validateEmail = useCallback((text) => {
     setEmail(text);
+    setLoginError('');
+
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (text.length > 0 && !emailRegex.test(text)) {
       setEmailError('Ingresá un correo válido');
@@ -107,100 +109,135 @@ const handleLogin = useCallback(async () => {
           <Text style={styles.formSubtitle}>Bienvenido de vuelta</Text>
 
           {/* Email */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Correo electrónico</Text>
-            <View
-              ref={emailWrapperRef}
-              style={[styles.inputWrapper, !!emailError && styles.inputWrapperError]}
-            >
-              <TextInput
-                style={styles.input}
-                placeholder="tu@correo.com"
-                placeholderTextColor={COLORS.textSecondary}
-                value={email}
-                onChangeText={validateEmail}
-                onFocus={() =>
-                  emailWrapperRef.current?.setNativeProps({
-                    style: [
-                      styles.inputWrapper,
-                        emailError ? styles.inputWrapperError : styles.inputWrapperFocused,
-                    ],
-                })
-              }
-                onBlur={() => emailWrapperRef.current?.setNativeProps({ style: [styles.inputWrapper, !!emailError && styles.inputWrapperError] })}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="next"
-              />
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>
+                Correo electrónico
+              </Text>
+
+              <View
+                ref={emailWrapperRef}
+                style={[
+                  styles.inputWrapper,
+                  (!!emailError || !!loginError) &&
+                    styles.inputWrapperError,
+                ]}
+              >
+                <TextInput
+                  style={styles.input}
+                  placeholder="tu@correo.com"
+                  placeholderTextColor={
+                    COLORS.textSecondary
+                  }
+                  value={email}
+                  onChangeText={validateEmail}
+                  onFocus={() =>
+                    emailWrapperRef.current?.setNativeProps({
+                      style: [
+                        styles.inputWrapper,
+                        (!!emailError || !!loginError) &&
+                          styles.inputWrapperError,
+                      ],
+                    })
+                  }
+                  onBlur={() =>
+                    emailWrapperRef.current?.setNativeProps({
+                      style: [
+                        styles.inputWrapper,
+                        (!!emailError || !!loginError) &&
+                          styles.inputWrapperError,
+                      ],
+                    })
+                  }
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="next"
+                />
+              </View>
+
+              {!!emailError && (
+                <Text style={styles.errorText}>
+                  {emailError}
+                </Text>
+              )}
             </View>
-            {!!emailError && <Text style={styles.errorText}>{emailError}</Text>}
-          </View>
 
           {/* Contraseña */}
-          <View style={styles.fieldGroup}>
-            <View style={styles.labelRow}>
-              <Text style={styles.label}>Contraseña</Text>
-              <TouchableOpacity onPress={() => {}}>
-                <Text style={styles.forgotLink}>
-                  ¿Olvidaste tu contraseña?
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <View style={styles.fieldGroup}>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>Contraseña</Text>
 
-            <View
-              ref={passWrapperRef}
-              style={styles.inputWrapper}
-            >
-              <TextInput
-                style={styles.input}
-                placeholder="••••••••"
-                placeholderTextColor={COLORS.textSecondary}
-                value={password}
-                onChangeText={setPassword}
-                onFocus={() =>
-                  passWrapperRef.current?.setNativeProps({
-                    style: [
-                      styles.inputWrapper,
-                      styles.inputWrapperFocused,
-                    ],
-                  })
-                }
-                onBlur={() =>
-                  passWrapperRef.current?.setNativeProps({
-                    style: styles.inputWrapper,
-                  })
-                }
-                secureTextEntry={!showPassword}
-                returnKeyType="done"
-                onSubmitEditing={handleLogin}
-              />
+                <TouchableOpacity onPress={() => {}}>
+                  <Text style={styles.forgotLink}>
+                    ¿Olvidaste tu contraseña?
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-              <TouchableOpacity
-                onPress={() =>
-                  setShowPassword(v => !v)
-                }
-                style={styles.eyeButton}
+              <View
+                ref={passWrapperRef}
+                style={[
+                  styles.inputWrapper,
+                  !!loginError && styles.inputWrapperError,
+                ]}
               >
-                <Ionicons
-                  name={
-                    showPassword
-                      ? 'eye-off-outline'
-                      : 'eye-outline'
+                <TextInput
+                  style={styles.input}
+                  placeholder="••••••••"
+                  placeholderTextColor={COLORS.textSecondary}
+                  value={password}
+                  onChangeText={(text) => {
+                        setPassword(text);
+                        setLoginError('');
+                      }}
+                  onFocus={() =>
+                    passWrapperRef.current?.setNativeProps({
+                      style: [
+                        styles.inputWrapper,
+                        !!loginError &&
+                          styles.inputWrapperError,
+                      ],
+                    })
                   }
-                  size={18}
-                  color="#64748B"
+                  onBlur={() =>
+                    passWrapperRef.current?.setNativeProps({
+                      style: [
+                        styles.inputWrapper,
+                        !!loginError &&
+                          styles.inputWrapperError,
+                      ],
+                    })
+                  }
+                  secureTextEntry={!showPassword}
+                  returnKeyType="done"
+                  onSubmitEditing={handleLogin}
                 />
-              </TouchableOpacity>
-            </View>
 
-            {/* ERROR LOGIN */}
-            {!!loginError && (
-              <Text style={styles.errorText}>
-                {loginError}
-              </Text>
-            )}
-          </View>
+                <TouchableOpacity
+                  onPress={() =>
+                    setShowPassword(v => !v)
+                  }
+                  style={styles.eyeButton}
+                >
+                  <Ionicons
+                    name={
+                      showPassword
+                        ? 'eye-off-outline'
+                        : 'eye-outline'
+                    }
+                    size={18}
+                    color="#64748B"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* ERROR LOGIN */}
+              {!!loginError && (
+                <Text style={styles.errorText}>
+                  {loginError}
+                </Text>
+              )}
+            </View>
 
           {/* Recordar sesión */}
           <TouchableOpacity
@@ -310,12 +347,7 @@ const styles = StyleSheet.create({
     borderRadius: 12, borderWidth: 1, borderColor: COLORS.border,
     paddingHorizontal: 14, height: 52,
   },
-  inputWrapperFocused: {
-    borderColor: COLORS.borderFocus,
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25, shadowRadius: 8, elevation: 4,
-  },
+  
   inputWrapperError: {
   borderColor: COLORS.error,
   shadowColor: COLORS.error,

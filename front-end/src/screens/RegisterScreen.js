@@ -118,7 +118,7 @@ const handleRegister = useCallback(async () => {
       );
     } else {
       setRegisterError(
-        'Error al registrar usuario'
+        'Tuvimos un problema, intentalo más tarde.'
       );
     }
   } finally {
@@ -150,111 +150,157 @@ const handleRegister = useCallback(async () => {
           <Text style={styles.formSubtitle}>Empezá a gestionar tus gastos</Text>
 
           {/* Nombre */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Nombre completo</Text>
-            <View ref={nameWrapperRef} style={styles.inputWrapper}>
-              <TextInput
-                style={styles.input}
-                placeholder="Tu nombre"
-                placeholderTextColor={COLORS.textSecondary}
-                value={name}
-                onChangeText={setName}
-                onFocus={() => nameWrapperRef.current?.setNativeProps({ style: [styles.inputWrapper, styles.inputWrapperFocused] })}
-                onBlur={() => nameWrapperRef.current?.setNativeProps({ style: styles.inputWrapper })}
-                autoCapitalize="words"
-                autoCorrect={false}
-                returnKeyType="next"
-              />
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Nombre completo</Text>
+              <View ref={nameWrapperRef} style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Tu nombre"
+                  placeholderTextColor={COLORS.textSecondary}
+                  value={name}
+                  onChangeText={setName}
+                  onFocus={() =>
+                    nameWrapperRef.current?.setNativeProps({
+                      style: styles.inputWrapper,
+                    })
+                  }
+                  onBlur={() =>
+                    nameWrapperRef.current?.setNativeProps({
+                      style: styles.inputWrapper,
+                    })
+                  }
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  returnKeyType="next"
+                />
+              </View>
             </View>
-          </View>
 
           {/* Email */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Correo electrónico</Text>
-            <View ref={emailWrapperRef} style={[styles.inputWrapper, !!emailError && styles.inputWrapperError]}>
-              <TextInput
-                style={styles.input}
-                placeholder="tu@correo.com"
-                placeholderTextColor={COLORS.textSecondary}
-                value={email}
-                onChangeText={validateEmail}
-                onFocus={() =>
-                  emailWrapperRef.current?.setNativeProps({
-                    style: [
-                      styles.inputWrapper,
-                      emailError ? styles.inputWrapperError : styles.inputWrapperFocused,
-                    ],
-                  })
-                }
-                onBlur={() => emailWrapperRef.current?.setNativeProps({ style: [styles.inputWrapper, !!emailError && styles.inputWrapperError] })}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="next"
-              />
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Correo electrónico</Text>
+              <View
+                ref={emailWrapperRef}
+                style={[
+                  styles.inputWrapper,
+                  !!emailError && styles.inputWrapperError,
+                ]}
+              >
+                <TextInput
+                  style={styles.input}
+                  placeholder="tu@correo.com"
+                  placeholderTextColor={COLORS.textSecondary}
+                  value={email}
+                  onChangeText={validateEmail}
+                  onFocus={() =>
+                    emailWrapperRef.current?.setNativeProps({
+                      style: [
+                        styles.inputWrapper,
+                        !!emailError && styles.inputWrapperError,
+                      ],
+                    })
+                  }
+                  onBlur={() =>
+                    emailWrapperRef.current?.setNativeProps({
+                      style: [
+                        styles.inputWrapper,
+                        !!emailError && styles.inputWrapperError,
+                      ],
+                    })
+                  }
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="next"
+                />
+              </View>
+              {!!emailError && <Text style={styles.errorText}>{emailError}</Text>}
             </View>
-            {!!emailError && <Text style={styles.errorText}>{emailError}</Text>}
-          </View>
 
-          {/* Contraseña */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Contraseña</Text>
-            <View ref={passWrapperRef} style={[styles.inputWrapper, !!passwordError && styles.inputWrapperError]}>
-              <TextInput
-                style={styles.input}
-                placeholder="********"
-                placeholderTextColor={COLORS.textSecondary}
-                value={password}
-                onChangeText={validatePassword}
-                onFocus={() =>
-                  passWrapperRef.current?.setNativeProps({
-                    style: [
-                      styles.inputWrapper,
-                      passwordError ? styles.inputWrapperError : styles.inputWrapperFocused,
-                    ],
-                  })
-                }
-                onBlur={() => passWrapperRef.current?.setNativeProps({ style: [styles.inputWrapper, !!passwordError && styles.inputWrapperError] })}
-                secureTextEntry={!showPassword}
-                returnKeyType="next"
-              />
-              <TouchableOpacity onPress={() => setShowPassword(v => !v)} style={styles.eyeButton}>
-                <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={18} color="#64748B" />
-              </TouchableOpacity>
+         {/* Contraseña */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Contraseña</Text>
+              <View
+                ref={passWrapperRef}
+                style={[
+                  styles.inputWrapper,
+                  !!passwordError && styles.inputWrapperError,
+                ]}
+              >
+                <TextInput
+                  style={styles.input}
+                  placeholder="********"
+                  placeholderTextColor={COLORS.textSecondary}
+                  value={password}
+                  onChangeText={validatePassword}
+                  onFocus={() =>
+                    passWrapperRef.current?.setNativeProps({
+                      style: [
+                        styles.inputWrapper,
+                        !!passwordError && styles.inputWrapperError,
+                      ],
+                    })
+                  }
+                  onBlur={() =>
+                    passWrapperRef.current?.setNativeProps({
+                      style: [
+                        styles.inputWrapper,
+                        !!passwordError && styles.inputWrapperError,
+                      ],
+                    })
+                  }
+                  secureTextEntry={!showPassword}
+                  returnKeyType="next"
+                />
+                <TouchableOpacity onPress={() => setShowPassword(v => !v)} style={styles.eyeButton}>
+                  <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={18} color="#64748B" />
+                </TouchableOpacity>
+              </View>
+              {!!passwordError && <Text style={styles.errorText}>{passwordError}</Text>}
             </View>
-            {!!passwordError && <Text style={styles.errorText}>{passwordError}</Text>}
-          </View>
 
           {/* Confirmar contraseña */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Confirmar contraseña</Text>
-            <View ref={confirmWrapperRef} style={[styles.inputWrapper, !!confirmError && styles.inputWrapperError]}>
-              <TextInput
-                style={styles.input}
-                placeholder="********"
-                placeholderTextColor={COLORS.textSecondary}
-                value={confirmPassword}
-                onChangeText={validateConfirm}
-                onFocus={() =>
-                  confirmWrapperRef.current?.setNativeProps({
-                    style: [
-                      styles.inputWrapper,
-                      confirmError ? styles.inputWrapperError : styles.inputWrapperFocused,
-                    ],
-                  })
-                }
-                onBlur={() => confirmWrapperRef.current?.setNativeProps({ style: [styles.inputWrapper, !!confirmError && styles.inputWrapperError] })}
-                secureTextEntry={!showConfirm}
-                returnKeyType="done"
-                onSubmitEditing={handleRegister}
-              />
-              <TouchableOpacity onPress={() => setShowConfirm(v => !v)} style={styles.eyeButton}>
-                <Ionicons name={showConfirm ? 'eye-off-outline' : 'eye-outline'} size={18} color="#64748B" />
-              </TouchableOpacity>
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Confirmar contraseña</Text>
+              <View
+                ref={confirmWrapperRef}
+                style={[
+                  styles.inputWrapper,
+                  !!confirmError && styles.inputWrapperError,
+                ]}
+              >
+                <TextInput
+                  style={styles.input}
+                  placeholder="********"
+                  placeholderTextColor={COLORS.textSecondary}
+                  value={confirmPassword}
+                  onChangeText={validateConfirm}
+                  onFocus={() =>
+                    confirmWrapperRef.current?.setNativeProps({
+                      style: [
+                        styles.inputWrapper,
+                        !!confirmError && styles.inputWrapperError,
+                      ],
+                    })
+                  }
+                  onBlur={() =>
+                    confirmWrapperRef.current?.setNativeProps({
+                      style: [
+                        styles.inputWrapper,
+                        !!confirmError && styles.inputWrapperError,
+                      ],
+                    })
+                  }
+                  secureTextEntry={!showConfirm}
+                  returnKeyType="done"
+                  onSubmitEditing={handleRegister}
+                />
+                <TouchableOpacity onPress={() => setShowConfirm(v => !v)} style={styles.eyeButton}>
+                  <Ionicons name={showConfirm ? 'eye-off-outline' : 'eye-outline'} size={18} color="#64748B" />
+                </TouchableOpacity>
+              </View>
+              {!!confirmError && <Text style={styles.errorText}>{confirmError}</Text>}
             </View>
-            {!!confirmError && <Text style={styles.errorText}>{confirmError}</Text>}
-          </View>
-
           {/* Términos */}
           <TouchableOpacity
             style={styles.checkboxRow}
@@ -367,12 +413,7 @@ const styles = StyleSheet.create({
     borderRadius: 12, borderWidth: 1, borderColor: COLORS.border,
     paddingHorizontal: 14, height: 52,
   },
-  inputWrapperFocused: {
-    borderColor: COLORS.borderFocus,
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25, shadowRadius: 8, elevation: 4,
-  },
+
   inputWrapperError: {
   borderColor: COLORS.error,
   shadowColor: COLORS.error,
@@ -383,7 +424,16 @@ const styles = StyleSheet.create({
   },
   input: { flex: 1, fontSize: 15, color: COLORS.textPrimary, paddingVertical: 0 },
   eyeButton: { padding: 4 },
-  errorText: { fontSize: 11, color: COLORS.error, marginTop: 5, marginLeft: 2 },
+
+  errorText: {
+  fontSize: 13,
+  fontWeight: '600',
+  color: COLORS.error,
+  marginTop: 2,
+  marginBottom: 14,
+  marginLeft: 2,
+  letterSpacing: 0.2,
+},
 
   // Checkbox términos
   checkboxRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 18, gap: 10 },
