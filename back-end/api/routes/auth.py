@@ -23,6 +23,7 @@ def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
     
     # 3. Crear la instancia del modelo y guardarla en la BD
     new_user = User(
+        full_name=user_data.full_name,
         email=user_data.email,
         hashed_password=hashed_pwd
     )
