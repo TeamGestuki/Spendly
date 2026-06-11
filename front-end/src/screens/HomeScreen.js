@@ -96,11 +96,15 @@ export default function HomeScreen({ navigation }) {
             <TouchableOpacity style={styles.iconBtn}>
               <AppIcon name="notifications-outline" size={20} color={COLORS.textSecondary} />
             </TouchableOpacity>
-            <View style={styles.avatarRing}>
+            <TouchableOpacity
+              style={styles.avatarRing}
+              onPress={() => navigation.navigate('Profile')}
+              activeOpacity={0.8}
+            >
               <View style={styles.avatarFallback}>
                 <Text style={styles.avatarText}>PD</Text>
               </View>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -312,13 +316,19 @@ export default function HomeScreen({ navigation }) {
           <Text style={[styles.navLabel, activeTab === 'stats' && styles.navLabelActive]}>Stats</Text>
         </TouchableOpacity>
 
-        {/* Perfil */}
+        {/* Metas */}
         <TouchableOpacity
           style={styles.navItem}
-         onPress={() => navigation.navigate('Profile')}
+          onPress={() => setActiveTab('metas')}
         >
-          <AppIcon name={activeTab === 'perfil' ? 'person' : 'person-outline'} size={24} color={activeTab === 'perfil' ? COLORS.accent : COLORS.textMuted} />
-          <Text style={[styles.navLabel, activeTab === 'perfil' && styles.navLabelActive]}>Perfil</Text>
+          <AppIcon
+            name={activeTab === 'metas' ? 'flag' : 'flag-outline'}
+            size={24}
+            color={activeTab === 'metas' ? COLORS.accent : COLORS.textMuted}
+          />
+          <Text style={[styles.navLabel, activeTab === 'metas' && styles.navLabelActive]}>
+            Metas
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

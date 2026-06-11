@@ -12,10 +12,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
-  Alert,
   Switch,
+  Modal,
 } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ─── Paleta idéntica al resto de la app ───────────────────────────────────────
 const COLORS = {
@@ -82,22 +84,20 @@ function SettingItem({ icon, iconColor = COLORS.accent, label, value, onPress, i
 export default function ProfileScreen({ navigation }) {
   const [activeTab, setActiveTab]           = useState('perfil');
   const [notificationsOn, setNotificationsOn] = useState(true);
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
   // Confirmación antes de cerrar sesión
   const handleLogout = () => {
-    Alert.alert(
-      'Cerrar sesión',
-      '¿Estás seguro que querés cerrar sesión?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Cerrar sesión',
-          style: 'destructive',
-          onPress: () => navigation.replace('Login'),
-        },
-      ]
-    );
-  };
+  setLogoutModalVisible(true);
+   };
+
+  const confirmLogout = async () => {
+    await AsyncStorage.removeItem('access_token');
+
+      setLogoutModalVisible(false);
+
+      navigation.replace('Login');
+    };
 
   return (
     <View style={styles.flex}>
@@ -139,22 +139,6 @@ export default function ProfileScreen({ navigation }) {
 
           {/* Dato secundario */}
           <Text style={styles.memberSince}>{USER.member}</Text>
-        </View>
-
-        {/* ── Stats resumen (misma estructura que heroCard de Home) ──────── */}
-        <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>$452.300</Text>
-            <Text style={styles.statLabel}>Balance</Text>
-          </View>
-          <View style={[styles.statCard, styles.statCardMiddle]}>
-            <Text style={[styles.statNumber, { color: COLORS.red }]}>$127.700</Text>
-            <Text style={styles.statLabel}>Gastos jun.</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={[styles.statNumber, { color: COLORS.blue }]}>$324.600</Text>
-            <Text style={styles.statLabel}>Ahorrado</Text>
-          </View>
         </View>
 
         {/* ══════════════════════════════════════════════════════════════════
@@ -265,6 +249,55 @@ export default function ProfileScreen({ navigation }) {
         <View style={{ height: 90 }} />
       </ScrollView>
 
+      <Modal
+        visible={logoutModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setLogoutModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.logoutModal}>
+            <View style={styles.modalIconWrapper}>
+              <AppIcon
+                name="log-out-outline"
+                size={26}
+                color={COLORS.red}
+              />
+            </View>
+
+            <Text style={styles.modalTitle}>
+              Cerrar sesión
+            </Text>
+
+            <Text style={styles.modalText}>
+              ¿Estás seguro de que querés cerrar sesión en Spendly?
+            </Text>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setLogoutModalVisible(false)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.cancelButtonText}>
+                  Cancelar
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.confirmLogoutButton}
+                onPress={confirmLogout}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.confirmLogoutText}>
+                  Cerrar sesión
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* ── Bottom Navigation (idéntica a HomeScreen) ──────────────────────── */}
       <View style={styles.bottomNav}>
         <TouchableOpacity
@@ -298,11 +331,14 @@ export default function ProfileScreen({ navigation }) {
           <Text style={styles.navLabel}>Stats</Text>
         </TouchableOpacity>
 
-        {/* Perfil — activo */}
-        <TouchableOpacity style={styles.navItem}>
-          <AppIcon name="person" size={24} color={COLORS.accent} />
-          <Text style={[styles.navLabel, styles.navLabelActive]}>Perfil</Text>
-        </TouchableOpacity>
+        {/* Metas */}
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => navigation.navigate('Home')}
+          >
+            <AppIcon name="flag-outline" size={24} color={COLORS.textMuted} />
+            <Text style={styles.navLabel}>Metas</Text>
+          </TouchableOpacity>
       </View>
     </View>
   );
@@ -466,4 +502,87 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
     marginTop: -28,
   },
+
+modalOverlay: {
+  flex: 1,
+  backgroundColor: 'rgba(0,0,0,0.65)',
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingHorizontal: 24,
+},
+
+logoutModal: {
+  width: '100%',
+  backgroundColor: COLORS.surface,
+  borderRadius: 24,
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  padding: 24,
+  alignItems: 'center',
+},
+
+modalIconWrapper: {
+  width: 56,
+  height: 56,
+  borderRadius: 28,
+  backgroundColor: 'rgba(248,113,113,0.12)',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: 16,
+},
+
+modalTitle: {
+  fontSize: 20,
+  fontWeight: '800',
+  color: COLORS.textPrimary,
+  marginBottom: 8,
+},
+
+modalText: {
+  fontSize: 14,
+  color: COLORS.textSecondary,
+  textAlign: 'center',
+  lineHeight: 22,
+  marginBottom: 24,
+},
+
+modalActions: {
+  flexDirection: 'row',
+  gap: 12,
+  width: '100%',
+},
+
+cancelButton: {
+  flex: 1,
+  height: 48,
+  borderRadius: 14,
+  backgroundColor: COLORS.surfaceHigh,
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+cancelButtonText: {
+  fontSize: 14,
+  fontWeight: '700',
+  color: COLORS.textSecondary,
+},
+
+confirmLogoutButton: {
+  flex: 1,
+  height: 48,
+  borderRadius: 14,
+  backgroundColor: 'rgba(248,113,113,0.14)',
+  borderWidth: 1,
+  borderColor: 'rgba(248,113,113,0.35)',
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+confirmLogoutText: {
+  fontSize: 14,
+  fontWeight: '800',
+  color: COLORS.red,
+},
 });
