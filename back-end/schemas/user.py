@@ -3,6 +3,7 @@ from pydantic import BaseModel, EmailStr
 # Esquema base con campos comunes
 class UserBase(BaseModel):
     email: EmailStr
+    full_name: str
 
 # Datos necesarios para el registro
 class UserCreate(UserBase):
@@ -12,11 +13,11 @@ class UserCreate(UserBase):
 class UserResponse(UserBase):
     id: int
     is_active: bool
+    profile_image_url: str | None = None
 
     # Habilita la compatibilidad con modelos de SQLAlchemy
     class Config:
         from_attributes = True
-# ... (deja lo que ya tenías de UserBase, UserCreate, UserResponse)
 
 # Esquema para responder con el Token
 class Token(BaseModel):

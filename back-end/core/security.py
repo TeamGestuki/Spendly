@@ -3,9 +3,9 @@ from jose import jwt
 from passlib.context import CryptContext
 
 # Configuración JWT (En el futuro, la SECRET_KEY debería ir oculta en un archivo .env)
-SECRET_KEY = "super-secreta-clave-para-app-gastos-utn" 
+SECRET_KEY = "spendly_uTn_2026_jwt_9XfK28@LmP7Qa#Zx91vRt"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 # El token durará 1 hora
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 14 # El token durará 2 semanas
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
