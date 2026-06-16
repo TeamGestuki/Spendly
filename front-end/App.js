@@ -70,15 +70,20 @@ export default function App() {
           options={{ gestureEnabled: false }}
         />
 
-        <Stack.Screen
-          name="Terms"
-          component={TermsScreen}
-        />
+        <Stack.Screen name="Terms" component={TermsScreen} />
+        <Stack.Screen name="Privacy" component={PrivacyScreen} />
 
-        <Stack.Screen
-          name="Privacy"
-          component={PrivacyScreen}
-        />
+        {/* Rutas simuladas temporalmente */}
+        <Stack.Screen name="EditProfile" component={HomeScreen} />
+        <Stack.Screen name="ChangePassword" component={HomeScreen} />
+        <Stack.Screen name="SecuritySettings" component={HomeScreen} />
+        <Stack.Screen name="CurrencySettings" component={HomeScreen} />
+        <Stack.Screen name="LanguageSettings" component={HomeScreen} />
+        <Stack.Screen name="NotificationSettings" component={HomeScreen} />
+        <Stack.Screen name="ExportData" component={HomeScreen} />
+        <Stack.Screen name="HelpCenter" component={HomeScreen} />
+        <Stack.Screen name="ReportProblem" component={HomeScreen} />
+        <Stack.Screen name="AboutSpendly" component={HomeScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -11,13 +11,18 @@ const parseResponse = async (response) => {
   }
 };
 
-export const registerUser = async (email, password) => {
+export const registerUser = async (
+  fullName,
+  email,
+  password
+) => {
   const response = await fetch(`${API_URL}/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
+      full_name: fullName,
       email,
       password,
     }),

@@ -106,7 +106,11 @@ const handleRegister = useCallback(async () => {
     setLoading(true);
     setRegisterError('');
 
-    await registerUser(email, password);
+    await registerUser(
+      name.trim(),
+      email,
+      password
+    );
 
     navigation.replace('Login');
   } catch (error) {
@@ -114,7 +118,7 @@ const handleRegister = useCallback(async () => {
       error.message?.includes('registrado')
     ) {
       setRegisterError(
-        'Usuario ya registrado'
+        'El email ya se encuentra registrado. Probá con otro o inicia sesión.'
       );
     } else {
       setRegisterError(
@@ -124,7 +128,7 @@ const handleRegister = useCallback(async () => {
   } finally {
     setLoading(false);
   }
-}, [isFormValid, email, password, navigation]);
+}, [isFormValid, name, email, password, navigation]);
 
   return (
     <View style={styles.flex}>
