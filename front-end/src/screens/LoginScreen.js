@@ -15,6 +15,8 @@ import {
   Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { loginUser } from '../services/authService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const COLORS = {
   bg:            '#0D0F14',
@@ -37,6 +39,7 @@ export default function LoginScreen({ navigation }) {
   const [rememberSession, setRememberSession] = useState(false);
   const [emailError, setEmailError]           = useState('');
   const [loading, setLoading]                 = useState(false);
+  const [loginError, setLoginError] = useState('');
 
   const buttonScale = useRef(new Animated.Value(1)).current;
 
@@ -46,6 +49,8 @@ export default function LoginScreen({ navigation }) {
 
   const validateEmail = useCallback((text) => {
     setEmail(text);
+    setLoginError('');
+
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (text.length > 0 && !emailRegex.test(text)) {
       setEmailError('Ingresá un correo válido');
@@ -62,11 +67,28 @@ export default function LoginScreen({ navigation }) {
     Animated.spring(buttonScale, { toValue: 1, friction: 3, useNativeDriver: true }).start();
   }, [buttonScale]);
 
-  const handleLogin = useCallback(() => {
-    if (!email || !password || emailError) return;
-    setLoading(true);
-    setTimeout(() => setLoading(false), 1500);
-  }, [email, password, emailError]);
+const handleLogin = useCallback(async () => {
+  if (!email || !password || emailError) return;
+
+    try {
+      setLoading(true);
+      setLoginError('');
+
+const data = await loginUser(email, password);
+
+if (rememberSession) {
+  await AsyncStorage.setItem('access_token', data.access_token);
+}
+
+navigation.replace('Home');
+
+    navigation.replace('Home');
+  } catch (error) {
+    setLoginError(error.message || 'Email o contraseña incorrectos');
+  } finally {
+    setLoading(false);
+  }
+}, [email, password, emailError, navigation]);
 
   const isDisabled = !email || !password || !!emailError || loading;
 
@@ -94,66 +116,135 @@ export default function LoginScreen({ navigation }) {
           <Text style={styles.formSubtitle}>Bienvenido de vuelta</Text>
 
           {/* Email */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Correo electrónico</Text>
-            <View
-              ref={emailWrapperRef}
-              style={[styles.inputWrapper, !!emailError && styles.inputWrapperError]}
-            >
-              <TextInput
-                style={styles.input}
-                placeholder="tu@correo.com"
-                placeholderTextColor={COLORS.textSecondary}
-                value={email}
-                onChangeText={validateEmail}
-                onFocus={() =>
-                  emailWrapperRef.current?.setNativeProps({
-                    style: [
-                      styles.inputWrapper,
-                        emailError ? styles.inputWrapperError : styles.inputWrapperFocused,
-                    ],
-                })
-              }
-                onBlur={() => emailWrapperRef.current?.setNativeProps({ style: [styles.inputWrapper, !!emailError && styles.inputWrapperError] })}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="next"
-              />
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>
+                Correo electrónico
+              </Text>
+
+              <View
+                ref={emailWrapperRef}
+                style={[
+                  styles.inputWrapper,
+                  (!!emailError || !!loginError) &&
+                    styles.inputWrapperError,
+                ]}
+              >
+                <TextInput
+                  style={styles.input}
+                  placeholder="tu@correo.com"
+                  placeholderTextColor={
+                    COLORS.textSecondary
+                  }
+                  value={email}
+                  onChangeText={validateEmail}
+                  onFocus={() =>
+                    emailWrapperRef.current?.setNativeProps({
+                      style: [
+                        styles.inputWrapper,
+                        (!!emailError || !!loginError) &&
+                          styles.inputWrapperError,
+                      ],
+                    })
+                  }
+                  onBlur={() =>
+                    emailWrapperRef.current?.setNativeProps({
+                      style: [
+                        styles.inputWrapper,
+                        (!!emailError || !!loginError) &&
+                          styles.inputWrapperError,
+                      ],
+                    })
+                  }
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="next"
+                />
+              </View>
+
+              {!!emailError && (
+                <Text style={styles.errorText}>
+                  {emailError}
+                </Text>
+              )}
             </View>
-            {!!emailError && <Text style={styles.errorText}>{emailError}</Text>}
-          </View>
 
           {/* Contraseña */}
-          <View style={styles.fieldGroup}>
-            <View style={styles.labelRow}>
-              <Text style={styles.label}>Contraseña</Text>
-              <TouchableOpacity onPress={() => {}}>
-                <Text style={styles.forgotLink}>¿Olvidaste tu contraseña?</Text>
-              </TouchableOpacity>
-            </View>
-            <View ref={passWrapperRef} style={styles.inputWrapper}>
-              <TextInput
-                style={styles.input}
-                placeholder="••••••••"
-                placeholderTextColor={COLORS.textSecondary}
-                value={password}
-                onChangeText={setPassword}
-                onFocus={() => passWrapperRef.current?.setNativeProps({ style: [styles.inputWrapper, styles.inputWrapperFocused] })}
-                onBlur={() => passWrapperRef.current?.setNativeProps({ style: styles.inputWrapper })}
-                secureTextEntry={!showPassword}
-                returnKeyType="done"
-                onSubmitEditing={handleLogin}
-              />
-              <TouchableOpacity onPress={() => setShowPassword(v => !v)} style={styles.eyeButton}>
-                <Ionicons
-                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={18}
-                  color="#64748B"
+            <View style={styles.fieldGroup}>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>Contraseña</Text>
+
+                <TouchableOpacity onPress={() => {}}>
+                  <Text style={styles.forgotLink}>
+                    ¿Olvidaste tu contraseña?
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View
+                ref={passWrapperRef}
+                style={[
+                  styles.inputWrapper,
+                  !!loginError && styles.inputWrapperError,
+                ]}
+              >
+                <TextInput
+                  style={styles.input}
+                  placeholder="••••••••"
+                  placeholderTextColor={COLORS.textSecondary}
+                  value={password}
+                  onChangeText={(text) => {
+                        setPassword(text);
+                        setLoginError('');
+                      }}
+                  onFocus={() =>
+                    passWrapperRef.current?.setNativeProps({
+                      style: [
+                        styles.inputWrapper,
+                        !!loginError &&
+                          styles.inputWrapperError,
+                      ],
+                    })
+                  }
+                  onBlur={() =>
+                    passWrapperRef.current?.setNativeProps({
+                      style: [
+                        styles.inputWrapper,
+                        !!loginError &&
+                          styles.inputWrapperError,
+                      ],
+                    })
+                  }
+                  secureTextEntry={!showPassword}
+                  returnKeyType="done"
+                  onSubmitEditing={handleLogin}
                 />
-              </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() =>
+                    setShowPassword(v => !v)
+                  }
+                  style={styles.eyeButton}
+                >
+                  <Ionicons
+                    name={
+                      showPassword
+                        ? 'eye-off-outline'
+                        : 'eye-outline'
+                    }
+                    size={18}
+                    color="#64748B"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* ERROR LOGIN */}
+              {!!loginError && (
+                <Text style={styles.errorText}>
+                  {loginError}
+                </Text>
+              )}
             </View>
-          </View>
 
           {/* Recordar sesión */}
           <TouchableOpacity
@@ -200,14 +291,28 @@ export default function LoginScreen({ navigation }) {
         </View>
 
         {/* Footer */}
-        <Text style={styles.footer}>
-          Al continuar aceptás los{' '}
-          <Text style={styles.footerLink}>Términos y condiciones</Text>
-          {' '}y la{' '}
-          <Text style={styles.footerLink}>Política de privacidad</Text>
-        </Text>
-      </ScrollView>
-    </View>
+          <Text style={styles.footer}>
+            Al continuar aceptás los{' '}
+
+            <Text
+              style={styles.footerLink}
+              onPress={() => navigation.navigate('Terms')}
+            >
+              Términos y condiciones
+            </Text>
+
+            {' '}y la{' '}
+
+            <Text
+              style={styles.footerLink}
+              onPress={() => navigation.navigate('Privacy')}
+            >
+              Política de privacidad
+            </Text>
+          </Text>
+
+          </ScrollView>
+          </View>
   );
 }
 
@@ -263,12 +368,7 @@ const styles = StyleSheet.create({
     borderRadius: 12, borderWidth: 1, borderColor: COLORS.border,
     paddingHorizontal: 14, height: 52,
   },
-  inputWrapperFocused: {
-    borderColor: COLORS.borderFocus,
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25, shadowRadius: 8, elevation: 4,
-  },
+  
   inputWrapperError: {
   borderColor: COLORS.error,
   shadowColor: COLORS.error,
@@ -282,7 +382,14 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 11, color: COLORS.error, marginTop: 5, marginLeft: 2 },
 
   // Recordar sesión
-  rememberRow: { flexDirection: 'row', alignItems: 'center', marginTop: -2, marginBottom: 15 },
+  rememberRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginTop: -2,
+  marginBottom: 15,
+  alignSelf: 'flex-start',
+},
+
   checkbox: {
     width: 20, height: 20, borderRadius: 6,
     borderWidth: 1, borderColor: COLORS.border,
