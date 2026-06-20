@@ -5,6 +5,7 @@ from core.database import get_db
 from models.user import User
 from schemas.user import UserCreate, UserResponse, Token
 from core.security import get_password_hash, verify_password, create_access_token
+from api.dependencies import get_current_user
 
 router = APIRouter()
 
@@ -51,3 +52,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
     access_token = create_access_token(data={"sub": user.email})
     
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/me", response_model=UserResponse)
+def read_current_user(current_user: User = Depends(get_current_user)):
+    return current_user

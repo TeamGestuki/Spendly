@@ -4,6 +4,7 @@ from pydantic import BaseModel, EmailStr
 class UserBase(BaseModel):
     full_name: str
     email: EmailStr
+    full_name: str
 
 # ─── Datos necesarios para el registro ────────────────────────
 class UserCreate(UserBase):
@@ -13,6 +14,7 @@ class UserCreate(UserBase):
 class UserResponse(UserBase):
     id: int
     is_active: bool
+    profile_image_url: str | None = None
 
     class Config:
         from_attributes = True

@@ -7,7 +7,6 @@ from core.database import get_db
 from core.security import SECRET_KEY, ALGORITHM
 from models.user import User
 
-# Esto le indica a FastAPI (y a Swagger) dónde está la ruta para conseguir el token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
