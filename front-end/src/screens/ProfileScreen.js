@@ -171,9 +171,10 @@ export default function ProfileScreen({ navigation }) {
     setAvatarMenuVisible(false);
   };
 
-  const handlePickAvatar = async () => {
-    closeAvatarMenu();
+const handlePickAvatar = async () => {
+  console.log('CLICK ACTUALIZAR FOTO');
 
+  setTimeout(async () => {
     const permission =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -184,20 +185,30 @@ export default function ProfileScreen({ navigation }) {
 
     const result =
       await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
       });
 
+    console.log('RESULT IMAGE PICKER:', result);
+    
+    closeAvatarMenu();
+    
     if (result.canceled) return;
 
     try {
       setUploadingAvatar(true);
 
       const imageUri = result.assets[0].uri;
+
+      console.log('IMAGE URI:', imageUri);
+      console.log('SUBIENDO AVATAR...');
+
       const updatedUser =
         await uploadProfileAvatar(imageUri);
+
+      console.log('USUARIO ACTUALIZADO:', updatedUser);
 
       setUser({
         id: updatedUser.id,
@@ -208,11 +219,15 @@ export default function ProfileScreen({ navigation }) {
         is_active: updatedUser.is_active,
       });
     } catch (error) {
-      console.log('Error subiendo avatar:', error.message);
+      console.log(
+        'Error subiendo avatar:',
+        error.message
+      );
     } finally {
       setUploadingAvatar(false);
     }
-  };
+  }, 350);
+};
 
   const handleViewAvatar = () => {
     closeAvatarMenu();

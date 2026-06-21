@@ -14,6 +14,7 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
+
 import { Ionicons, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -294,7 +295,7 @@ export default function HomeScreen({ navigation }) {
         {/* Gastos */}
         <TouchableOpacity
           style={styles.navItem}
-          onPress={() => setActiveTab('gastos')}
+          onPress={() => navigation.navigate('Expenses')}
         >
           <AppIcon name={activeTab === 'gastos' ? 'card' : 'card-outline'} size={24} color={activeTab === 'gastos' ? COLORS.accent : COLORS.textMuted} />
           <Text style={[styles.navLabel, activeTab === 'gastos' && styles.navLabelActive]}>Gastos</Text>

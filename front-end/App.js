@@ -10,6 +10,8 @@ import HomeScreen from './src/screens/HomeScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import TermsScreen from './src/screens/TermsScreen';
 import PrivacyScreen from './src/screens/PrivacyScreen';
+import ExpensesScreen from './src/screens/ExpensesScreen';
+import AddExpenseScreen from './src/screens/AddExpenseScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -68,6 +70,17 @@ export default function App() {
           name="Profile"
           component={ProfileScreen}
           options={{ gestureEnabled: false }}
+        />
+
+        <Stack.Screen
+            name="Expenses"
+            component={ExpensesScreen}
+            options={{ gestureEnabled: false }}
+        />
+
+        <Stack.Screen
+            name="AddExpense"
+            component={AddExpenseScreen}
         />
 
         <Stack.Screen name="Terms" component={TermsScreen} />
