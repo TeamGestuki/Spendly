@@ -3,7 +3,7 @@
     * Pantalla principal de Spendly, muestra un resumen financiero con diseño moderno y visualmente atractivo.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,8 @@ import {
 } from 'react-native';
 
 import { Ionicons, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
+import { getCurrentUser } from '../services/authService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -39,6 +41,30 @@ const COLORS = {
   slate:         '#94A3B8',
   cardBorder:    'rgba(255,255,255,0.06)',
 };
+
+const API_BASE_URL =
+  'https://spendly-production-1793.up.railway.app';
+
+function getInitials(fullName = '') {
+  const parts = fullName.trim().split(' ').filter(Boolean);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+
+  if (parts.length === 1) {
+    return parts[0][0].toUpperCase();
+  }
+
+  return 'U';
+}
+
+function getAvatarUrl(url) {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+
+  return `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
+}
 
 // ─── Datos de ejemplo ─────────────────────────────────────────────────────────
 const EXPENSES = [
@@ -75,6 +101,27 @@ function ProgressBar({ percent, color }) {
 export default function HomeScreen({ navigation }) {
   const [activeTab, setActiveTab] = useState('home');
 
+  const [user, setUser] = useState({
+      full_name: 'Usuario',
+      email: '',
+      profile_image_url: null,
+    });
+
+    useFocusEffect(
+      useCallback(() => {
+        const loadUser = async () => {
+          try {
+            const data = await getCurrentUser();
+            setUser(data);
+          } catch (error) {
+            console.log('Error cargando usuario en Home:', error.message);
+          }
+        };
+
+        loadUser();
+      }, [])
+  );
+
   const formatAmount = (n) =>
     Math.abs(n).toLocaleString('es-AR');
 
@@ -90,7 +137,9 @@ export default function HomeScreen({ navigation }) {
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Hola, Pedro</Text>
+            <Text style={styles.greeting}>
+              Hola, {user.full_name?.split(' ')[0] || 'Usuario'}
+            </Text>
             <Text style={styles.greetingSub}>Bienvenido de nuevo</Text>
           </View>
           <View style={styles.headerActions}>
@@ -102,9 +151,18 @@ export default function HomeScreen({ navigation }) {
               onPress={() => navigation.navigate('Profile')}
               activeOpacity={0.8}
             >
-              <View style={styles.avatarFallback}>
-                <Text style={styles.avatarText}>PD</Text>
-              </View>
+              {getAvatarUrl(user.profile_image_url) ? (
+                  <Image
+                    source={{ uri: getAvatarUrl(user.profile_image_url) }}
+                    style={styles.avatarImage}
+                  />
+                ) : (
+                  <View style={styles.avatarFallback}>
+                    <Text style={styles.avatarText}>
+                      {getInitials(user.full_name)}
+                    </Text>
+                  </View>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -363,6 +421,12 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   avatarText: { fontSize: 13, fontWeight: '700', color: COLORS.accent },
+
+  avatarImage: {
+  width: 38,
+  height: 38,
+  borderRadius: 19,
+},
 
   // ── Hero Card
   heroCard: {
