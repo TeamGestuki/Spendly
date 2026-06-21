@@ -1,9 +1,9 @@
 /**
  * ProfileScreen.js
- * Pantalla de perfil y configuración de Spendly.
+ * Perfil y configuración de Spendly.
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -13,10 +13,21 @@ import {
   StatusBar,
   Switch,
   Modal,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
+
+import {
+  getCurrentUser,
+  uploadProfileAvatar,
+} from '../services/authService';
+
+const API_BASE_URL =
+  'https://spendly-production-1793.up.railway.app';
 
 const COLORS = {
   bg: '#0D0F14',
@@ -34,15 +45,29 @@ const COLORS = {
   purple: '#C084FC',
 };
 
-const USER = {
-  name: 'Pedro Díaz',
-  email: 'pedro.diaz@gmail.com',
-  initials: 'PD',
-  plan: 'Cuenta activa',
-};
-
 function AppIcon({ name, size = 20, color = COLORS.textSecondary }) {
   return <Ionicons name={name} size={size} color={color} />;
+}
+
+function getInitials(fullName = '') {
+  const parts = fullName.trim().split(' ').filter(Boolean);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+
+  if (parts.length === 1) {
+    return parts[0][0].toUpperCase();
+  }
+
+  return 'U';
+}
+
+function getAvatarUrl(url) {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+
+  return `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
 }
 
 function SettingItem({
@@ -56,21 +81,35 @@ function SettingItem({
 }) {
   return (
     <TouchableOpacity
-      style={[styles.settingItem, isLast && styles.settingItemLast]}
+      style={[
+        styles.settingItem,
+        isLast && styles.settingItemLast,
+      ]}
       onPress={onPress}
       activeOpacity={0.75}
     >
-      <View style={[styles.settingIconWrapper, { backgroundColor: `${iconColor}18` }]}>
+      <View
+        style={[
+          styles.settingIconWrapper,
+          { backgroundColor: `${iconColor}18` },
+        ]}
+      >
         <AppIcon name={icon} size={18} color={iconColor} />
       </View>
 
       <View style={styles.settingBody}>
         <Text style={styles.settingLabel}>{label}</Text>
-        {!!value && <Text style={styles.settingValue}>{value}</Text>}
+        {!!value && (
+          <Text style={styles.settingValue}>{value}</Text>
+        )}
       </View>
 
       {rightElement || (
-        <AppIcon name="chevron-forward" size={16} color={COLORS.textMuted} />
+        <AppIcon
+          name="chevron-forward"
+          size={16}
+          color={COLORS.textMuted}
+        />
       )}
     </TouchableOpacity>
   );
@@ -78,7 +117,147 @@ function SettingItem({
 
 export default function ProfileScreen({ navigation }) {
   const [darkModeOn, setDarkModeOn] = useState(true);
-  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [logoutModalVisible, setLogoutModalVisible] =
+    useState(false);
+
+  const [avatarMenuVisible, setAvatarMenuVisible] =
+    useState(false);
+  const [avatarPreviewVisible, setAvatarPreviewVisible] =
+    useState(false);
+
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const [user, setUser] = useState({
+    id: null,
+    full_name: 'Usuario',
+    email: '',
+    profile_image_url: null,
+    is_active: true,
+  });
+
+  const avatarUrl = getAvatarUrl(user.profile_image_url);
+  const initials = getInitials(user.full_name);
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      setLoadingUser(true);
+
+      const data = await getCurrentUser();
+
+      setUser({
+        id: data.id,
+        full_name: data.full_name || 'Usuario',
+        email: data.email || '',
+        profile_image_url: data.profile_image_url || null,
+        is_active: data.is_active,
+      });
+    } catch (error) {
+      console.log('Error cargando usuario:', error.message);
+    } finally {
+      setLoadingUser(false);
+    }
+  };
+
+  const openAvatarMenu = () => {
+    setAvatarMenuVisible(true);
+  };
+
+  const closeAvatarMenu = () => {
+    setAvatarMenuVisible(false);
+  };
+
+  const handlePickAvatar = async () => {
+    closeAvatarMenu();
+
+    const permission =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      console.log('Permiso de galería denegado');
+      return;
+    }
+
+    const result =
+      await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+    if (result.canceled) return;
+
+    try {
+      setUploadingAvatar(true);
+
+      const imageUri = result.assets[0].uri;
+      const updatedUser =
+        await uploadProfileAvatar(imageUri);
+
+      setUser({
+        id: updatedUser.id,
+        full_name: updatedUser.full_name || 'Usuario',
+        email: updatedUser.email || '',
+        profile_image_url:
+          updatedUser.profile_image_url || null,
+        is_active: updatedUser.is_active,
+      });
+    } catch (error) {
+      console.log('Error subiendo avatar:', error.message);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleViewAvatar = () => {
+    closeAvatarMenu();
+
+    if (avatarUrl) {
+      setAvatarPreviewVisible(true);
+    }
+  };
+
+  const handleDeleteAvatar = async () => {
+    closeAvatarMenu();
+
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/profile/avatar`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : null;
+
+      if (!response.ok) {
+        throw new Error(
+          data?.detail || 'No se pudo eliminar la foto'
+        );
+      }
+
+      setUser(prev => ({
+        ...prev,
+        profile_image_url: null,
+      }));
+    } catch (error) {
+      console.log(
+        'Error eliminando avatar:',
+        error.message
+      );
+    }
+  };
 
   const handleLogout = () => {
     setLogoutModalVisible(true);
@@ -92,7 +271,10 @@ export default function ProfileScreen({ navigation }) {
 
   return (
     <View style={styles.flex}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={COLORS.bg}
+      />
 
       <ScrollView
         style={styles.flex}
@@ -106,7 +288,11 @@ export default function ProfileScreen({ navigation }) {
             style={styles.iconBtn}
             onPress={() => navigation.navigate('EditProfile')}
           >
-            <AppIcon name="create-outline" size={20} color={COLORS.textSecondary} />
+            <AppIcon
+              name="create-outline"
+              size={20}
+              color={COLORS.textSecondary}
+            />
           </TouchableOpacity>
         </View>
 
@@ -114,24 +300,62 @@ export default function ProfileScreen({ navigation }) {
           <TouchableOpacity
             style={styles.avatarRing}
             activeOpacity={0.8}
-            onPress={() => navigation.navigate('EditProfile')}
+            onPress={openAvatarMenu}
           >
-            <View style={styles.avatarFallback}>
-              <Text style={styles.avatarText}>{USER.initials}</Text>
-            </View>
+            {avatarUrl ? (
+              <Image
+                source={{ uri: avatarUrl }}
+                style={styles.avatarImage}
+              />
+            ) : (
+              <View style={styles.avatarFallback}>
+                <Text style={styles.avatarText}>
+                  {initials}
+                </Text>
+              </View>
+            )}
 
             <View style={styles.avatarEditBadge}>
-              <AppIcon name="camera-outline" size={13} color="#0D1A12" />
+              {uploadingAvatar ? (
+                <ActivityIndicator
+                  size="small"
+                  color="#0D1A12"
+                />
+              ) : (
+                <AppIcon
+                  name="camera-outline"
+                  size={13}
+                  color="#0D1A12"
+                />
+              )}
             </View>
           </TouchableOpacity>
 
-          <Text style={styles.heroName}>{USER.name}</Text>
-          <Text style={styles.heroEmail}>{USER.email}</Text>
+          {loadingUser ? (
+            <ActivityIndicator
+              size="small"
+              color={COLORS.accent}
+            />
+          ) : (
+            <>
+              <Text style={styles.heroName}>
+                {user.full_name}
+              </Text>
 
-          <View style={styles.statusBadge}>
-            <View style={styles.statusDot} />
-            <Text style={styles.statusText}>{USER.plan}</Text>
-          </View>
+              <Text style={styles.heroEmail}>
+                {user.email}
+              </Text>
+
+              <View style={styles.statusBadge}>
+                <View style={styles.statusDot} />
+                <Text style={styles.statusText}>
+                  {user.is_active
+                    ? 'Cuenta activa'
+                    : 'Cuenta inactiva'}
+                </Text>
+              </View>
+            </>
+          )}
         </View>
 
         <Text style={styles.sectionTitle}>Cuenta</Text>
@@ -174,8 +398,15 @@ export default function ProfileScreen({ navigation }) {
               <Switch
                 value={darkModeOn}
                 onValueChange={setDarkModeOn}
-                trackColor={{ false: COLORS.border, true: COLORS.accentDim }}
-                thumbColor={darkModeOn ? COLORS.accent : COLORS.textMuted}
+                trackColor={{
+                  false: COLORS.border,
+                  true: COLORS.accentDim,
+                }}
+                thumbColor={
+                  darkModeOn
+                    ? COLORS.accent
+                    : COLORS.textMuted
+                }
                 ios_backgroundColor={COLORS.border}
               />
             }
@@ -202,12 +433,16 @@ export default function ProfileScreen({ navigation }) {
             iconColor={COLORS.orange}
             label="Notificaciones"
             value="Alertas, recordatorios y resúmenes"
-            onPress={() => navigation.navigate('NotificationSettings')}
+            onPress={() =>
+              navigation.navigate('NotificationSettings')
+            }
             isLast
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Datos y privacidad</Text>
+        <Text style={styles.sectionTitle}>
+          Datos y privacidad
+        </Text>
         <View style={styles.card}>
           <SettingItem
             icon="download-outline"
@@ -264,14 +499,135 @@ export default function ProfileScreen({ navigation }) {
         </View>
 
         <Text style={styles.sectionTitle}>Sesión</Text>
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.8}>
-          <AppIcon name="log-out-outline" size={20} color={COLORS.red} />
-          <Text style={styles.logoutText}>Cerrar sesión</Text>
+        <TouchableOpacity
+          style={styles.logoutBtn}
+          onPress={handleLogout}
+          activeOpacity={0.8}
+        >
+          <AppIcon
+            name="log-out-outline"
+            size={20}
+            color={COLORS.red}
+          />
+          <Text style={styles.logoutText}>
+            Cerrar sesión
+          </Text>
         </TouchableOpacity>
 
         <View style={{ height: 90 }} />
       </ScrollView>
 
+      {/* Modal opciones avatar */}
+      <Modal
+        visible={avatarMenuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeAvatarMenu}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={closeAvatarMenu}
+        >
+          <View style={styles.actionSheet}>
+            <Text style={styles.actionSheetTitle}>
+              Foto de perfil
+            </Text>
+
+            {avatarUrl && (
+              <TouchableOpacity
+                style={styles.actionSheetItem}
+                onPress={handleViewAvatar}
+              >
+                <AppIcon
+                  name="eye-outline"
+                  size={20}
+                  color={COLORS.blue}
+                />
+                <Text style={styles.actionSheetText}>
+                  Ver foto de perfil
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              style={styles.actionSheetItem}
+              onPress={handlePickAvatar}
+            >
+              <AppIcon
+                name={avatarUrl ? 'image-outline' : 'add-circle-outline'}
+                size={20}
+                color={COLORS.accent}
+              />
+              <Text style={styles.actionSheetText}>
+                {avatarUrl
+                  ? 'Actualizar foto'
+                  : 'Agregar foto'}
+              </Text>
+            </TouchableOpacity>
+
+            {avatarUrl && (
+              <TouchableOpacity
+                style={styles.actionSheetItem}
+                onPress={handleDeleteAvatar}
+              >
+                <AppIcon
+                  name="trash-outline"
+                  size={20}
+                  color={COLORS.red}
+                />
+                <Text
+                  style={[
+                    styles.actionSheetText,
+                    { color: COLORS.red },
+                  ]}
+                >
+                  Eliminar foto
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              style={styles.actionSheetCancel}
+              onPress={closeAvatarMenu}
+            >
+              <Text style={styles.actionSheetCancelText}>
+                Cancelar
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Modal ver avatar */}
+      <Modal
+        visible={avatarPreviewVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setAvatarPreviewVisible(false)}
+      >
+        <View style={styles.previewOverlay}>
+          <TouchableOpacity
+            style={styles.previewCloseBtn}
+            onPress={() => setAvatarPreviewVisible(false)}
+          >
+            <AppIcon
+              name="close"
+              size={24}
+              color={COLORS.textPrimary}
+            />
+          </TouchableOpacity>
+
+          {avatarUrl && (
+            <Image
+              source={{ uri: avatarUrl }}
+              style={styles.previewImage}
+            />
+          )}
+        </View>
+      </Modal>
+
+      {/* Modal cerrar sesión */}
       <Modal
         visible={logoutModalVisible}
         transparent
@@ -281,10 +637,16 @@ export default function ProfileScreen({ navigation }) {
         <View style={styles.modalOverlay}>
           <View style={styles.logoutModal}>
             <View style={styles.modalIconWrapper}>
-              <AppIcon name="log-out-outline" size={26} color={COLORS.red} />
+              <AppIcon
+                name="log-out-outline"
+                size={26}
+                color={COLORS.red}
+              />
             </View>
 
-            <Text style={styles.modalTitle}>Cerrar sesión</Text>
+            <Text style={styles.modalTitle}>
+              Cerrar sesión
+            </Text>
 
             <Text style={styles.modalText}>
               ¿Estás seguro de que querés cerrar sesión en Spendly?
@@ -296,7 +658,9 @@ export default function ProfileScreen({ navigation }) {
                 onPress={() => setLogoutModalVisible(false)}
                 activeOpacity={0.8}
               >
-                <Text style={styles.cancelButtonText}>Cancelar</Text>
+                <Text style={styles.cancelButtonText}>
+                  Cancelar
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -304,7 +668,9 @@ export default function ProfileScreen({ navigation }) {
                 onPress={confirmLogout}
                 activeOpacity={0.8}
               >
-                <Text style={styles.confirmLogoutText}>Cerrar sesión</Text>
+                <Text style={styles.confirmLogoutText}>
+                  Cerrar sesión
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -312,29 +678,64 @@ export default function ProfileScreen({ navigation }) {
       </Modal>
 
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
-          <AppIcon name="home-outline" size={24} color={COLORS.textMuted} />
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate('Home')}
+        >
+          <AppIcon
+            name="home-outline"
+            size={24}
+            color={COLORS.textMuted}
+          />
           <Text style={styles.navLabel}>Home</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
-          <AppIcon name="card-outline" size={24} color={COLORS.textMuted} />
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate('Home')}
+        >
+          <AppIcon
+            name="card-outline"
+            size={24}
+            color={COLORS.textMuted}
+          />
           <Text style={styles.navLabel}>Gastos</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navScanWrapper} activeOpacity={0.85}>
+        <TouchableOpacity
+          style={styles.navScanWrapper}
+          activeOpacity={0.85}
+        >
           <View style={styles.navScanBtn}>
-            <AppIcon name="scan-outline" size={26} color="#0D1A12" />
+            <AppIcon
+              name="scan-outline"
+              size={26}
+              color="#0D1A12"
+            />
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
-          <AppIcon name="bar-chart-outline" size={24} color={COLORS.textMuted} />
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate('Home')}
+        >
+          <AppIcon
+            name="bar-chart-outline"
+            size={24}
+            color={COLORS.textMuted}
+          />
           <Text style={styles.navLabel}>Stats</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
-          <AppIcon name="flag-outline" size={24} color={COLORS.textMuted} />
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate('Home')}
+        >
+          <AppIcon
+            name="flag-outline"
+            size={24}
+            color={COLORS.textMuted}
+          />
           <Text style={styles.navLabel}>Metas</Text>
         </TouchableOpacity>
       </View>
@@ -344,7 +745,10 @@ export default function ProfileScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: COLORS.bg },
-  scrollContent: { paddingHorizontal: 20, paddingTop: 56 },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 56,
+  },
 
   header: {
     flexDirection: 'row',
@@ -392,6 +796,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 14,
     position: 'relative',
+  },
+  avatarImage: {
+    width: 74,
+    height: 74,
+    borderRadius: 37,
   },
   avatarFallback: {
     width: 74,
@@ -572,6 +981,72 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
+
+  actionSheet: {
+    width: '100%',
+    backgroundColor: COLORS.surface,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 18,
+  },
+  actionSheetTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: COLORS.textPrimary,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  actionSheetItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  actionSheetText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+  },
+  actionSheetCancel: {
+    marginTop: 14,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: COLORS.surfaceHigh,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionSheetCancelText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+  },
+
+  previewOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.92)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  previewCloseBtn: {
+    position: 'absolute',
+    top: 54,
+    right: 24,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  previewImage: {
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+  },
+
   logoutModal: {
     width: '100%',
     backgroundColor: COLORS.surface,

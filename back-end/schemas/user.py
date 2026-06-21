@@ -4,7 +4,6 @@ from pydantic import BaseModel, EmailStr
 class UserBase(BaseModel):
     full_name: str
     email: EmailStr
-    full_name: str
 
 # ─── Datos necesarios para el registro ────────────────────────
 class UserCreate(UserBase):
