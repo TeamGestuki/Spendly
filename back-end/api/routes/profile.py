@@ -6,7 +6,7 @@ from core.storage import save_avatar, delete_avatar, MAX_FILE_SIZE
 from core.security import verify_password, get_password_hash
 from models.user import User
 from models.session import UserSession
-from schemas.user import UserResponse, PasswordChange, MessageResponse
+from schemas.user import UserResponse, PasswordChange, MessageResponse, UpdateProfile
 from schemas.session import SessionResponse
 from api.dependencies import get_current_user, get_current_session
 
@@ -57,6 +57,18 @@ def change_password(
     current_user.hashed_password = get_password_hash(body.new_password)
     db.commit()
     return MessageResponse(message="Contraseña actualizada correctamente")
+
+
+@router.patch("", response_model=UserResponse)
+def update_profile(
+    body: UpdateProfile,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    current_user.full_name = body.full_name
+    db.commit()
+    db.refresh(current_user)
+    return current_user
 
 
 @router.get("/sessions", response_model=list[SessionResponse])
