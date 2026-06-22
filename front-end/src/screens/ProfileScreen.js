@@ -379,26 +379,19 @@ const handlePickAvatar = async () => {
             icon="person-outline"
             iconColor={COLORS.accent}
             label="Editar datos personales"
-            value="Nombre, email y foto de perfil"
+            value="Nombre, email y direcciones"
             onPress={() => navigation.navigate('EditProfile')}
-          />
-
-          <SettingItem
-            icon="lock-closed-outline"
-            iconColor={COLORS.blue}
-            label="Cambiar contraseña"
-            value="Actualizá tu clave de acceso"
-            onPress={() => navigation.navigate('ChangePassword')}
           />
 
           <SettingItem
             icon="shield-checkmark-outline"
             iconColor={COLORS.purple}
             label="Seguridad y acceso"
-            value="Sesiones, bloqueo y autenticación"
+            value="Autenticación, sesiones y acceso"
             onPress={() => navigation.navigate('SecuritySettings')}
             isLast
           />
+
         </View>
 
         <Text style={styles.sectionTitle}>Preferencias</Text>
@@ -707,7 +700,7 @@ const handlePickAvatar = async () => {
 
         <TouchableOpacity
           style={styles.navItem}
-          onPress={() => navigation.navigate('Home')}
+          onPress={() => navigation.navigate('Expenses')}
         >
           <AppIcon
             name="card-outline"

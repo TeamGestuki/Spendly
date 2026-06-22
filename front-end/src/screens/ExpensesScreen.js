@@ -1,9 +1,6 @@
 /**
  * ExpensesScreen.js
  * Pantalla de gastos de Spendly.
- * Muestra lista de gastos, resumen del mes y acceso a agregar nuevo gasto.
- *
- * Ubicación: src/screens/ExpensesScreen.js
  */
 
 import React, { useState, useCallback } from 'react';

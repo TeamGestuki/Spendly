@@ -12,6 +12,7 @@ import TermsScreen from './src/screens/TermsScreen';
 import PrivacyScreen from './src/screens/PrivacyScreen';
 import ExpensesScreen from './src/screens/ExpensesScreen';
 import AddExpenseScreen from './src/screens/AddExpenseScreen';
+import EditProfileScreen from './src/screens/EditProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -73,6 +74,11 @@ export default function App() {
         />
 
         <Stack.Screen
+          name="EditProfile"
+          component={EditProfileScreen}
+        />
+
+        <Stack.Screen
             name="Expenses"
             component={ExpensesScreen}
             options={{ gestureEnabled: false }}
@@ -87,7 +93,6 @@ export default function App() {
         <Stack.Screen name="Privacy" component={PrivacyScreen} />
 
         {/* Rutas simuladas temporalmente */}
-        <Stack.Screen name="EditProfile" component={HomeScreen} />
         <Stack.Screen name="ChangePassword" component={HomeScreen} />
         <Stack.Screen name="SecuritySettings" component={HomeScreen} />
         <Stack.Screen name="CurrencySettings" component={HomeScreen} />

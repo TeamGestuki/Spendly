@@ -1,12 +1,6 @@
 /**
  * AddExpenseScreen.js
  * Pantalla para registrar un nuevo gasto en Spendly.
- * Incluye validaciones, selector de categoría, método de pago, fecha y hora.
- *
- * Ubicación: src/screens/AddExpenseScreen.js
- *
- * Dependencia necesaria para DatePicker:
- *   npx expo install @react-native-community/datetimepicker
  */
 
 import React, { useState, useRef, useCallback } from 'react';

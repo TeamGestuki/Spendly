@@ -142,3 +142,30 @@ export const uploadProfileAvatar = async (imageUri) => {
 
   return data;
 };
+
+export const updateCurrentUser = async (data) => {
+  const token = await AsyncStorage.getItem('access_token');
+
+  if (!token) {
+    throw new Error('No hay sesión activa');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/profile`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  const responseData = await parseResponse(response);
+
+  if (!response.ok) {
+    throw new Error(
+      responseData.detail || 'No se pudo actualizar el perfil'
+    );
+  }
+
+  return responseData;
+};
