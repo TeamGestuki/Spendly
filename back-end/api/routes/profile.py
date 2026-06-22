@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
 from sqlalchemy.orm import Session
 from core.database import get_db
-from core.storage import save_avatar, MAX_FILE_SIZE
+from core.storage import save_avatar, delete_avatar, MAX_FILE_SIZE
 from models.user import User
 from schemas.user import UserResponse
 from api.dependencies import get_current_user
@@ -26,4 +26,16 @@ def upload_avatar(
     current_user.profile_image_url = url
     db.commit()
     db.refresh(current_user)
+    return current_user
+
+@router.delete("/avatar", response_model=UserResponse)
+def delete_avatar_endpoint(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    old_url = current_user.profile_image_url
+    current_user.profile_image_url = None
+    db.commit()
+    db.refresh(current_user)
+    delete_avatar(old_url)
     return current_user
