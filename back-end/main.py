@@ -3,7 +3,7 @@ import os
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from core.database import engine, Base
-from models import user, transaction
+from models import user, transaction, session
 from api.routes import auth, transaction as transaction_router, profile as profile_router
 
 # Esto crea las tablas en la base de datos de forma automática si no existen

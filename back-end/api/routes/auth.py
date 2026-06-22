@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Form
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from models.session import UserSession
 from core.database import get_db
 from models.user import User
 from schemas.user import UserCreate, UserResponse, Token
@@ -34,23 +35,50 @@ def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user) # Recarga el objeto para obtener el ID autogenerado
     
     return new_user
+class LoginForm(OAuth2PasswordRequestForm):
+    def __init__(
+        self,
+        grant_type: str = Form(None),
+        username: str = Form(),
+        password: str = Form(),
+        scope: str = Form(""),
+        client_id: str = Form(None),
+        client_secret: str = Form(None),
+        device_name: str | None = Form(None),
+    ):
+        super().__init__(
+            grant_type=grant_type, username=username, password=password,
+            scope=scope, client_id=client_id, client_secret=client_secret,
+        )
+        self.device_name = device_name
+
 @router.post("/login", response_model=Token)
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    # 1. Buscar al usuario por email. 
-    # (FastAPI usa el campo 'username' en sus formularios por defecto, pero nosotros le pasaremos el email)
+def login_for_access_token(
+    form_data: LoginForm = Depends(),
+    request: Request = None,
+    db: Session = Depends(get_db),
+):
     user = db.query(User).filter(User.email == form_data.username).first()
-    
-    # 2. Verificar si el usuario existe y si la contraseña coincide
+
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email o contraseña incorrectos",
             headers={"WWW-Authenticate": "Bearer"},
         )
-        
-    # 3. Si todo está bien, generamos el Token JWT guardando el email adentro
-    access_token = create_access_token(data={"sub": user.email})
-    
+
+    session = UserSession(
+        user_id=user.id,
+        device_name=form_data.device_name,
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+    )
+    db.add(session)
+    db.commit()
+    db.refresh(session)
+
+    access_token = create_access_token(data={"sub": user.email, "sid": session.id})
+
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/me", response_model=UserResponse)
