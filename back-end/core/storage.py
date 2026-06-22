@@ -18,3 +18,10 @@ def save_avatar(file_content: bytes, filename: str) -> str:
         f.write(file_content)
 
     return f"/uploads/avatars/{name}"
+
+def delete_avatar(url: str | None) -> None:
+    if not url:
+        return
+    path = os.path.join(UPLOAD_DIR, os.path.basename(url))
+    if os.path.exists(path):
+        os.remove(path)
