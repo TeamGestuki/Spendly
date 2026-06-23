@@ -169,3 +169,70 @@ export const updateCurrentUser = async (data) => {
 
   return responseData;
 };
+
+export const deleteProfileAvatar = async () => {
+  const token = await AsyncStorage.getItem('access_token');
+
+  if (!token) {
+    throw new Error('No hay sesión activa');
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/profile/avatar`,
+    {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await parseResponse(response);
+
+  console.log('DELETE STATUS:', response.status);
+  console.log('DELETE DATA:', data);
+
+  if (!response.ok) {
+    throw new Error(
+      data.detail || 'No se pudo eliminar la foto'
+    );
+  }
+
+  return data;
+};
+
+export const changePassword = async (
+  currentPassword,
+  newPassword
+) => {
+  const token = await AsyncStorage.getItem('access_token');
+
+  if (!token) {
+    throw new Error('No hay sesión activa');
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/profile/password`,
+    {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+      }),
+    }
+  );
+
+  const data = await parseResponse(response);
+
+  if (!response.ok) {
+    throw new Error(
+      data.detail || 'No se pudo cambiar la contraseña'
+    );
+  }
+
+  return data;
+};

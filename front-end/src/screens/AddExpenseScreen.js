@@ -15,6 +15,7 @@ import {
   Animated,
   Platform,
   Modal,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -179,7 +180,11 @@ export default function AddExpenseScreen({ navigation }) {
   const isValid = !!amount && !amountError && !!category;
 
   return (
-    <View style={styles.flex}>
+    <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={0}
+      >
       <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
 
       {/* ── Header ────────────────────────────────────────────────────── */}
@@ -502,7 +507,7 @@ export default function AddExpenseScreen({ navigation }) {
           </View>
         </View>
       </Modal>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

@@ -24,6 +24,7 @@ import * as ImagePicker from 'expo-image-picker';
 import {
   getCurrentUser,
   uploadProfileAvatar,
+  deleteProfileAvatar,
 } from '../services/authService';
 
 const API_BASE_URL =
@@ -237,52 +238,33 @@ const handlePickAvatar = async () => {
     }
   };
 
-  const handleDeleteAvatar = async () => {
+const handleDeleteAvatar = async () => {
     closeAvatarMenu();
 
     try {
-      const token = await AsyncStorage.getItem('access_token');
+      const updatedUser = await deleteProfileAvatar();
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/v1/profile/avatar`,
-        {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const text = await response.text();
-      const data = text ? JSON.parse(text) : null;
-
-      if (!response.ok) {
-        throw new Error(
-          data?.detail || 'No se pudo eliminar la foto'
-        );
-      }
-
-      setUser(prev => ({
-        ...prev,
-        profile_image_url: null,
-      }));
+      setUser({
+        id: updatedUser.id,
+        full_name: updatedUser.full_name || 'Usuario',
+        email: updatedUser.email || '',
+        profile_image_url: updatedUser.profile_image_url || null,
+        is_active: updatedUser.is_active,
+      });
     } catch (error) {
-      console.log(
-        'Error eliminando avatar:',
-        error.message
-      );
+      console.log('Error eliminando avatar:', error.message);
     }
   };
 
-  const handleLogout = () => {
-    setLogoutModalVisible(true);
-  };
+    const handleLogout = () => {
+      setLogoutModalVisible(true);
+    };
 
-  const confirmLogout = async () => {
-    await AsyncStorage.removeItem('access_token');
-    setLogoutModalVisible(false);
-    navigation.replace('Login');
-  };
+    const confirmLogout = async () => {
+      await AsyncStorage.removeItem('access_token');
+      setLogoutModalVisible(false);
+      navigation.replace('Login');
+};
 
   return (
     <View style={styles.flex}>
