@@ -70,17 +70,20 @@ export default function LoginScreen({ navigation }) {
 const handleLogin = useCallback(async () => {
   if (!email || !password || emailError) return;
 
-    try {
-      setLoading(true);
-      setLoginError('');
+  try {
+    setLoading(true);
+    setLoginError('');
 
-const data = await loginUser(email, password);
+    const data = await loginUser(email, password);
 
-if (rememberSession) {
-  await AsyncStorage.setItem('access_token', data.access_token);
-}
-
-navigation.replace('Home');
+    if (rememberSession) {
+      await AsyncStorage.setItem(
+        'access_token',
+        data.access_token
+      );
+    } else {
+      await AsyncStorage.removeItem('access_token');
+    }
 
     navigation.replace('Home');
   } catch (error) {
@@ -88,7 +91,13 @@ navigation.replace('Home');
   } finally {
     setLoading(false);
   }
-}, [email, password, emailError, navigation]);
+}, [
+  email,
+  password,
+  emailError,
+  rememberSession,
+  navigation,
+]);
 
   const isDisabled = !email || !password || !!emailError || loading;
 
