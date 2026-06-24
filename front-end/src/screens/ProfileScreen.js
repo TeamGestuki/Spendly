@@ -20,6 +20,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
+import * as LocalAuthentication from 'expo-local-authentication';
 
 import {
   getCurrentUser,
