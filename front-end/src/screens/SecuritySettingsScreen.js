@@ -400,20 +400,13 @@ const closePinModal = () => {
 
         <Text style={styles.sectionTitle}>Sesión</Text>
         <View style={styles.card}>
-          <SecurityItem
-            icon="phone-portrait-outline"
-            iconColor={COLORS.blue}
-            label="Sesión actual"
-            value="Este dispositivo"
-            disabled
-          />
 
           <SecurityItem
             icon="desktop-outline"
             iconColor={COLORS.orange}
             label="Dispositivos conectados"
-            value="Próximamente"
-            disabled
+            value="Ver sesiones activas"
+            onPress={() => navigation.navigate('Sessions')}
           />
 
           <SecurityItem

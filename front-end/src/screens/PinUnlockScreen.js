@@ -41,7 +41,7 @@ function formatTimeLeft(ms) {
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
-export default function PinUnlockScreen({ navigation }) {
+export default function PinUnlockScreen({ navigation, route }) {
   const [pinValue, setPinValue] = useState('');
   const [error, setError] = useState('');
   const [lockedUntil, setLockedUntil] = useState(null);
@@ -172,7 +172,10 @@ export default function PinUnlockScreen({ navigation }) {
       await AsyncStorage.removeItem('pin_failed_attempts');
       await AsyncStorage.removeItem('pin_locked_until');
 
-      navigation.replace('Home');
+      const redirectTo = route?.params?.redirectTo || 'Home';
+
+      navigation.replace(redirectTo);
+      
       return;
     }
 

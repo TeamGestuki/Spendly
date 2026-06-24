@@ -17,6 +17,7 @@ import EditProfileScreen from './src/screens/EditProfileScreen';
 import SecuritySettingsScreen from './src/screens/SecuritySettingsScreen';
 import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
 import PinUnlockScreen from './src/screens/PinUnlockScreen';
+import SessionsScreen from './src/screens/SessionsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -124,6 +125,11 @@ export default function App() {
           name="PinUnlock"
           component={PinUnlockScreen}
           options={{ gestureEnabled: false }}
+        />
+
+        <Stack.Screen
+          name="Sessions"
+          component={SessionsScreen}
         />
 
         <Stack.Screen
