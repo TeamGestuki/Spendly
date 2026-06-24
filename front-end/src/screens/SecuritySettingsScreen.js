@@ -287,6 +287,14 @@ const handlePinDelete = () => {
   }
 };
 
+const closePinModal = () => {
+  setPinModalVisible(false);
+  setPinError('');
+  setPinValue('');
+  setPinConfirmValue('');
+  setPinStep('enter');
+};
+
   const handleLogoutDevice = () => {
     setLogoutModalVisible(true);
   };
@@ -464,10 +472,28 @@ const handlePinDelete = () => {
         visible={pinModalVisible}
         transparent
         animationType="fade"
-        onRequestClose={() => setPinModalVisible(false)}
+        onRequestClose={closePinModal}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.logoutModal}>
+            <TouchableOpacity
+                style={{
+                  position: 'absolute',
+                  top: 18,
+                  left: 18,
+                  width: 40,
+                  height: 40,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                onPress={closePinModal}
+              >
+                <AppIcon
+                  name="arrow-back"
+                  size={22}
+                  color={COLORS.textSecondary}
+                />
+              </TouchableOpacity>
             <View style={styles.modalIcon}>
               <AppIcon name="keypad-outline" size={26} color={COLORS.accent} />
             </View>
@@ -536,7 +562,7 @@ const handlePinDelete = () => {
 
             <TouchableOpacity
               style={styles.cancelBtn}
-              onPress={() => setPinModalVisible(false)}
+              onPress={closePinModal}
             >
               <Text style={styles.cancelText}>Cancelar</Text>
             </TouchableOpacity>

@@ -16,6 +16,7 @@ import AddExpenseScreen from './src/screens/AddExpenseScreen';
 import EditProfileScreen from './src/screens/EditProfileScreen';
 import SecuritySettingsScreen from './src/screens/SecuritySettingsScreen';
 import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
+import PinUnlockScreen from './src/screens/PinUnlockScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,6 +27,7 @@ export default function App() {
     const checkSession = async () => {
       const token = await AsyncStorage.getItem('access_token');
       const biometricEnabled = await AsyncStorage.getItem('biometric_enabled');
+      const pinEnabled = await AsyncStorage.getItem('pin_enabled');
 
       if (!token) {
         setInitialRoute('Login');
@@ -44,6 +46,11 @@ export default function App() {
       }
 
       setInitialRoute('Home');
+      
+      if (pinEnabled === 'true') {
+        setInitialRoute('PinUnlock');
+        return;
+      }
     };
 
     checkSession();
@@ -71,28 +78,109 @@ export default function App() {
         screenOptions={{
           headerShown: false,
           animation: 'slide_from_right',
-          contentStyle: { backgroundColor: '#0D0F14' },
+          contentStyle: {
+            backgroundColor: '#0D0F14',
+          },
         }}
       >
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen name="Home" component={HomeScreen} options={{ gestureEnabled: false }} />
-        <Stack.Screen name="Profile" component={ProfileScreen} options={{ gestureEnabled: false }} />
-        <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-        <Stack.Screen name="SecuritySettings" component={SecuritySettingsScreen} />
-        <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
-        <Stack.Screen name="Expenses" component={ExpensesScreen} options={{ gestureEnabled: false }} />
-        <Stack.Screen name="AddExpense" component={AddExpenseScreen} />
-        <Stack.Screen name="Terms" component={TermsScreen} />
-        <Stack.Screen name="Privacy" component={PrivacyScreen} />
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+        />
 
-        <Stack.Screen name="CurrencySettings" component={HomeScreen} />
-        <Stack.Screen name="LanguageSettings" component={HomeScreen} />
-        <Stack.Screen name="NotificationSettings" component={HomeScreen} />
-        <Stack.Screen name="ExportData" component={HomeScreen} />
-        <Stack.Screen name="HelpCenter" component={HomeScreen} />
-        <Stack.Screen name="ReportProblem" component={HomeScreen} />
-        <Stack.Screen name="AboutSpendly" component={HomeScreen} />
+        <Stack.Screen
+          name="Register"
+          component={RegisterScreen}
+        />
+
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{ gestureEnabled: false }}
+        />
+
+        <Stack.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{ gestureEnabled: false }}
+        />
+
+        <Stack.Screen
+          name="EditProfile"
+          component={EditProfileScreen}
+        />
+
+        <Stack.Screen
+          name="SecuritySettings"
+          component={SecuritySettingsScreen}
+        />
+
+        <Stack.Screen
+          name="ChangePassword"
+          component={ChangePasswordScreen}
+        />
+
+        <Stack.Screen
+          name="PinUnlock"
+          component={PinUnlockScreen}
+          options={{ gestureEnabled: false }}
+        />
+
+        <Stack.Screen
+          name="Expenses"
+          component={ExpensesScreen}
+          options={{ gestureEnabled: false }}
+        />
+
+        <Stack.Screen
+          name="AddExpense"
+          component={AddExpenseScreen}
+        />
+
+        <Stack.Screen
+          name="Terms"
+          component={TermsScreen}
+        />
+
+        <Stack.Screen
+          name="Privacy"
+          component={PrivacyScreen}
+        />
+
+        <Stack.Screen
+          name="CurrencySettings"
+          component={HomeScreen}
+        />
+
+        <Stack.Screen
+          name="LanguageSettings"
+          component={HomeScreen}
+        />
+
+        <Stack.Screen
+          name="NotificationSettings"
+          component={HomeScreen}
+        />
+
+        <Stack.Screen
+          name="ExportData"
+          component={HomeScreen}
+        />
+
+        <Stack.Screen
+          name="HelpCenter"
+          component={HomeScreen}
+        />
+
+        <Stack.Screen
+          name="ReportProblem"
+          component={HomeScreen}
+        />
+
+        <Stack.Screen
+          name="AboutSpendly"
+          component={HomeScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
