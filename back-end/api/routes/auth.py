@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Form
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -45,12 +47,14 @@ class LoginForm(OAuth2PasswordRequestForm):
         client_id: str = Form(None),
         client_secret: str = Form(None),
         device_name: str | None = Form(None),
+        remember_me: bool = Form(False),
     ):
         super().__init__(
             grant_type=grant_type, username=username, password=password,
             scope=scope, client_id=client_id, client_secret=client_secret,
         )
         self.device_name = device_name
+        self.remember_me = remember_me
 
 @router.post("/login", response_model=Token)
 def login_for_access_token(
@@ -77,7 +81,11 @@ def login_for_access_token(
     db.commit()
     db.refresh(session)
 
-    access_token = create_access_token(data={"sub": user.email, "sid": session.id})
+    token_expires = timedelta(days=30 if form_data.remember_me else 7)
+    access_token = create_access_token(
+        data={"sub": user.email, "sid": session.id},
+        expires_delta=token_expires,
+    )
 
     return {"access_token": access_token, "token_type": "bearer"}
 
