@@ -355,6 +355,24 @@ export default function SessionsScreen({ navigation }) {
               {selectedSession ? getDeviceLabel(selectedSession) : ''}
             </Text>
 
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Contraseña actual"
+              placeholderTextColor={COLORS.textMuted}
+              secureTextEntry
+              value={password}
+              onChangeText={(text) => {
+                setPassword(text);
+                setPasswordError('');
+              }}
+            />
+
+            {!!passwordError && (
+              <Text style={styles.passwordError}>
+                {passwordError}
+              </Text>
+            )}
+
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={styles.cancelBtn}
@@ -397,6 +415,24 @@ export default function SessionsScreen({ navigation }) {
             <Text style={styles.modalText}>
               Esto cerrará tu cuenta en todos los demás dispositivos, pero mantendrá esta sesión activa.
             </Text>
+
+            <TextInput
+                style={styles.passwordInput}
+                placeholder="Contraseña actual"
+                placeholderTextColor={COLORS.textMuted}
+                secureTextEntry
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setPasswordError('');
+                }}
+              />
+
+              {!!passwordError && (
+                <Text style={styles.passwordError}>
+                  {passwordError}
+                </Text>
+              )}
 
             <View style={styles.modalActions}>
               <TouchableOpacity
