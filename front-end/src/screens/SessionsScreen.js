@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, TextInput} from 'react';
 import {
   View,
   Text,
@@ -93,6 +93,8 @@ export default function SessionsScreen({ navigation }) {
   const [confirmAllVisible, setConfirmAllVisible] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   const loadSessions = async (isRefresh = false) => {
     try {
@@ -129,7 +131,14 @@ export default function SessionsScreen({ navigation }) {
     try {
       setActionLoading(true);
 
-      await revokeSession(selectedSession.id);
+      if (!password) {
+        setPasswordError('Ingresá tu contraseña.');
+        return;
+      }
+
+      await revokeSession(selectedSession.id, password);
+      setPassword('');
+      setPasswordError('');
 
       setSelectedSession(null);
       await loadSessions(false);
@@ -144,7 +153,14 @@ export default function SessionsScreen({ navigation }) {
     try {
       setActionLoading(true);
 
-      await revokeOtherSessions();
+      if (!password) {
+        setPasswordError('Ingresá tu contraseña.');
+        return;
+      }
+
+      await revokeOtherSessions(password);
+      setPassword('');
+      setPasswordError('');
 
       setConfirmAllVisible(false);
       await loadSessions(false);
@@ -711,4 +727,25 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: COLORS.red,
   },
+
+passwordInput: {
+  width: '100%',
+  height: 48,
+  borderRadius: 14,
+  backgroundColor: COLORS.surfaceHigh,
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  paddingHorizontal: 14,
+  color: COLORS.textPrimary,
+  fontSize: 14,
+  marginTop: 8,
+},
+
+passwordError: {
+  width: '100%',
+  fontSize: 12,
+  color: COLORS.red,
+  marginTop: 8,
+  textAlign: 'left',
+},
 });

@@ -415,14 +415,6 @@ const closePinModal = () => {
             label="Cerrar sesión en este dispositivo"
             value="Salir de Spendly en este celular"
             onPress={handleLogoutDevice}
-          />
-
-          <SecurityItem
-            icon="exit-outline"
-            iconColor={COLORS.red}
-            label="Cerrar sesión en todos los dispositivos"
-            value="Requiere backend de sesiones"
-            disabled
             isLast
           />
         </View>
@@ -453,12 +445,6 @@ const closePinModal = () => {
             isLast
           />
         </View>
-
-        <Text style={styles.infoText}>
-          Algunas opciones están preparadas visualmente y se conectarán cuando el backend de sesiones y seguridad esté disponible.
-        </Text>
-
-        <View style={{ height: 40 }} />
       </ScrollView>
       
       <Modal

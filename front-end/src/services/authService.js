@@ -272,7 +272,10 @@ export const getActiveSessions = async () => {
   return data;
 };
 
-export const revokeSession = async (sessionId) => {
+export const revokeSession = async (
+  sessionId,
+  currentPassword
+) => {
   const token = await AsyncStorage.getItem('access_token');
 
   if (!token) {
@@ -284,8 +287,12 @@ export const revokeSession = async (sessionId) => {
     {
       method: 'DELETE',
       headers: {
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
+      body: JSON.stringify({
+        current_password: currentPassword,
+      }),
     }
   );
 
@@ -300,7 +307,9 @@ export const revokeSession = async (sessionId) => {
   return data;
 };
 
-export const revokeOtherSessions = async () => {
+export const revokeOtherSessions = async (
+  currentPassword
+) => {
   const token = await AsyncStorage.getItem('access_token');
 
   if (!token) {
@@ -312,8 +321,12 @@ export const revokeOtherSessions = async () => {
     {
       method: 'DELETE',
       headers: {
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
+      body: JSON.stringify({
+        current_password: currentPassword,
+      }),
     }
   );
 
