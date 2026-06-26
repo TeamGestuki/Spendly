@@ -11,6 +11,7 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
     profile_image_url = Column(String(255), nullable=True)
+    preferred_currency = Column(String(3), default="ARS", nullable=False)
     
     # Relaciones inversas (Un usuario tiene una lista de transacciones)
     transactions = relationship("Transaction", back_populates="owner")

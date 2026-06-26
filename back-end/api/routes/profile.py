@@ -1,16 +1,24 @@
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
-from sqlalchemy.orm import Session
+
+from api.dependencies import get_current_session, get_current_user
 from core.database import get_db
-from core.storage import save_avatar, delete_avatar, MAX_FILE_SIZE
-from core.security import verify_password, get_password_hash
-from models.user import User
+from core.security import get_password_hash, verify_password
+from core.storage import MAX_FILE_SIZE, delete_avatar, save_avatar
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from models.session import UserSession
-from schemas.user import UserResponse, PasswordChange, MessageResponse, UpdateProfile, ConfirmPassword
+from models.user import User
 from schemas.session import SessionResponse
-from api.dependencies import get_current_user, get_current_session
+from schemas.user import (
+    ConfirmPassword,
+    MessageResponse,
+    PasswordChange,
+    UpdateProfile,
+    UserResponse,
+)
+from sqlalchemy.orm import Session
 
 router = APIRouter()
+
 
 @router.post("/avatar", response_model=UserResponse)
 def upload_avatar(
@@ -32,6 +40,7 @@ def upload_avatar(
     db.refresh(current_user)
     return current_user
 
+
 @router.delete("/avatar", response_model=UserResponse)
 def delete_avatar_endpoint(
     db: Session = Depends(get_db),
@@ -44,6 +53,7 @@ def delete_avatar_endpoint(
     delete_avatar(old_url)
     return current_user
 
+
 @router.patch("/password", response_model=MessageResponse)
 def change_password(
     body: PasswordChange,
@@ -51,9 +61,14 @@ def change_password(
     current_user: User = Depends(get_current_user),
 ):
     if not verify_password(body.current_password, current_user.hashed_password):
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Contraseña actual incorrecta")
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED, detail="Contraseña actual incorrecta"
+        )
     if body.current_password == body.new_password:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="La nueva contraseña debe ser diferente a la actual")
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail="La nueva contraseña debe ser diferente a la actual",
+        )
     current_user.hashed_password = get_password_hash(body.new_password)
     db.commit()
     return MessageResponse(message="Contraseña actualizada correctamente")
@@ -65,7 +80,10 @@ def update_profile(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    current_user.full_name = body.full_name
+    if body.full_name is not None:
+        current_user.full_name = body.full_name
+    if body.preferred_currency is not None:
+        current_user.preferred_currency = body.preferred_currency
     db.commit()
     db.refresh(current_user)
     return current_user
@@ -77,15 +95,23 @@ def list_sessions(
     current_user: User = Depends(get_current_user),
     current_session: UserSession = Depends(get_current_session),
 ):
-    sessions = db.query(UserSession).filter(
-        UserSession.user_id == current_user.id,
-        UserSession.revoked_at.is_(None),
-    ).all()
+    sessions = (
+        db.query(UserSession)
+        .filter(
+            UserSession.user_id == current_user.id,
+            UserSession.revoked_at.is_(None),
+        )
+        .all()
+    )
     return [
         SessionResponse(
-            id=s.id, device_name=s.device_name, ip_address=s.ip_address,
-            user_agent=s.user_agent, created_at=s.created_at,
-            last_seen_at=s.last_seen_at, is_current=(s.id == current_session.id),
+            id=s.id,
+            device_name=s.device_name,
+            ip_address=s.ip_address,
+            user_agent=s.user_agent,
+            created_at=s.created_at,
+            last_seen_at=s.last_seen_at,
+            is_current=(s.id == current_session.id),
         )
         for s in sessions
     ]
@@ -100,20 +126,20 @@ def revoke_session(
 ):
     if not verify_password(body.current_password, current_user.hashed_password):
         raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED,
-            detail="Contraseña incorrecta"
+            status.HTTP_401_UNAUTHORIZED, detail="Contraseña incorrecta"
         )
 
-    session = db.query(UserSession).filter(
-        UserSession.id == session_id,
-        UserSession.user_id == current_user.id,
-    ).first()
+    session = (
+        db.query(UserSession)
+        .filter(
+            UserSession.id == session_id,
+            UserSession.user_id == current_user.id,
+        )
+        .first()
+    )
 
     if not session:
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            detail="Sesión no encontrada"
-        )
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Sesión no encontrada")
 
     session.revoked_at = datetime.now(timezone.utc)
     db.commit()
@@ -130,8 +156,7 @@ def revoke_all_sessions(
 ):
     if not verify_password(body.current_password, current_user.hashed_password):
         raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED,
-            detail="Contraseña incorrecta"
+            status.HTTP_401_UNAUTHORIZED, detail="Contraseña incorrecta"
         )
 
     now = datetime.now(timezone.utc)
@@ -145,3 +170,4 @@ def revoke_all_sessions(
     db.commit()
 
     return MessageResponse(message="Sesiones cerradas correctamente")
+
