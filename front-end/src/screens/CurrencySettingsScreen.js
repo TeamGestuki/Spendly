@@ -9,13 +9,13 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
 import {
   CURRENCIES,
   getPreferredCurrency,
   setPreferredCurrency,
   formatMoney,
 } from '../utils/currency';
+import { updateCurrentUser } from '../services/authService';
 
 const COLORS = {
   bg: '#0D0F14',
@@ -135,6 +135,10 @@ export default function CurrencySettingsScreen({ navigation }) {
 
       const savedCurrency =
         await setPreferredCurrency(currency.code);
+
+      await updateCurrentUser({
+        preferred_currency: currency.code,
+      });
 
       setSelectedCurrency(savedCurrency);
     } catch (error) {

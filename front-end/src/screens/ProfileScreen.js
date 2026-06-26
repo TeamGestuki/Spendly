@@ -20,7 +20,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getPreferredCurrency } from '../utils/currency';
+import {getCurrencyByCode, setPreferredCurrency, } from '../utils/currency';
 import { getPreferredLanguage } from '../utils/language';
 import * as ImagePicker from 'expo-image-picker';
 import * as LocalAuthentication from 'expo-local-authentication';
@@ -130,8 +130,11 @@ export default function ProfileScreen({ navigation }) {
 
     const data = await getCurrentUser();
 
-    const currency = await getPreferredCurrency();
+    const currency = getCurrencyByCode(data.preferred_currency);
+
     setPreferredCurrency(currency);
+
+    await setPreferredCurrency(currency.code);
 
     const language = await getPreferredLanguage();
     setPreferredLanguage(language);
