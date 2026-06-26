@@ -21,6 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getPreferredCurrency } from '../utils/currency';
+import { getPreferredLanguage } from '../utils/language';
 import * as ImagePicker from 'expo-image-picker';
 import * as LocalAuthentication from 'expo-local-authentication';
 
@@ -104,6 +105,7 @@ export default function ProfileScreen({ navigation }) {
   const [loadingUser, setLoadingUser] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [preferredCurrency, setPreferredCurrency] = useState(null);
+  const [preferredLanguage, setPreferredLanguage] = useState(null);
 
   const [user, setUser] = useState({
     id: null,
@@ -130,6 +132,9 @@ export default function ProfileScreen({ navigation }) {
 
     const currency = await getPreferredCurrency();
     setPreferredCurrency(currency);
+
+    const language = await getPreferredLanguage();
+    setPreferredLanguage(language);
 
     setUser({
       id: data.id,
@@ -364,7 +369,11 @@ export default function ProfileScreen({ navigation }) {
             icon="language-outline"
             iconColor={COLORS.blue}
             label="Idioma"
-            value="Español"
+            value={
+              preferredLanguage
+                ? `${preferredLanguage.flag} ${preferredLanguage.name}`
+                : 'Cargando...'
+            }
             onPress={() => navigation.navigate('LanguageSettings')}
           />
 

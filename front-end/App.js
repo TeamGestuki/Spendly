@@ -19,6 +19,7 @@ import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
 import PinUnlockScreen from './src/screens/PinUnlockScreen';
 import SessionsScreen from './src/screens/SessionsScreen';
 import CurrencySettingsScreen from './src/screens/CurrencySettingsScreen';
+import LanguageSettingsScreen from './src/screens/LanguageSettingsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -161,7 +162,7 @@ export default function App() {
 
         <Stack.Screen
           name="LanguageSettings"
-          component={HomeScreen}
+          component={LanguageSettingsScreen}
         />
 
         <Stack.Screen
