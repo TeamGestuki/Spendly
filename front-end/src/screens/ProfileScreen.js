@@ -3,7 +3,7 @@
  * Perfil y configuración de Spendly.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -18,7 +18,9 @@ import {
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getPreferredCurrency } from '../utils/currency';
 import * as ImagePicker from 'expo-image-picker';
 import * as LocalAuthentication from 'expo-local-authentication';
 
@@ -101,6 +103,7 @@ export default function ProfileScreen({ navigation }) {
   const [avatarPreviewVisible, setAvatarPreviewVisible] = useState(false);
   const [loadingUser, setLoadingUser] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [preferredCurrency, setPreferredCurrency] = useState(null);
 
   const [user, setUser] = useState({
     id: null,
@@ -113,28 +116,34 @@ export default function ProfileScreen({ navigation }) {
   const avatarUrl = getAvatarUrl(user.profile_image_url);
   const initials = getInitials(user.full_name);
 
-  useEffect(() => {
+ useFocusEffect(
+  useCallback(() => {
     loadUserData();
-  }, []);
+  }, [])
+);
 
   const loadUserData = async () => {
-    try {
-      setLoadingUser(true);
-      const data = await getCurrentUser();
+  try {
+    setLoadingUser(true);
 
-      setUser({
-        id: data.id,
-        full_name: data.full_name || 'Usuario',
-        email: data.email || '',
-        profile_image_url: data.profile_image_url || null,
-        is_active: data.is_active,
-      });
-    } catch (error) {
-      console.log('Error cargando usuario:', error.message);
-    } finally {
-      setLoadingUser(false);
-    }
-  };
+    const data = await getCurrentUser();
+
+    const currency = await getPreferredCurrency();
+    setPreferredCurrency(currency);
+
+    setUser({
+      id: data.id,
+      full_name: data.full_name || 'Usuario',
+      email: data.email || '',
+      profile_image_url: data.profile_image_url || null,
+      is_active: data.is_active,
+    });
+  } catch (error) {
+    console.log('Error cargando usuario:', error.message);
+  } finally {
+    setLoadingUser(false);
+  }
+};
 
   const handleOpenSecurity = async () => {
     const biometricEnabled = await AsyncStorage.getItem('biometric_enabled');
@@ -343,7 +352,11 @@ export default function ProfileScreen({ navigation }) {
             icon="cash-outline"
             iconColor={COLORS.orange}
             label="Moneda principal"
-            value="ARS — Peso argentino"
+            value={
+              preferredCurrency
+                ? `${preferredCurrency.code} · ${preferredCurrency.name}`
+                : 'Cargando...'
+            }
             onPress={() => navigation.navigate('CurrencySettings')}
           />
 
