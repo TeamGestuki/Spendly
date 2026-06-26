@@ -6,7 +6,7 @@ from core.storage import save_avatar, delete_avatar, MAX_FILE_SIZE
 from core.security import verify_password, get_password_hash
 from models.user import User
 from models.session import UserSession
-from schemas.user import UserResponse, PasswordChange, MessageResponse, UpdateProfile
+from schemas.user import UserResponse, PasswordChange, MessageResponse, UpdateProfile, ConfirmPassword
 from schemas.session import SessionResponse
 from api.dependencies import get_current_user, get_current_session
 
@@ -94,31 +94,54 @@ def list_sessions(
 @router.delete("/sessions/{session_id}", response_model=MessageResponse)
 def revoke_session(
     session_id: int,
+    body: ConfirmPassword,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    if not verify_password(body.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="Contraseña incorrecta"
+        )
+
     session = db.query(UserSession).filter(
         UserSession.id == session_id,
         UserSession.user_id == current_user.id,
     ).first()
+
     if not session:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Sesión no encontrada")
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail="Sesión no encontrada"
+        )
+
     session.revoked_at = datetime.now(timezone.utc)
     db.commit()
+
     return MessageResponse(message="Sesión cerrada correctamente")
 
 
 @router.delete("/sessions", response_model=MessageResponse)
 def revoke_all_sessions(
+    body: ConfirmPassword,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
     current_session: UserSession = Depends(get_current_session),
 ):
+    if not verify_password(body.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="Contraseña incorrecta"
+        )
+
     now = datetime.now(timezone.utc)
+
     db.query(UserSession).filter(
         UserSession.user_id == current_user.id,
         UserSession.revoked_at.is_(None),
         UserSession.id != current_session.id,
     ).update({"revoked_at": now})
+
     db.commit()
+
     return MessageResponse(message="Sesiones cerradas correctamente")

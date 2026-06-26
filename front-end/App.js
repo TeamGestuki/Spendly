@@ -3,6 +3,7 @@ import { View, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import * as LocalAuthentication from 'expo-local-authentication';
 
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
@@ -10,6 +11,14 @@ import HomeScreen from './src/screens/HomeScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import TermsScreen from './src/screens/TermsScreen';
 import PrivacyScreen from './src/screens/PrivacyScreen';
+import ExpensesScreen from './src/screens/ExpensesScreen';
+import AddExpenseScreen from './src/screens/AddExpenseScreen';
+import EditProfileScreen from './src/screens/EditProfileScreen';
+import SecuritySettingsScreen from './src/screens/SecuritySettingsScreen';
+import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
+import PinUnlockScreen from './src/screens/PinUnlockScreen';
+import SessionsScreen from './src/screens/SessionsScreen';
+import CurrencySettingsScreen from './src/screens/CurrencySettingsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,11 +28,30 @@ export default function App() {
   useEffect(() => {
     const checkSession = async () => {
       const token = await AsyncStorage.getItem('access_token');
+      const biometricEnabled = await AsyncStorage.getItem('biometric_enabled');
+      const pinEnabled = await AsyncStorage.getItem('pin_enabled');
 
-      if (token) {
-        setInitialRoute('Home');
-      } else {
+      if (!token) {
         setInitialRoute('Login');
+        return;
+      }
+
+      if (biometricEnabled === 'true') {
+        const result = await LocalAuthentication.authenticateAsync({
+          promptMessage: 'Desbloquear Spendly',
+          cancelLabel: 'Cancelar',
+          disableDeviceFallback: false,
+        });
+
+        setInitialRoute(result.success ? 'Home' : 'Login');
+        return;
+      }
+
+      setInitialRoute('Home');
+      
+      if (pinEnabled === 'true') {
+        setInitialRoute('PinUnlock');
+        return;
       }
     };
 
@@ -52,11 +80,20 @@ export default function App() {
         screenOptions={{
           headerShown: false,
           animation: 'slide_from_right',
-          contentStyle: { backgroundColor: '#0D0F14' },
+          contentStyle: {
+            backgroundColor: '#0D0F14',
+          },
         }}
       >
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+        />
+
+        <Stack.Screen
+          name="Register"
+          component={RegisterScreen}
+        />
 
         <Stack.Screen
           name="Home"
@@ -70,20 +107,87 @@ export default function App() {
           options={{ gestureEnabled: false }}
         />
 
-        <Stack.Screen name="Terms" component={TermsScreen} />
-        <Stack.Screen name="Privacy" component={PrivacyScreen} />
+        <Stack.Screen
+          name="EditProfile"
+          component={EditProfileScreen}
+        />
 
-        {/* Rutas simuladas temporalmente */}
-        <Stack.Screen name="EditProfile" component={HomeScreen} />
-        <Stack.Screen name="ChangePassword" component={HomeScreen} />
-        <Stack.Screen name="SecuritySettings" component={HomeScreen} />
-        <Stack.Screen name="CurrencySettings" component={HomeScreen} />
-        <Stack.Screen name="LanguageSettings" component={HomeScreen} />
-        <Stack.Screen name="NotificationSettings" component={HomeScreen} />
-        <Stack.Screen name="ExportData" component={HomeScreen} />
-        <Stack.Screen name="HelpCenter" component={HomeScreen} />
-        <Stack.Screen name="ReportProblem" component={HomeScreen} />
-        <Stack.Screen name="AboutSpendly" component={HomeScreen} />
+        <Stack.Screen
+          name="SecuritySettings"
+          component={SecuritySettingsScreen}
+        />
+
+        <Stack.Screen
+          name="ChangePassword"
+          component={ChangePasswordScreen}
+        />
+
+        <Stack.Screen
+          name="PinUnlock"
+          component={PinUnlockScreen}
+          options={{ gestureEnabled: false }}
+        />
+
+        <Stack.Screen
+          name="Sessions"
+          component={SessionsScreen}
+        />
+
+        <Stack.Screen
+          name="Expenses"
+          component={ExpensesScreen}
+          options={{ gestureEnabled: false }}
+        />
+
+        <Stack.Screen
+          name="AddExpense"
+          component={AddExpenseScreen}
+        />
+
+        <Stack.Screen
+          name="Terms"
+          component={TermsScreen}
+        />
+
+        <Stack.Screen
+          name="Privacy"
+          component={PrivacyScreen}
+        />
+
+        <Stack.Screen
+          name="CurrencySettings"
+          component={CurrencySettingsScreen}
+        />
+
+        <Stack.Screen
+          name="LanguageSettings"
+          component={HomeScreen}
+        />
+
+        <Stack.Screen
+          name="NotificationSettings"
+          component={HomeScreen}
+        />
+
+        <Stack.Screen
+          name="ExportData"
+          component={HomeScreen}
+        />
+
+        <Stack.Screen
+          name="HelpCenter"
+          component={HomeScreen}
+        />
+
+        <Stack.Screen
+          name="ReportProblem"
+          component={HomeScreen}
+        />
+
+        <Stack.Screen
+          name="AboutSpendly"
+          component={HomeScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -32,3 +32,6 @@ class MessageResponse(BaseModel):
 
 class UpdateProfile(BaseModel):
     full_name: str = Field(min_length=1)
+
+class ConfirmPassword(BaseModel):
+    current_password: str
