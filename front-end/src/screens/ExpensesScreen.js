@@ -295,7 +295,10 @@ export default function ExpensesScreen({ navigation, route }) {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate('Stats')}
+        >
           <AppIcon name="bar-chart-outline" size={24} color={COLORS.textMuted} />
           <Text style={styles.navLabel}>Stats</Text>
         </TouchableOpacity>

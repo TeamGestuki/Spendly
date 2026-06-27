@@ -20,6 +20,7 @@ import PinUnlockScreen from './src/screens/PinUnlockScreen';
 import SessionsScreen from './src/screens/SessionsScreen';
 import CurrencySettingsScreen from './src/screens/CurrencySettingsScreen';
 import LanguageSettingsScreen from './src/screens/LanguageSettingsScreen';
+import StatsScreen from './src/screens/StatsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -143,6 +144,11 @@ export default function App() {
         <Stack.Screen
           name="AddExpense"
           component={AddExpenseScreen}
+        />
+
+        <Stack.Screen
+          name="Stats"
+          component={StatsScreen}
         />
 
         <Stack.Screen

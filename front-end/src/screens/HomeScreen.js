@@ -204,12 +204,16 @@ export default function HomeScreen({ navigation }) {
         {/* ── Quick Actions ─────────────────────────────────────────────── */}
         <View style={styles.quickActions}>
           {/* Gasto */}
-          <TouchableOpacity style={styles.actionBtn}>
-            <View style={[styles.actionIcon, { backgroundColor: 'rgba(74,222,128,0.1)' }]}>
-              <AppIcon name="add" size={24} color={COLORS.accent} />
-            </View>
-            <Text style={styles.actionLabel}>Gasto</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={() => navigation.navigate('AddExpense')}
+              activeOpacity={0.85}
+            >
+              <View style={[styles.actionIcon, { backgroundColor: 'rgba(74,222,128,0.1)' }]}>
+                <AppIcon name="add" size={24} color={COLORS.accent} />
+              </View>
+              <Text style={styles.actionLabel}>Gasto</Text>
+            </TouchableOpacity>
 
           {/* Ingreso */}
           <TouchableOpacity style={styles.actionBtn}>
@@ -230,12 +234,16 @@ export default function HomeScreen({ navigation }) {
           </TouchableOpacity>
 
           {/* Stats */}
-          <TouchableOpacity style={styles.actionBtn}>
-            <View style={[styles.actionIcon, { backgroundColor: 'rgba(192,132,252,0.1)' }]}>
-              <AppIcon name="bar-chart-outline" size={24} color={COLORS.purple} />
-            </View>
-            <Text style={styles.actionLabel}>Stats</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={() => navigation.navigate('Stats')}
+              activeOpacity={0.85}
+            >
+              <View style={[styles.actionIcon, { backgroundColor: 'rgba(192,132,252,0.1)' }]}>
+                <AppIcon name="bar-chart-outline" size={24} color={COLORS.purple} />
+              </View>
+              <Text style={styles.actionLabel}>Stats</Text>
+            </TouchableOpacity>
         </View>
 
         {/* ── IA/OCR Banner ─────────────────────────────────────────────── */}
@@ -292,7 +300,12 @@ export default function HomeScreen({ navigation }) {
         {/* ── Gastos Recientes ──────────────────────────────────────────── */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Gastos Recientes</Text>
-          <TouchableOpacity><Text style={styles.sectionLink}>Ver todos</Text></TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Expenses')}
+          >
+            <Text style={styles.sectionLink}>Ver todos</Text>
+          </TouchableOpacity>
         </View>
 
         {EXPENSES.map((expense) => (
@@ -369,10 +382,10 @@ export default function HomeScreen({ navigation }) {
         {/* Stats */}
         <TouchableOpacity
           style={styles.navItem}
-          onPress={() => setActiveTab('stats')}
+          onPress={() => navigation.navigate('Stats')}
         >
-          <AppIcon name={activeTab === 'stats' ? 'bar-chart' : 'bar-chart-outline'} size={24} color={activeTab === 'stats' ? COLORS.accent : COLORS.textMuted} />
-          <Text style={[styles.navLabel, activeTab === 'stats' && styles.navLabelActive]}>Stats</Text>
+          <AppIcon name="bar-chart-outline" size={24} color={COLORS.textMuted} />
+          <Text style={styles.navLabel}>Stats</Text>
         </TouchableOpacity>
 
         {/* Metas */}
