@@ -21,6 +21,7 @@ import SessionsScreen from './src/screens/SessionsScreen';
 import CurrencySettingsScreen from './src/screens/CurrencySettingsScreen';
 import LanguageSettingsScreen from './src/screens/LanguageSettingsScreen';
 import StatsScreen from './src/screens/StatsScreen';
+import GoalsScreen from './src/screens/GoalsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -149,6 +150,11 @@ export default function App() {
         <Stack.Screen
           name="Stats"
           component={StatsScreen}
+        />
+
+        <Stack.Screen
+          name="Goals"
+          component={GoalsScreen}
         />
 
         <Stack.Screen

@@ -589,7 +589,7 @@ export default function ProfileScreen({ navigation }) {
           <Text style={styles.navLabel}>Stats</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Goals')}>
           <AppIcon name="flag-outline" size={24} color={COLORS.textMuted} />
           <Text style={styles.navLabel}>Metas</Text>
         </TouchableOpacity>

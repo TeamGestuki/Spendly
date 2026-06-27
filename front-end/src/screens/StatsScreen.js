@@ -12,6 +12,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { getTransactions } from '../services/transactionService';
+import { getCurrentUser } from '../services/authService';
+import {
+  getCurrencyByCode,
+  formatMoney,
+} from '../utils/currency';
 
 const COLORS = {
   bg: '#0D0F14',
@@ -44,13 +49,6 @@ const CATEGORY_ICONS = {
 
 function AppIcon({ name, size = 20, color = COLORS.textSecondary }) {
   return <Ionicons name={name} size={size} color={color} />;
-}
-
-function formatMoney(amount) {
-  return `$${Number(amount || 0).toLocaleString('es-AR', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  })}`;
 }
 
 function isSameMonth(dateString, targetDate) {
@@ -96,6 +94,7 @@ function StatCard({ icon, iconColor, label, value, sub }) {
 
 export default function StatsScreen({ navigation }) {
   const [expenses, setExpenses] = useState([]);
+  const [currency, setCurrency] = useState(getCurrencyByCode('ARS'));
   const [loading, setLoading] = useState(true);
 
   useFocusEffect(
@@ -108,11 +107,19 @@ export default function StatsScreen({ navigation }) {
     try {
       setLoading(true);
 
+      const userData = await getCurrentUser();
+
+      const userCurrency = getCurrencyByCode(
+        userData.preferred_currency || 'ARS'
+      );
+
+      setCurrency(userCurrency);
+
       const data = await getTransactions();
 
-      const onlyExpenses = data.filter(
-        (transaction) => transaction.type === 'expense'
-      );
+      const onlyExpenses = Array.isArray(data)
+        ? data.filter((transaction) => transaction.type === 'expense')
+        : [];
 
       setExpenses(onlyExpenses);
     } catch (error) {
@@ -190,7 +197,11 @@ export default function StatsScreen({ navigation }) {
           </View>
 
           <TouchableOpacity style={styles.iconBtn} onPress={loadStats}>
-            <AppIcon name="refresh-outline" size={20} color={COLORS.textSecondary} />
+            <AppIcon
+              name="refresh-outline"
+              size={20}
+              color={COLORS.textSecondary}
+            />
           </TouchableOpacity>
         </View>
 
@@ -205,7 +216,7 @@ export default function StatsScreen({ navigation }) {
               <Text style={styles.heroLabel}>Total gastado este mes</Text>
 
               <Text style={styles.heroAmount}>
-                {formatMoney(totalMonth)}
+                {formatMoney(totalMonth, currency)}
               </Text>
 
               <View
@@ -217,7 +228,11 @@ export default function StatsScreen({ navigation }) {
                 ]}
               >
                 <AppIcon
-                  name={monthlyDifference > 0 ? 'trending-up-outline' : 'trending-down-outline'}
+                  name={
+                    monthlyDifference > 0
+                      ? 'trending-up-outline'
+                      : 'trending-down-outline'
+                  }
                   size={16}
                   color={monthlyDifference > 0 ? COLORS.red : COLORS.accent}
                 />
@@ -253,23 +268,35 @@ export default function StatsScreen({ navigation }) {
                 icon="calculator-outline"
                 iconColor={COLORS.blue}
                 label="Promedio"
-                value={formatMoney(averageExpense)}
+                value={formatMoney(averageExpense, currency)}
                 sub="por gasto"
               />
 
               <StatCard
-                icon={topCategory ? getCategoryMeta(topCategory.category).icon : 'grid-outline'}
-                iconColor={topCategory ? getCategoryMeta(topCategory.category).color : COLORS.textMuted}
+                icon={
+                  topCategory
+                    ? getCategoryMeta(topCategory.category).icon
+                    : 'grid-outline'
+                }
+                iconColor={
+                  topCategory
+                    ? getCategoryMeta(topCategory.category).color
+                    : COLORS.textMuted
+                }
                 label="Categoría top"
                 value={topCategory?.category || '—'}
-                sub={topCategory ? formatMoney(topCategory.total) : 'sin datos'}
+                sub={
+                  topCategory
+                    ? formatMoney(topCategory.total, currency)
+                    : 'sin datos'
+                }
               />
 
               <StatCard
                 icon="calendar-outline"
                 iconColor={COLORS.orange}
                 label="Mes anterior"
-                value={formatMoney(previousTotal)}
+                value={formatMoney(previousTotal, currency)}
                 sub={getMonthName(previousMonth)}
               />
             </View>
@@ -278,7 +305,11 @@ export default function StatsScreen({ navigation }) {
 
             {topCategories.length === 0 ? (
               <View style={styles.emptyCard}>
-                <AppIcon name="pie-chart-outline" size={34} color={COLORS.textMuted} />
+                <AppIcon
+                  name="pie-chart-outline"
+                  size={34}
+                  color={COLORS.textMuted}
+                />
                 <Text style={styles.emptyTitle}>Sin datos todavía</Text>
                 <Text style={styles.emptyText}>
                   Cuando registres gastos, vas a ver acá el desglose por categoría.
@@ -304,14 +335,18 @@ export default function StatsScreen({ navigation }) {
                           { backgroundColor: `${meta.color}18` },
                         ]}
                       >
-                        <AppIcon name={meta.icon} size={18} color={meta.color} />
+                        <AppIcon
+                          name={meta.icon}
+                          size={18}
+                          color={meta.color}
+                        />
                       </View>
 
                       <View style={styles.categoryBody}>
                         <View style={styles.categoryTop}>
                           <Text style={styles.categoryName}>{item.category}</Text>
                           <Text style={styles.categoryAmount}>
-                            {formatMoney(item.total)}
+                            {formatMoney(item.total, currency)}
                           </Text>
                         </View>
 
@@ -364,7 +399,11 @@ export default function StatsScreen({ navigation }) {
                           { backgroundColor: `${meta.color}18` },
                         ]}
                       >
-                        <AppIcon name={meta.icon} size={18} color={meta.color} />
+                        <AppIcon
+                          name={meta.icon}
+                          size={18}
+                          color={meta.color}
+                        />
                       </View>
 
                       <View style={styles.recentBody}>
@@ -377,7 +416,7 @@ export default function StatsScreen({ navigation }) {
                       </View>
 
                       <Text style={styles.recentAmount}>
-                        -{formatMoney(expense.amount)}
+                        -{formatMoney(expense.amount, currency)}
                       </Text>
                     </View>
                   );
@@ -391,12 +430,18 @@ export default function StatsScreen({ navigation }) {
       </ScrollView>
 
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate('Home')}
+        >
           <AppIcon name="home-outline" size={24} color={COLORS.textMuted} />
           <Text style={styles.navLabel}>Home</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Expenses')}>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate('Expenses')}
+        >
           <AppIcon name="card-outline" size={24} color={COLORS.textMuted} />
           <Text style={styles.navLabel}>Gastos</Text>
         </TouchableOpacity>
@@ -409,10 +454,15 @@ export default function StatsScreen({ navigation }) {
 
         <TouchableOpacity style={styles.navItem}>
           <AppIcon name="bar-chart" size={24} color={COLORS.accent} />
-          <Text style={[styles.navLabel, styles.navLabelActive]}>Stats</Text>
+          <Text style={[styles.navLabel, styles.navLabelActive]}>
+            Stats
+          </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}>
+        <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => navigation.navigate('Goals')}
+        >
           <AppIcon name="flag-outline" size={24} color={COLORS.textMuted} />
           <Text style={styles.navLabel}>Metas</Text>
         </TouchableOpacity>

@@ -20,6 +20,9 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { createTransaction } from '../services/transactionService';
+import { getCurrentUser } from '../services/authService';
+import { getCurrencyByCode } from '../utils/currency';
+import { useFocusEffect } from '@react-navigation/native';
 
 // ─── Paleta ───────────────────────────────────────────────────────────────────
 const COLORS = {
@@ -89,6 +92,7 @@ export default function AddExpenseScreen({ navigation }) {
   const [paymentMethod, setPaymentMethod] = useState('');
   const [date,          setDate]          = useState(now);
   const [note,          setNote]          = useState('');
+  const [currency, setCurrency] = useState(getCurrencyByCode('ARS'));
 
   // ── Errores
   const [amountError,   setAmountError]   = useState('');
@@ -104,6 +108,26 @@ export default function AddExpenseScreen({ navigation }) {
 
   const buttonScale = useRef(new Animated.Value(1)).current;
   const amountRef   = useRef(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadCurrency = async () => {
+        try {
+          const userData = await getCurrentUser();
+
+          const userCurrency = getCurrencyByCode(
+            userData.preferred_currency || 'ARS'
+          );
+
+          setCurrency(userCurrency);
+        } catch (error) {
+          console.log('Error cargando moneda:', error.message);
+        }
+      };
+
+      loadCurrency();
+    }, [])
+  );
 
   // ── Animación del botón
   const handlePressIn  = useCallback(() => {
@@ -163,7 +187,7 @@ export default function AddExpenseScreen({ navigation }) {
             category,
             description: description.trim() || 'Gasto sin descripción',
             date: formattedDate,
-            currency: 'ARS',
+            currency: currency.code,
             };
 
       await createTransaction(newExpense);
@@ -206,7 +230,7 @@ export default function AddExpenseScreen({ navigation }) {
         <View style={styles.amountCard}>
           <Text style={styles.amountLabel}>¿Cuánto gastaste?</Text>
           <View style={styles.amountRow}>
-            <Text style={styles.currencySymbol}>$</Text>
+            <Text style={styles.currencySymbol}>{currency.symbol}</Text>
             <TextInput
               ref={amountRef}
               style={[styles.amountInput, !!amountError && styles.amountInputError]}
