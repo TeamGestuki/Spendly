@@ -22,6 +22,7 @@ import CurrencySettingsScreen from './src/screens/CurrencySettingsScreen';
 import LanguageSettingsScreen from './src/screens/LanguageSettingsScreen';
 import StatsScreen from './src/screens/StatsScreen';
 import GoalsScreen from './src/screens/GoalsScreen';
+import ScanScreen from './src/screens/ScanScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -140,6 +141,11 @@ export default function App() {
           name="Expenses"
           component={ExpensesScreen}
           options={{ gestureEnabled: false }}
+        />
+
+        <Stack.Screen
+          name="Scan"
+          component={ScanScreen}
         />
 
         <Stack.Screen
