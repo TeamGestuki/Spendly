@@ -378,7 +378,11 @@ export default function HomeScreen({ navigation }) {
                 <Text style={styles.actionLabel}>Gasto</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.actionBtn}>
+              <TouchableOpacity
+                style={styles.actionBtn}
+                onPress={() => navigation.navigate('AddIncome')}
+                activeOpacity={0.85}
+              >
                 <View
                   style={[
                     styles.actionIcon,
@@ -395,8 +399,11 @@ export default function HomeScreen({ navigation }) {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.actionBtn, styles.actionBtnHighlight]}
+                  style={styles.actionBtn}
+                  onPress={() => navigation.navigate('Scan')}
+                  activeOpacity={0.85}
               >
+
                 <View
                   style={[
                     styles.actionIcon,
@@ -436,7 +443,12 @@ export default function HomeScreen({ navigation }) {
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={styles.iaBanner} activeOpacity={0.85}>
+            <TouchableOpacity
+                style={styles.iaBanner}
+                activeOpacity={0.85}
+                onPress={() => navigation.navigate('Scan')}
+              >
+                
               <View style={styles.iaLeft}>
                 <View style={styles.iaIconWrapper}>
                   <AppIcon
