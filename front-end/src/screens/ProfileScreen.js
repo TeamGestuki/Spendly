@@ -571,9 +571,17 @@ export default function ProfileScreen({ navigation }) {
           <Text style={styles.navLabel}>Gastos</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navScanWrapper} activeOpacity={0.85}>
+        <TouchableOpacity
+          style={styles.navScanWrapper}
+          activeOpacity={0.85}
+          onPress={() => navigation.navigate('Scan')}
+        >
           <View style={styles.navScanBtn}>
-            <AppIcon name="scan-outline" size={26} color="#0D1A12" />
+            <AppIcon
+              name="scan-outline"
+              size={26}
+              color="#0D1A12"
+            />
           </View>
         </TouchableOpacity>
 

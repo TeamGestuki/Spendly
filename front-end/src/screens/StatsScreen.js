@@ -446,11 +446,19 @@ export default function StatsScreen({ navigation }) {
           <Text style={styles.navLabel}>Gastos</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navScanWrapper} activeOpacity={0.85}>
-          <View style={styles.navScanBtn}>
-            <AppIcon name="scan-outline" size={26} color="#0D1A12" />
-          </View>
-        </TouchableOpacity>
+        <TouchableOpacity
+            style={styles.navScanWrapper}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('Scan')}
+          >
+            <View style={styles.navScanBtn}>
+              <AppIcon
+                name="scan-outline"
+                size={26}
+                color="#0D1A12"
+              />
+            </View>
+          </TouchableOpacity>
 
         <TouchableOpacity style={styles.navItem}>
           <AppIcon name="bar-chart" size={24} color={COLORS.accent} />
