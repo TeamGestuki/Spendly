@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from google import genai
 from google.genai import types
 
-# Importamos las dependencias del proyecto
 from core.database import get_db
 from models.user import User
 from models.transaction import Transaction  
@@ -15,10 +14,8 @@ from api.dependencies import get_current_user
 
 router = APIRouter()
 
-# Configuramos un logger para ver alertas amigables en la terminal
 logger = logging.getLogger(__name__)
 
-# Configuración de Gemini
 API_KEY = os.getenv("GOOGLE_API_KEY")
 client = genai.Client(api_key=API_KEY)
 
@@ -52,9 +49,7 @@ Reglas estrictas de extracción:
 async def escanear_ticket(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    # current_user: User = Depends(get_current_user) # <-- Sigue comentado hasta que usen Login
 ):
-    # 1. Validar formato de archivo
     if not file.content_type.startswith("image/"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -62,16 +57,13 @@ async def escanear_ticket(
         )
 
     try:
-        # 2. Leer los bytes de la imagen provista por el frontend
         image_bytes = await file.read()
 
-        # 3. Preparar el formato binario para la API de Gemini
         image_part = types.Part.from_bytes(
             data=image_bytes,
             mime_type=file.content_type
         )
 
-        # 4. Llamar a Gemini (Modelo flash 2.5) pidiendo respuesta JSON estructurada
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=[image_part, PROMPT_INSTRUCCIONES],
@@ -80,7 +72,6 @@ async def escanear_ticket(
             ),
         )
 
-        # 5. Transformar el texto de la IA en un diccionario Python
         resultado_json = json.loads(response.text)
 
     except json.JSONDecodeError:
@@ -94,7 +85,6 @@ async def escanear_ticket(
             detail=f"Error en el procesamiento del ticket con Gemini: {str(e)}"
         )
 
-    # 6. LÓGICA DE BASE DE DATOS (Mapeo inteligente con control de errores)
     if not resultado_json.get("comprobante_detectado", False):
         return {
             "status": "error",
@@ -110,7 +100,6 @@ async def escanear_ticket(
     comercio = datos_factura.get("nombre_comercio", "Comercio Desconocido")
     tipo_comprobante = datos_factura.get("tipo_comprobante", "Ticket")
 
-    # Formateamos la fecha a un objeto Date real de Python
     fecha_str = datos_factura.get("fecha")
     if fecha_str:
         try:
