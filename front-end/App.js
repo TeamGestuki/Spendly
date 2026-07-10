@@ -10,6 +10,11 @@ import HomeScreen from './src/screens/HomeScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import TermsScreen from './src/screens/TermsScreen';
 import PrivacyScreen from './src/screens/PrivacyScreen';
+import ExpensesScreen from './src/screens/ExpensesScreen';
+import AddExpenseScreen from './src/screens/AddExpenseScreen';
+import EditProfileScreen from './src/screens/EditProfileScreen';
+import SecuritySettingsScreen from './src/screens/SecuritySettingsScreen';
+import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -70,13 +75,36 @@ export default function App() {
           options={{ gestureEnabled: false }}
         />
 
+        <Stack.Screen
+          name="EditProfile"
+          component={EditProfileScreen}
+        />
+
+        <Stack.Screen
+          name="SecuritySettings"
+          component={SecuritySettingsScreen}
+        />
+
+        <Stack.Screen
+          name="ChangePassword"
+          component={ChangePasswordScreen}
+        />
+
+        <Stack.Screen
+            name="Expenses"
+            component={ExpensesScreen}
+            options={{ gestureEnabled: false }}
+        />
+
+        <Stack.Screen
+            name="AddExpense"
+            component={AddExpenseScreen}
+        />
+
         <Stack.Screen name="Terms" component={TermsScreen} />
         <Stack.Screen name="Privacy" component={PrivacyScreen} />
 
         {/* Rutas simuladas temporalmente */}
-        <Stack.Screen name="EditProfile" component={HomeScreen} />
-        <Stack.Screen name="ChangePassword" component={HomeScreen} />
-        <Stack.Screen name="SecuritySettings" component={HomeScreen} />
         <Stack.Screen name="CurrencySettings" component={HomeScreen} />
         <Stack.Screen name="LanguageSettings" component={HomeScreen} />
         <Stack.Screen name="NotificationSettings" component={HomeScreen} />

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 # ─── Esquema base con campos comunes ──────────────────────────
 class UserBase(BaseModel):
@@ -22,3 +22,13 @@ class UserResponse(UserBase):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=8)
+
+class MessageResponse(BaseModel):
+    message: str
+
+class UpdateProfile(BaseModel):
+    full_name: str = Field(min_length=1)

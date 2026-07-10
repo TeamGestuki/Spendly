@@ -13,6 +13,8 @@ import {
   StatusBar,
   ScrollView,
   Animated,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { loginUser } from '../services/authService';
@@ -102,7 +104,11 @@ const handleLogin = useCallback(async () => {
   const isDisabled = !email || !password || !!emailError || loading;
 
   return (
-    <View style={styles.flex}>
+          <KeyboardAvoidingView
+            style={styles.flex}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={0}
+          >
       <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
 
       <ScrollView
@@ -321,7 +327,7 @@ const handleLogin = useCallback(async () => {
           </Text>
 
           </ScrollView>
-          </View>
+        </KeyboardAvoidingView>
   );
 }
 
