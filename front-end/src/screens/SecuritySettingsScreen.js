@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,10 @@ import {
   Switch,
   Modal,
 } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as LocalAuthentication from 'expo-local-authentication';
 
 const COLORS = {
   bg: '#0D0F14',
@@ -78,10 +80,220 @@ function SecurityItem({
 }
 
 export default function SecuritySettingsScreen({ navigation }) {
-  const [biometricEnabled, setBiometricEnabled] = useState(false);
-  const [pinEnabled, setPinEnabled] = useState(false);
-  const [securityAlertsEnabled, setSecurityAlertsEnabled] = useState(true);
-  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+ const [biometricEnabled, setBiometricEnabled] = useState(false);
+const [pinEnabled, setPinEnabled] = useState(false);
+const [biometricAvailable, setBiometricAvailable] = useState(false);
+const [biometricEnrolled, setBiometricEnrolled] = useState(false);
+const [securityAlertsEnabled, setSecurityAlertsEnabled] = useState(true);
+const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+
+const [pinModalVisible, setPinModalVisible] = useState(false);
+const [pinMode, setPinMode] = useState('create');
+const [pinStep, setPinStep] = useState('enter');
+const [pinValue, setPinValue] = useState('');
+const [pinConfirmValue, setPinConfirmValue] = useState('');
+const [pinError, setPinError] = useState('');
+
+  const biometricBlocked =
+  pinEnabled || !biometricAvailable || !biometricEnrolled;
+
+  const pinBlocked = biometricEnabled;
+
+  useEffect(() => {
+  const loadSecuritySettings = async () => {
+    const savedBiometric =
+      await AsyncStorage.getItem('biometric_enabled');
+
+    const savedPin =
+      await AsyncStorage.getItem('pin_enabled');
+
+    const compatible =
+      await LocalAuthentication.hasHardwareAsync();
+
+    const enrolled =
+      await LocalAuthentication.isEnrolledAsync();
+
+    setBiometricAvailable(compatible);
+    setBiometricEnrolled(enrolled);
+
+    setBiometricEnabled(
+      savedBiometric === 'true' && compatible && enrolled
+    );
+
+    setPinEnabled(savedPin === 'true');
+  };
+
+  loadSecuritySettings();
+}, []);
+
+  const handleToggleBiometric = async (value) => {
+  try {
+    const compatible =
+      await LocalAuthentication.hasHardwareAsync();
+
+    if (!compatible) {
+      alert('Este dispositivo no soporta Face ID o huella.');
+      return;
+    }
+
+    const enrolled =
+      await LocalAuthentication.isEnrolledAsync();
+
+    if (!enrolled) {
+      alert('No tenés Face ID o huella configurados.');
+      return;
+    }
+
+    const result =
+      await LocalAuthentication.authenticateAsync({
+        promptMessage: value
+          ? 'Activar Face ID para Spendly'
+          : 'Desactivar Face ID para Spendly',
+        cancelLabel: 'Cancelar',
+        disableDeviceFallback: false,
+      });
+
+    if (!result.success) {
+      return;
+    }
+
+    await AsyncStorage.setItem(
+      'biometric_enabled',
+      value ? 'true' : 'false'
+    );
+
+    setBiometricEnabled(value);
+  } catch (error) {
+    console.log('Biometric error:', error);
+  }
+};
+
+const handleTogglePin = async (value) => {
+  if (biometricEnabled) return;
+
+  setPinError('');
+  setPinValue('');
+  setPinConfirmValue('');
+
+  if (value) {
+    setPinMode('create');
+    setPinStep('enter');
+    setPinModalVisible(true);
+  } else {
+    setPinMode('disable');
+    setPinStep('enter');
+    setPinModalVisible(true);
+  }
+};
+
+const handlePinPress = async (digit) => {
+  setPinError('');
+
+  const currentValue =
+    pinStep === 'confirm'
+      ? pinConfirmValue
+      : pinValue;
+
+  if (currentValue.length >= 4) return;
+
+  const nextValue = currentValue + digit;
+
+  // ─── Confirmación PIN ─────────────────────
+  if (pinStep === 'confirm') {
+    setPinConfirmValue(nextValue);
+
+    if (nextValue.length === 4) {
+      if (nextValue !== pinValue) {
+        setPinError('Los PIN no coinciden.');
+        setPinConfirmValue('');
+        return;
+      }
+
+      await AsyncStorage.setItem(
+        'spendly_pin',
+        pinValue
+      );
+
+      await AsyncStorage.setItem(
+        'pin_enabled',
+        'true'
+      );
+
+      setPinEnabled(true);
+      setPinModalVisible(false);
+
+      setPinValue('');
+      setPinConfirmValue('');
+      setPinStep('enter');
+    }
+
+    return;
+  }
+
+  // ─── Primer ingreso ─────────────────────
+  setPinValue(nextValue);
+
+  if (nextValue.length === 4) {
+
+    // Crear PIN
+    if (pinMode === 'create') {
+      setTimeout(() => {
+        setPinStep('confirm');
+        setPinConfirmValue('');
+      }, 200);
+
+      return;
+    }
+
+    // Desactivar PIN
+    const savedPin =
+      await AsyncStorage.getItem('spendly_pin');
+
+    if (nextValue !== savedPin) {
+      setPinError('PIN incorrecto.');
+      setPinValue('');
+      return;
+    }
+
+    await AsyncStorage.removeItem(
+      'spendly_pin'
+    );
+
+    await AsyncStorage.setItem(
+      'pin_enabled',
+      'false'
+    );
+
+    setPinEnabled(false);
+    setPinModalVisible(false);
+
+    setPinValue('');
+    setPinConfirmValue('');
+    setPinStep('enter');
+  }
+};
+
+const handlePinDelete = () => {
+  setPinError('');
+
+  if (pinStep === 'confirm') {
+    setPinConfirmValue((prev) =>
+      prev.slice(0, -1)
+    );
+  } else {
+    setPinValue((prev) =>
+      prev.slice(0, -1)
+    );
+  }
+};
+
+const closePinModal = () => {
+  setPinModalVisible(false);
+  setPinError('');
+  setPinValue('');
+  setPinConfirmValue('');
+  setPinStep('enter');
+};
 
   const handleLogoutDevice = () => {
     setLogoutModalVisible(true);
@@ -142,12 +354,21 @@ export default function SecuritySettingsScreen({ navigation }) {
             iconColor={COLORS.accent}
             label="Face ID / huella"
             value={biometricEnabled ? 'Activado' : 'Desactivado'}
+            disabled={biometricBlocked}
             rightElement={
               <Switch
                 value={biometricEnabled}
-                onValueChange={setBiometricEnabled}
-                trackColor={{ false: COLORS.border, true: COLORS.accentDim }}
-                thumbColor={biometricEnabled ? COLORS.accent : COLORS.textMuted}
+                onValueChange={handleToggleBiometric}
+                disabled={biometricBlocked}
+                trackColor={{
+                  false: COLORS.surfaceHigh,
+                  true: COLORS.accentDim,
+                }}
+                thumbColor={
+                  biometricEnabled
+                    ? COLORS.accent
+                    : COLORS.textSecondary
+                }
               />
             }
           />
@@ -157,12 +378,20 @@ export default function SecuritySettingsScreen({ navigation }) {
             iconColor={COLORS.purple}
             label="PIN de acceso"
             value={pinEnabled ? 'Activado' : 'Próximamente funcional'}
+            disabled={pinBlocked}
             rightElement={
               <Switch
                 value={pinEnabled}
-                onValueChange={setPinEnabled}
-                trackColor={{ false: COLORS.border, true: COLORS.accentDim }}
-                thumbColor={pinEnabled ? COLORS.accent : COLORS.textMuted}
+                onValueChange={handleTogglePin}
+                trackColor={{
+                  false: COLORS.surfaceHigh,
+                  true: COLORS.accentDim,
+                }}
+                thumbColor={
+                  pinEnabled
+                    ? COLORS.accent
+                    : COLORS.textSecondary
+                }
               />
             }
             isLast
@@ -171,20 +400,13 @@ export default function SecuritySettingsScreen({ navigation }) {
 
         <Text style={styles.sectionTitle}>Sesión</Text>
         <View style={styles.card}>
-          <SecurityItem
-            icon="phone-portrait-outline"
-            iconColor={COLORS.blue}
-            label="Sesión actual"
-            value="Este dispositivo"
-            disabled
-          />
 
           <SecurityItem
             icon="desktop-outline"
             iconColor={COLORS.orange}
             label="Dispositivos conectados"
-            value="Próximamente"
-            disabled
+            value="Ver sesiones activas"
+            onPress={() => navigation.navigate('Sessions')}
           />
 
           <SecurityItem
@@ -193,14 +415,6 @@ export default function SecuritySettingsScreen({ navigation }) {
             label="Cerrar sesión en este dispositivo"
             value="Salir de Spendly en este celular"
             onPress={handleLogoutDevice}
-          />
-
-          <SecurityItem
-            icon="exit-outline"
-            iconColor={COLORS.red}
-            label="Cerrar sesión en todos los dispositivos"
-            value="Requiere backend de sesiones"
-            disabled
             isLast
           />
         </View>
@@ -231,13 +445,109 @@ export default function SecuritySettingsScreen({ navigation }) {
             isLast
           />
         </View>
-
-        <Text style={styles.infoText}>
-          Algunas opciones están preparadas visualmente y se conectarán cuando el backend de sesiones y seguridad esté disponible.
-        </Text>
-
-        <View style={{ height: 40 }} />
       </ScrollView>
+      
+      <Modal
+        visible={pinModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closePinModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.logoutModal}>
+            <TouchableOpacity
+                style={{
+                  position: 'absolute',
+                  top: 18,
+                  left: 18,
+                  width: 40,
+                  height: 40,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                onPress={closePinModal}
+              >
+                <AppIcon
+                  name="arrow-back"
+                  size={22}
+                  color={COLORS.textSecondary}
+                />
+              </TouchableOpacity>
+            <View style={styles.modalIcon}>
+              <AppIcon name="keypad-outline" size={26} color={COLORS.accent} />
+            </View>
+
+            <Text style={styles.modalTitle}>
+              {pinMode === 'create'
+                ? pinStep === 'enter'
+                  ? 'Crear PIN'
+                  : 'Confirmar PIN'
+                : 'Desactivar PIN'}
+            </Text>
+
+            <Text style={styles.modalText}>
+              {pinMode === 'create'
+                ? pinStep === 'enter'
+                  ? 'Ingresá un PIN de 4 dígitos para proteger Spendly.'
+                  : 'Volvé a ingresar el PIN para confirmarlo.'
+                : 'Ingresá tu PIN actual para desactivarlo.'}
+            </Text>
+
+            <Text style={styles.pinDots}>
+              {'●'.repeat(
+                pinStep === 'confirm'
+                  ? pinConfirmValue.length
+                  : pinValue.length
+              )}
+              {'○'.repeat(
+                4 -
+                  (pinStep === 'confirm'
+                    ? pinConfirmValue.length
+                    : pinValue.length)
+              )}
+            </Text>
+
+            {!!pinError && (
+              <Text style={styles.pinError}>{pinError}</Text>
+            )}
+
+            <View style={styles.pinGrid}>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                <TouchableOpacity
+                  key={num}
+                  style={styles.pinKey}
+                  onPress={() => handlePinPress(String(num))}
+                >
+                  <Text style={styles.pinKeyText}>{num}</Text>
+                </TouchableOpacity>
+              ))}
+
+              <View style={styles.pinKeyPlaceholder} />
+
+              <TouchableOpacity
+                style={styles.pinKey}
+                onPress={() => handlePinPress('0')}
+              >
+                <Text style={styles.pinKeyText}>0</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.pinKey}
+                onPress={handlePinDelete}
+              >
+                <AppIcon name="backspace-outline" size={22} color={COLORS.textPrimary} />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={closePinModal}
+            >
+              <Text style={styles.cancelText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         visible={logoutModalVisible}
@@ -485,4 +795,49 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: COLORS.red,
   },
+
+  pinDots: {
+  fontSize: 28,
+  color: COLORS.accent,
+  letterSpacing: 8,
+  marginBottom: 16,
+},
+
+pinError: {
+  fontSize: 12,
+  color: COLORS.red,
+  marginBottom: 12,
+  textAlign: 'center',
+},
+
+pinGrid: {
+  width: '100%',
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  justifyContent: 'center',
+  gap: 12,
+  marginBottom: 18,
+},
+
+pinKey: {
+  width: 68,
+  height: 58,
+  borderRadius: 18,
+  backgroundColor: COLORS.surfaceHigh,
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+pinKeyPlaceholder: {
+  width: 68,
+  height: 58,
+},
+
+pinKeyText: {
+  fontSize: 22,
+  fontWeight: '800',
+  color: COLORS.textPrimary,
+},
 });

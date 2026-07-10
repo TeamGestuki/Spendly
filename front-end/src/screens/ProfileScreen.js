@@ -3,7 +3,7 @@
  * Perfil y configuración de Spendly.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -18,8 +18,12 @@ import {
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getCurrencyByCode, setPreferredCurrency as savePreferredCurrency, } from '../utils/currency';
+import { getPreferredLanguage } from '../utils/language';
 import * as ImagePicker from 'expo-image-picker';
+import * as LocalAuthentication from 'expo-local-authentication';
 
 import {
   getCurrentUser,
@@ -27,8 +31,7 @@ import {
   deleteProfileAvatar,
 } from '../services/authService';
 
-const API_BASE_URL =
-  'https://spendly-production-1793.up.railway.app';
+const API_BASE_URL = 'https://spendly-production-1793.up.railway.app';
 
 const COLORS = {
   bg: '#0D0F14',
@@ -52,22 +55,14 @@ function AppIcon({ name, size = 20, color = COLORS.textSecondary }) {
 
 function getInitials(fullName = '') {
   const parts = fullName.trim().split(' ').filter(Boolean);
-
-  if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-  }
-
-  if (parts.length === 1) {
-    return parts[0][0].toUpperCase();
-  }
-
+  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  if (parts.length === 1) return parts[0][0].toUpperCase();
   return 'U';
 }
 
 function getAvatarUrl(url) {
   if (!url) return null;
   if (url.startsWith('http')) return url;
-
   return `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
 }
 
@@ -82,35 +77,21 @@ function SettingItem({
 }) {
   return (
     <TouchableOpacity
-      style={[
-        styles.settingItem,
-        isLast && styles.settingItemLast,
-      ]}
+      style={[styles.settingItem, isLast && styles.settingItemLast]}
       onPress={onPress}
       activeOpacity={0.75}
     >
-      <View
-        style={[
-          styles.settingIconWrapper,
-          { backgroundColor: `${iconColor}18` },
-        ]}
-      >
+      <View style={[styles.settingIconWrapper, { backgroundColor: `${iconColor}18` }]}>
         <AppIcon name={icon} size={18} color={iconColor} />
       </View>
 
       <View style={styles.settingBody}>
         <Text style={styles.settingLabel}>{label}</Text>
-        {!!value && (
-          <Text style={styles.settingValue}>{value}</Text>
-        )}
+        {!!value && <Text style={styles.settingValue}>{value}</Text>}
       </View>
 
       {rightElement || (
-        <AppIcon
-          name="chevron-forward"
-          size={16}
-          color={COLORS.textMuted}
-        />
+        <AppIcon name="chevron-forward" size={16} color={COLORS.textMuted} />
       )}
     </TouchableOpacity>
   );
@@ -118,16 +99,13 @@ function SettingItem({
 
 export default function ProfileScreen({ navigation }) {
   const [darkModeOn, setDarkModeOn] = useState(true);
-  const [logoutModalVisible, setLogoutModalVisible] =
-    useState(false);
-
-  const [avatarMenuVisible, setAvatarMenuVisible] =
-    useState(false);
-  const [avatarPreviewVisible, setAvatarPreviewVisible] =
-    useState(false);
-
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [avatarMenuVisible, setAvatarMenuVisible] = useState(false);
+  const [avatarPreviewVisible, setAvatarPreviewVisible] = useState(false);
   const [loadingUser, setLoadingUser] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [preferredCurrency, setPreferredCurrency] = useState(null);
+  const [preferredLanguage, setPreferredLanguage] = useState(null);
 
   const [user, setUser] = useState({
     id: null,
@@ -140,105 +118,118 @@ export default function ProfileScreen({ navigation }) {
   const avatarUrl = getAvatarUrl(user.profile_image_url);
   const initials = getInitials(user.full_name);
 
-  useEffect(() => {
+ useFocusEffect(
+  useCallback(() => {
     loadUserData();
-  }, []);
+  }, [])
+);
 
   const loadUserData = async () => {
-    try {
-      setLoadingUser(true);
+  try {
+    setLoadingUser(true);
 
-      const data = await getCurrentUser();
+    const data = await getCurrentUser();
 
-      setUser({
-        id: data.id,
-        full_name: data.full_name || 'Usuario',
-        email: data.email || '',
-        profile_image_url: data.profile_image_url || null,
-        is_active: data.is_active,
+    const currency = getCurrencyByCode(data.preferred_currency);
+
+    setPreferredCurrency(currency);
+
+    await savePreferredCurrency(currency.code);
+
+    const language = await getPreferredLanguage();
+    setPreferredLanguage(language);
+
+    setUser({
+      id: data.id,
+      full_name: data.full_name || 'Usuario',
+      email: data.email || '',
+      profile_image_url: data.profile_image_url || null,
+      is_active: data.is_active,
+    });
+  } catch (error) {
+    console.log('Error cargando usuario:', error.message);
+  } finally {
+    setLoadingUser(false);
+  }
+};
+
+  const handleOpenSecurity = async () => {
+    const biometricEnabled = await AsyncStorage.getItem('biometric_enabled');
+    const pinEnabled = await AsyncStorage.getItem('pin_enabled');
+
+    if (biometricEnabled === 'true') {
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: 'Verificar identidad',
+        cancelLabel: 'Cancelar',
+        disableDeviceFallback: false,
       });
-    } catch (error) {
-      console.log('Error cargando usuario:', error.message);
-    } finally {
-      setLoadingUser(false);
-    }
-  };
 
-  const openAvatarMenu = () => {
-    setAvatarMenuVisible(true);
-  };
+      if (result.success) {
+        navigation.navigate('SecuritySettings');
+      }
 
-  const closeAvatarMenu = () => {
-    setAvatarMenuVisible(false);
-  };
-
-const handlePickAvatar = async () => {
-  console.log('CLICK ACTUALIZAR FOTO');
-
-  setTimeout(async () => {
-    const permission =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permission.granted) {
-      console.log('Permiso de galería denegado');
       return;
     }
 
-    const result =
-      await ImagePicker.launchImageLibraryAsync({
+    if (pinEnabled === 'true') {
+      navigation.navigate('PinUnlock', {
+        redirectTo: 'SecuritySettings',
+      });
+      return;
+    }
+
+    navigation.navigate('SecuritySettings');
+  };
+
+  const openAvatarMenu = () => setAvatarMenuVisible(true);
+  const closeAvatarMenu = () => setAvatarMenuVisible(false);
+
+  const handlePickAvatar = async () => {
+    setTimeout(async () => {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permission.granted) {
+        console.log('Permiso de galería denegado');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
       });
 
-    console.log('RESULT IMAGE PICKER:', result);
-    
-    closeAvatarMenu();
-    
-    if (result.canceled) return;
+      closeAvatarMenu();
 
-    try {
-      setUploadingAvatar(true);
+      if (result.canceled) return;
 
-      const imageUri = result.assets[0].uri;
+      try {
+        setUploadingAvatar(true);
+        const imageUri = result.assets[0].uri;
+        const updatedUser = await uploadProfileAvatar(imageUri);
 
-      console.log('IMAGE URI:', imageUri);
-      console.log('SUBIENDO AVATAR...');
-
-      const updatedUser =
-        await uploadProfileAvatar(imageUri);
-
-      console.log('USUARIO ACTUALIZADO:', updatedUser);
-
-      setUser({
-        id: updatedUser.id,
-        full_name: updatedUser.full_name || 'Usuario',
-        email: updatedUser.email || '',
-        profile_image_url:
-          updatedUser.profile_image_url || null,
-        is_active: updatedUser.is_active,
-      });
-    } catch (error) {
-      console.log(
-        'Error subiendo avatar:',
-        error.message
-      );
-    } finally {
-      setUploadingAvatar(false);
-    }
-  }, 350);
-};
+        setUser({
+          id: updatedUser.id,
+          full_name: updatedUser.full_name || 'Usuario',
+          email: updatedUser.email || '',
+          profile_image_url: updatedUser.profile_image_url || null,
+          is_active: updatedUser.is_active,
+        });
+      } catch (error) {
+        console.log('Error subiendo avatar:', error.message);
+      } finally {
+        setUploadingAvatar(false);
+      }
+    }, 350);
+  };
 
   const handleViewAvatar = () => {
     closeAvatarMenu();
-
-    if (avatarUrl) {
-      setAvatarPreviewVisible(true);
-    }
+    if (avatarUrl) setAvatarPreviewVisible(true);
   };
 
-const handleDeleteAvatar = async () => {
+  const handleDeleteAvatar = async () => {
     closeAvatarMenu();
 
     try {
@@ -256,22 +247,19 @@ const handleDeleteAvatar = async () => {
     }
   };
 
-    const handleLogout = () => {
-      setLogoutModalVisible(true);
-    };
+  const handleLogout = () => {
+    setLogoutModalVisible(true);
+  };
 
-    const confirmLogout = async () => {
-      await AsyncStorage.removeItem('access_token');
-      setLogoutModalVisible(false);
-      navigation.replace('Login');
-};
+  const confirmLogout = async () => {
+    await AsyncStorage.removeItem('access_token');
+    setLogoutModalVisible(false);
+    navigation.replace('Login');
+  };
 
   return (
     <View style={styles.flex}>
-      <StatusBar
-        barStyle="light-content"
-        backgroundColor={COLORS.bg}
-      />
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
 
       <ScrollView
         style={styles.flex}
@@ -285,11 +273,7 @@ const handleDeleteAvatar = async () => {
             style={styles.iconBtn}
             onPress={() => navigation.navigate('EditProfile')}
           >
-            <AppIcon
-              name="create-outline"
-              size={20}
-              color={COLORS.textSecondary}
-            />
+            <AppIcon name="create-outline" size={20} color={COLORS.textSecondary} />
           </TouchableOpacity>
         </View>
 
@@ -300,55 +284,33 @@ const handleDeleteAvatar = async () => {
             onPress={openAvatarMenu}
           >
             {avatarUrl ? (
-              <Image
-                source={{ uri: avatarUrl }}
-                style={styles.avatarImage}
-              />
+              <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
             ) : (
               <View style={styles.avatarFallback}>
-                <Text style={styles.avatarText}>
-                  {initials}
-                </Text>
+                <Text style={styles.avatarText}>{initials}</Text>
               </View>
             )}
 
             <View style={styles.avatarEditBadge}>
               {uploadingAvatar ? (
-                <ActivityIndicator
-                  size="small"
-                  color="#0D1A12"
-                />
+                <ActivityIndicator size="small" color="#0D1A12" />
               ) : (
-                <AppIcon
-                  name="camera-outline"
-                  size={13}
-                  color="#0D1A12"
-                />
+                <AppIcon name="camera-outline" size={13} color="#0D1A12" />
               )}
             </View>
           </TouchableOpacity>
 
           {loadingUser ? (
-            <ActivityIndicator
-              size="small"
-              color={COLORS.accent}
-            />
+            <ActivityIndicator size="small" color={COLORS.accent} />
           ) : (
             <>
-              <Text style={styles.heroName}>
-                {user.full_name}
-              </Text>
-
-              <Text style={styles.heroEmail}>
-                {user.email}
-              </Text>
+              <Text style={styles.heroName}>{user.full_name}</Text>
+              <Text style={styles.heroEmail}>{user.email}</Text>
 
               <View style={styles.statusBadge}>
                 <View style={styles.statusDot} />
                 <Text style={styles.statusText}>
-                  {user.is_active
-                    ? 'Cuenta activa'
-                    : 'Cuenta inactiva'}
+                  {user.is_active ? 'Cuenta activa' : 'Cuenta inactiva'}
                 </Text>
               </View>
             </>
@@ -370,10 +332,9 @@ const handleDeleteAvatar = async () => {
             iconColor={COLORS.purple}
             label="Seguridad y acceso"
             value="Autenticación, sesiones y acceso"
-            onPress={() => navigation.navigate('SecuritySettings')}
+            onPress={handleOpenSecurity}
             isLast
           />
-
         </View>
 
         <Text style={styles.sectionTitle}>Preferencias</Text>
@@ -388,15 +349,8 @@ const handleDeleteAvatar = async () => {
               <Switch
                 value={darkModeOn}
                 onValueChange={setDarkModeOn}
-                trackColor={{
-                  false: COLORS.border,
-                  true: COLORS.accentDim,
-                }}
-                thumbColor={
-                  darkModeOn
-                    ? COLORS.accent
-                    : COLORS.textMuted
-                }
+                trackColor={{ false: COLORS.border, true: COLORS.accentDim }}
+                thumbColor={darkModeOn ? COLORS.accent : COLORS.textMuted}
                 ios_backgroundColor={COLORS.border}
               />
             }
@@ -406,7 +360,11 @@ const handleDeleteAvatar = async () => {
             icon="cash-outline"
             iconColor={COLORS.orange}
             label="Moneda principal"
-            value="ARS — Peso argentino"
+            value={
+              preferredCurrency
+                ? `${preferredCurrency.code} · ${preferredCurrency.name}`
+                : 'Cargando...'
+            }
             onPress={() => navigation.navigate('CurrencySettings')}
           />
 
@@ -414,7 +372,11 @@ const handleDeleteAvatar = async () => {
             icon="language-outline"
             iconColor={COLORS.blue}
             label="Idioma"
-            value="Español"
+            value={
+              preferredLanguage
+                ? `${preferredLanguage.flag} ${preferredLanguage.name}`
+                : 'Cargando...'
+            }
             onPress={() => navigation.navigate('LanguageSettings')}
           />
 
@@ -423,16 +385,12 @@ const handleDeleteAvatar = async () => {
             iconColor={COLORS.orange}
             label="Notificaciones"
             value="Alertas, recordatorios y resúmenes"
-            onPress={() =>
-              navigation.navigate('NotificationSettings')
-            }
+            onPress={() => navigation.navigate('NotificationSettings')}
             isLast
           />
         </View>
 
-        <Text style={styles.sectionTitle}>
-          Datos y privacidad
-        </Text>
+        <Text style={styles.sectionTitle}>Datos y privacidad</Text>
         <View style={styles.card}>
           <SettingItem
             icon="download-outline"
@@ -489,25 +447,14 @@ const handleDeleteAvatar = async () => {
         </View>
 
         <Text style={styles.sectionTitle}>Sesión</Text>
-        <TouchableOpacity
-          style={styles.logoutBtn}
-          onPress={handleLogout}
-          activeOpacity={0.8}
-        >
-          <AppIcon
-            name="log-out-outline"
-            size={20}
-            color={COLORS.red}
-          />
-          <Text style={styles.logoutText}>
-            Cerrar sesión
-          </Text>
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.8}>
+          <AppIcon name="log-out-outline" size={20} color={COLORS.red} />
+          <Text style={styles.logoutText}>Cerrar sesión</Text>
         </TouchableOpacity>
 
         <View style={{ height: 90 }} />
       </ScrollView>
 
-      {/* Modal opciones avatar */}
       <Modal
         visible={avatarMenuVisible}
         transparent
@@ -520,76 +467,42 @@ const handleDeleteAvatar = async () => {
           onPress={closeAvatarMenu}
         >
           <View style={styles.actionSheet}>
-            <Text style={styles.actionSheetTitle}>
-              Foto de perfil
-            </Text>
+            <Text style={styles.actionSheetTitle}>Foto de perfil</Text>
 
             {avatarUrl && (
-              <TouchableOpacity
-                style={styles.actionSheetItem}
-                onPress={handleViewAvatar}
-              >
-                <AppIcon
-                  name="eye-outline"
-                  size={20}
-                  color={COLORS.blue}
-                />
-                <Text style={styles.actionSheetText}>
-                  Ver foto de perfil
-                </Text>
+              <TouchableOpacity style={styles.actionSheetItem} onPress={handleViewAvatar}>
+                <AppIcon name="eye-outline" size={20} color={COLORS.blue} />
+                <Text style={styles.actionSheetText}>Ver foto de perfil</Text>
               </TouchableOpacity>
             )}
 
-            <TouchableOpacity
-              style={styles.actionSheetItem}
-              onPress={handlePickAvatar}
-            >
+            <TouchableOpacity style={styles.actionSheetItem} onPress={handlePickAvatar}>
               <AppIcon
                 name={avatarUrl ? 'image-outline' : 'add-circle-outline'}
                 size={20}
                 color={COLORS.accent}
               />
               <Text style={styles.actionSheetText}>
-                {avatarUrl
-                  ? 'Actualizar foto'
-                  : 'Agregar foto'}
+                {avatarUrl ? 'Actualizar foto' : 'Agregar foto'}
               </Text>
             </TouchableOpacity>
 
             {avatarUrl && (
-              <TouchableOpacity
-                style={styles.actionSheetItem}
-                onPress={handleDeleteAvatar}
-              >
-                <AppIcon
-                  name="trash-outline"
-                  size={20}
-                  color={COLORS.red}
-                />
-                <Text
-                  style={[
-                    styles.actionSheetText,
-                    { color: COLORS.red },
-                  ]}
-                >
+              <TouchableOpacity style={styles.actionSheetItem} onPress={handleDeleteAvatar}>
+                <AppIcon name="trash-outline" size={20} color={COLORS.red} />
+                <Text style={[styles.actionSheetText, { color: COLORS.red }]}>
                   Eliminar foto
                 </Text>
               </TouchableOpacity>
             )}
 
-            <TouchableOpacity
-              style={styles.actionSheetCancel}
-              onPress={closeAvatarMenu}
-            >
-              <Text style={styles.actionSheetCancelText}>
-                Cancelar
-              </Text>
+            <TouchableOpacity style={styles.actionSheetCancel} onPress={closeAvatarMenu}>
+              <Text style={styles.actionSheetCancelText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
       </Modal>
 
-      {/* Modal ver avatar */}
       <Modal
         visible={avatarPreviewVisible}
         transparent
@@ -601,23 +514,13 @@ const handleDeleteAvatar = async () => {
             style={styles.previewCloseBtn}
             onPress={() => setAvatarPreviewVisible(false)}
           >
-            <AppIcon
-              name="close"
-              size={24}
-              color={COLORS.textPrimary}
-            />
+            <AppIcon name="close" size={24} color={COLORS.textPrimary} />
           </TouchableOpacity>
 
-          {avatarUrl && (
-            <Image
-              source={{ uri: avatarUrl }}
-              style={styles.previewImage}
-            />
-          )}
+          {avatarUrl && <Image source={{ uri: avatarUrl }} style={styles.previewImage} />}
         </View>
       </Modal>
 
-      {/* Modal cerrar sesión */}
       <Modal
         visible={logoutModalVisible}
         transparent
@@ -627,16 +530,10 @@ const handleDeleteAvatar = async () => {
         <View style={styles.modalOverlay}>
           <View style={styles.logoutModal}>
             <View style={styles.modalIconWrapper}>
-              <AppIcon
-                name="log-out-outline"
-                size={26}
-                color={COLORS.red}
-              />
+              <AppIcon name="log-out-outline" size={26} color={COLORS.red} />
             </View>
 
-            <Text style={styles.modalTitle}>
-              Cerrar sesión
-            </Text>
+            <Text style={styles.modalTitle}>Cerrar sesión</Text>
 
             <Text style={styles.modalText}>
               ¿Estás seguro de que querés cerrar sesión en Spendly?
@@ -648,9 +545,7 @@ const handleDeleteAvatar = async () => {
                 onPress={() => setLogoutModalVisible(false)}
                 activeOpacity={0.8}
               >
-                <Text style={styles.cancelButtonText}>
-                  Cancelar
-                </Text>
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -658,9 +553,7 @@ const handleDeleteAvatar = async () => {
                 onPress={confirmLogout}
                 activeOpacity={0.8}
               >
-                <Text style={styles.confirmLogoutText}>
-                  Cerrar sesión
-                </Text>
+                <Text style={styles.confirmLogoutText}>Cerrar sesión</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -668,33 +561,20 @@ const handleDeleteAvatar = async () => {
       </Modal>
 
       <View style={styles.bottomNav}>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate('Home')}
-        >
-          <AppIcon
-            name="home-outline"
-            size={24}
-            color={COLORS.textMuted}
-          />
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
+          <AppIcon name="home-outline" size={24} color={COLORS.textMuted} />
           <Text style={styles.navLabel}>Home</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate('Expenses')}
-        >
-          <AppIcon
-            name="card-outline"
-            size={24}
-            color={COLORS.textMuted}
-          />
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Expenses')}>
+          <AppIcon name="card-outline" size={24} color={COLORS.textMuted} />
           <Text style={styles.navLabel}>Gastos</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.navScanWrapper}
           activeOpacity={0.85}
+          onPress={() => navigation.navigate('Scan')}
         >
           <View style={styles.navScanBtn}>
             <AppIcon
@@ -707,7 +587,7 @@ const handleDeleteAvatar = async () => {
 
         <TouchableOpacity
           style={styles.navItem}
-          onPress={() => navigation.navigate('Home')}
+          onPress={() => navigation.navigate('Stats')}
         >
           <AppIcon
             name="bar-chart-outline"
@@ -717,15 +597,8 @@ const handleDeleteAvatar = async () => {
           <Text style={styles.navLabel}>Stats</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate('Home')}
-        >
-          <AppIcon
-            name="flag-outline"
-            size={24}
-            color={COLORS.textMuted}
-          />
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Goals')}>
+          <AppIcon name="flag-outline" size={24} color={COLORS.textMuted} />
           <Text style={styles.navLabel}>Metas</Text>
         </TouchableOpacity>
       </View>
@@ -735,22 +608,14 @@ const handleDeleteAvatar = async () => {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: COLORS.bg },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 56,
-  },
-
+  scrollContent: { paddingHorizontal: 20, paddingTop: 56 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 24,
   },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-  },
+  headerTitle: { fontSize: 22, fontWeight: '700', color: COLORS.textPrimary },
   iconBtn: {
     width: 40,
     height: 40,
@@ -761,7 +626,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   heroCard: {
     backgroundColor: COLORS.surface,
     borderRadius: 24,
@@ -770,11 +634,6 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(74,222,128,0.15)',
     marginBottom: 24,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 8,
   },
   avatarRing: {
     width: 84,
@@ -787,11 +646,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     position: 'relative',
   },
-  avatarImage: {
-    width: 74,
-    height: 74,
-    borderRadius: 37,
-  },
+  avatarImage: { width: 74, height: 74, borderRadius: 37 },
   avatarFallback: {
     width: 74,
     height: 74,
@@ -800,11 +655,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: COLORS.accent,
-  },
+  avatarText: { fontSize: 24, fontWeight: '800', color: COLORS.accent },
   avatarEditBadge: {
     position: 'absolute',
     right: -2,
@@ -818,17 +669,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: COLORS.surface,
   },
-  heroName: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-    marginBottom: 4,
-  },
-  heroEmail: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    marginBottom: 10,
-  },
+  heroName: { fontSize: 20, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 4 },
+  heroEmail: { fontSize: 13, color: COLORS.textSecondary, marginBottom: 10 },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -846,12 +688,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.accent,
     marginRight: 6,
   },
-  statusText: {
-    fontSize: 12,
-    color: COLORS.accent,
-    fontWeight: '600',
-  },
-
+  statusText: { fontSize: 12, color: COLORS.accent, fontWeight: '600' },
   sectionTitle: {
     fontSize: 13,
     fontWeight: '600',
@@ -878,9 +715,7 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.border,
     gap: 12,
   },
-  settingItemLast: {
-    borderBottomWidth: 0,
-  },
+  settingItemLast: { borderBottomWidth: 0 },
   settingIconWrapper: {
     width: 38,
     height: 38,
@@ -889,20 +724,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexShrink: 0,
   },
-  settingBody: {
-    flex: 1,
-  },
-  settingLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.textPrimary,
-  },
-  settingValue: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-
+  settingBody: { flex: 1 },
+  settingLabel: { fontSize: 14, fontWeight: '500', color: COLORS.textPrimary },
+  settingValue: { fontSize: 11, color: COLORS.textSecondary, marginTop: 2 },
   logoutBtn: {
     backgroundColor: COLORS.surface,
     borderRadius: 20,
@@ -915,12 +739,7 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 10,
   },
-  logoutText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.red,
-  },
-
+  logoutText: { fontSize: 15, fontWeight: '600', color: COLORS.red },
   bottomNav: {
     position: 'absolute',
     bottom: 0,
@@ -935,20 +754,9 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingHorizontal: 20,
   },
-  navItem: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 4,
-  },
-  navLabel: {
-    fontSize: 10,
-    color: COLORS.textMuted,
-  },
-  navScanWrapper: {
-    flex: 1,
-    alignItems: 'center',
-    marginBottom: 8,
-  },
+  navItem: { flex: 1, alignItems: 'center', gap: 4 },
+  navLabel: { fontSize: 10, color: COLORS.textMuted },
+  navScanWrapper: { flex: 1, alignItems: 'center', marginBottom: 8 },
   navScanBtn: {
     width: 60,
     height: 60,
@@ -956,14 +764,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.accent,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
     marginTop: -28,
   },
-
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.65)',
@@ -971,7 +773,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
-
   actionSheet: {
     width: '100%',
     backgroundColor: COLORS.surface,
@@ -995,11 +796,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  actionSheetText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-  },
+  actionSheetText: { fontSize: 14, fontWeight: '600', color: COLORS.textPrimary },
   actionSheetCancel: {
     marginTop: 14,
     height: 48,
@@ -1008,12 +805,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  actionSheetCancelText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
-
+  actionSheetCancelText: { fontSize: 14, fontWeight: '700', color: COLORS.textSecondary },
   previewOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.92)',
@@ -1031,12 +823,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  previewImage: {
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-  },
-
+  previewImage: { width: 280, height: 280, borderRadius: 140 },
   logoutModal: {
     width: '100%',
     backgroundColor: COLORS.surface,
@@ -1055,12 +842,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 16,
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-    marginBottom: 8,
-  },
+  modalTitle: { fontSize: 20, fontWeight: '800', color: COLORS.textPrimary, marginBottom: 8 },
   modalText: {
     fontSize: 14,
     color: COLORS.textSecondary,
@@ -1068,11 +850,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginBottom: 24,
   },
-  modalActions: {
-    flexDirection: 'row',
-    gap: 12,
-    width: '100%',
-  },
+  modalActions: { flexDirection: 'row', gap: 12, width: '100%' },
   cancelButton: {
     flex: 1,
     height: 48,
@@ -1083,11 +861,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cancelButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
+  cancelButtonText: { fontSize: 14, fontWeight: '700', color: COLORS.textSecondary },
   confirmLogoutButton: {
     flex: 1,
     height: 48,
@@ -1098,9 +872,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  confirmLogoutText: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: COLORS.red,
-  },
+  confirmLogoutText: { fontSize: 14, fontWeight: '800', color: COLORS.red },
 });

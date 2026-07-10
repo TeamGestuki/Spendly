@@ -76,20 +76,35 @@ const handleLogin = useCallback(async () => {
     setLoading(true);
     setLoginError('');
 
-    const data = await loginUser(email, password);
+    const deviceName =
+    Platform.OS === 'ios'
+    ? 'iPhone'
+    : Platform.OS === 'android'
+      ? 'Android'
+      : 'Dispositivo móvil';
 
-    if (rememberSession) {
-      await AsyncStorage.setItem(
-        'access_token',
-        data.access_token
-      );
-    } else {
-      await AsyncStorage.removeItem('access_token');
-    }
+    const data = await loginUser(
+      email,
+      password,
+      rememberSession,
+      deviceName
+    );
+
+    await AsyncStorage.setItem(
+      'access_token',
+      data.access_token
+    );
+
+    await AsyncStorage.setItem(
+      'remember_session',
+      rememberSession ? 'true' : 'false'
+    );
 
     navigation.replace('Home');
   } catch (error) {
-    setLoginError(error.message || 'Email o contraseña incorrectos');
+    setLoginError(
+      error.message || 'Email o contraseña incorrectos'
+    );
   } finally {
     setLoading(false);
   }
