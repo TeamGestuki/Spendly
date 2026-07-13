@@ -2,8 +2,12 @@
  * ProfileScreen.js
  * Perfil y configuración de Spendly.
  */
+import React, {
+  useCallback,
+  useMemo,
+  useState,
+} from 'react';
 
-import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -24,6 +28,7 @@ import { getCurrencyByCode, setPreferredCurrency as savePreferredCurrency, } fro
 import { getPreferredLanguage } from '../utils/language';
 import * as ImagePicker from 'expo-image-picker';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { useTheme } from '../context/ThemeContext';
 
 import {
   getCurrentUser,
@@ -33,24 +38,18 @@ import {
 
 const API_BASE_URL = 'https://spendly-production-1793.up.railway.app';
 
-const COLORS = {
-  bg: '#0D0F14',
-  surface: '#161A23',
-  surfaceHigh: '#1E2330',
-  border: '#272D3D',
-  accent: '#4ADE80',
-  accentDim: '#1A3D28',
-  textPrimary: '#F0F2F7',
-  textSecondary: '#9CA3AF',
-  textMuted: '#6B748A',
-  red: '#F87171',
-  blue: '#60A5FA',
-  orange: '#FB923C',
-  purple: '#C084FC',
-};
-
-function AppIcon({ name, size = 20, color = COLORS.textSecondary }) {
-  return <Ionicons name={name} size={size} color={color} />;
+function AppIcon({
+  name,
+  size = 20,
+  color = '#9CA3AF',
+}) {
+  return (
+    <Ionicons
+      name={name}
+      size={size}
+      color={color}
+    />
+  );
 }
 
 function getInitials(fullName = '') {
@@ -66,39 +65,74 @@ function getAvatarUrl(url) {
   return `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
 }
 
-function SettingItem({
-  icon,
-  iconColor = COLORS.accent,
-  label,
-  value,
-  onPress,
-  isLast,
-  rightElement,
-}) {
-  return (
-    <TouchableOpacity
-      style={[styles.settingItem, isLast && styles.settingItemLast]}
-      onPress={onPress}
-      activeOpacity={0.75}
-    >
-      <View style={[styles.settingIconWrapper, { backgroundColor: `${iconColor}18` }]}>
-        <AppIcon name={icon} size={18} color={iconColor} />
-      </View>
-
-      <View style={styles.settingBody}>
-        <Text style={styles.settingLabel}>{label}</Text>
-        {!!value && <Text style={styles.settingValue}>{value}</Text>}
-      </View>
-
-      {rightElement || (
-        <AppIcon name="chevron-forward" size={16} color={COLORS.textMuted} />
-      )}
-    </TouchableOpacity>
-  );
-}
-
 export default function ProfileScreen({ navigation }) {
-  const [darkModeOn, setDarkModeOn] = useState(true);
+  const {
+      colors: COLORS,
+      isDark,
+    } = useTheme();
+
+
+  const styles = useMemo(
+    () => createStyles(COLORS),
+    [COLORS]
+  );
+
+  function SettingItem({
+    icon,
+    iconColor = COLORS.accent,
+    label,
+    value,
+    onPress,
+    isLast,
+    rightElement,
+  }) {
+    return (
+      <TouchableOpacity
+        style={[
+          styles.settingItem,
+          isLast && styles.settingItemLast,
+        ]}
+        onPress={onPress}
+        activeOpacity={0.75}
+      >
+        <View
+          style={[
+            styles.settingIconWrapper,
+            {
+              backgroundColor: `${iconColor}18`,
+            },
+          ]}
+        >
+          <AppIcon
+            name={icon}
+            size={18}
+            color={iconColor}
+          />
+        </View>
+
+        <View style={styles.settingBody}>
+          <Text style={styles.settingLabel}>
+            {label}
+          </Text>
+
+          {!!value && (
+            <Text style={styles.settingValue}>
+              {value}
+            </Text>
+          )}
+        </View>
+
+        {rightElement || (
+          <AppIcon
+            name="chevron-forward"
+            size={16}
+            color={COLORS.textMuted}
+          />
+        )}
+      </TouchableOpacity>
+    );
+  }
+
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [avatarMenuVisible, setAvatarMenuVisible] = useState(false);
   const [avatarPreviewVisible, setAvatarPreviewVisible] = useState(false);
@@ -259,7 +293,14 @@ export default function ProfileScreen({ navigation }) {
 
   return (
     <View style={styles.flex}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+      <StatusBar
+        barStyle={
+          isDark
+            ? 'light-content'
+            : 'dark-content'
+        }
+        backgroundColor={COLORS.bg}
+      />
 
       <ScrollView
         style={styles.flex}
@@ -342,18 +383,9 @@ export default function ProfileScreen({ navigation }) {
           <SettingItem
             icon="moon-outline"
             iconColor={COLORS.purple}
-            label="Modo oscuro"
-            value={darkModeOn ? 'Activado' : 'Desactivado'}
-            onPress={() => setDarkModeOn(v => !v)}
-            rightElement={
-              <Switch
-                value={darkModeOn}
-                onValueChange={setDarkModeOn}
-                trackColor={{ false: COLORS.border, true: COLORS.accentDim }}
-                thumbColor={darkModeOn ? COLORS.accent : COLORS.textMuted}
-                ios_backgroundColor={COLORS.border}
-              />
-            }
+            label="Apariencia"
+            value="Claro, oscuro o automático"
+            onPress={() => navigation.navigate('ThemeSettings')}
           />
 
           <SettingItem
@@ -606,7 +638,8 @@ export default function ProfileScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(COLORS) {
+  return StyleSheet.create({
   flex: { flex: 1, backgroundColor: COLORS.bg },
   scrollContent: { paddingHorizontal: 20, paddingTop: 56 },
   header: {
@@ -745,7 +778,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(22,26,35,0.97)',
+    backgroundColor: COLORS.surface,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     flexDirection: 'row',
@@ -873,4 +906,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   confirmLogoutText: { fontSize: 14, fontWeight: '800', color: COLORS.red },
-});
+  });
+}
