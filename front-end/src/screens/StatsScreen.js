@@ -7,6 +7,7 @@ import {
   StyleSheet,
   StatusBar,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -96,6 +97,7 @@ export default function StatsScreen({ navigation }) {
   const [expenses, setExpenses] = useState([]);
   const [currency, setCurrency] = useState(getCurrencyByCode('ARS'));
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -129,6 +131,15 @@ export default function StatsScreen({ navigation }) {
     }
   };
 
+
+  const onRefresh = async () => {
+  try {
+    setRefreshing(true);
+    await loadStats();
+  } finally {
+    setRefreshing(false);
+  }
+};  
   const now = new Date();
   const previousMonth = getPreviousMonth(now);
 
@@ -187,6 +198,14 @@ export default function StatsScreen({ navigation }) {
         style={styles.flex}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={COLORS.accent}
+            colors={[COLORS.accent]}
+          />
+        }
       >
         <View style={styles.header}>
           <View>
@@ -195,14 +214,6 @@ export default function StatsScreen({ navigation }) {
               Resumen de {getMonthName(now)}
             </Text>
           </View>
-
-          <TouchableOpacity style={styles.iconBtn} onPress={loadStats}>
-            <AppIcon
-              name="refresh-outline"
-              size={20}
-              color={COLORS.textSecondary}
-            />
-          </TouchableOpacity>
         </View>
 
         {loading ? (
@@ -442,8 +453,12 @@ export default function StatsScreen({ navigation }) {
           style={styles.navItem}
           onPress={() => navigation.navigate('Expenses')}
         >
-          <AppIcon name="card-outline" size={24} color={COLORS.textMuted} />
-          <Text style={styles.navLabel}>Gastos</Text>
+          <AppIcon
+            name="swap-horizontal-outline"
+            size={24}
+            color={COLORS.textMuted}
+          />
+          <Text style={styles.navLabel}>Movimientos</Text>
         </TouchableOpacity>
 
         <TouchableOpacity

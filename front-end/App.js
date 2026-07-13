@@ -11,8 +11,8 @@ import HomeScreen from './src/screens/HomeScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import TermsScreen from './src/screens/TermsScreen';
 import PrivacyScreen from './src/screens/PrivacyScreen';
-import ExpensesScreen from './src/screens/ExpensesScreen';
-import AddExpenseScreen from './src/screens/AddExpenseScreen';
+import TransactionListScreen from './src/screens/TransactionListScreen';
+import AddTransactionScreen from './src/screens/AddTransactionScreen';
 import EditProfileScreen from './src/screens/EditProfileScreen';
 import SecuritySettingsScreen from './src/screens/SecuritySettingsScreen';
 import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
@@ -29,38 +29,48 @@ const Stack = createNativeStackNavigator();
 export default function App() {
   const [initialRoute, setInitialRoute] = useState(null);
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const token = await AsyncStorage.getItem('access_token');
-      const biometricEnabled = await AsyncStorage.getItem('biometric_enabled');
-      const pinEnabled = await AsyncStorage.getItem('pin_enabled');
+useEffect(() => {
+  const checkSession = async () => {
+    const token = await AsyncStorage.getItem('access_token');
+    const biometricEnabled = await AsyncStorage.getItem('biometric_enabled');
+    const pinEnabled = await AsyncStorage.getItem('pin_enabled');
 
-      if (!token) {
-        setInitialRoute('Login');
+    if (!token) {
+      setInitialRoute('Login');
+      return;
+    }
+
+    if (biometricEnabled === 'true') {
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: 'Desbloquear Spendly',
+        cancelLabel: 'Cancelar',
+        disableDeviceFallback: true,
+      });
+
+      if (result.success) {
+        setInitialRoute('Home');
         return;
       }
 
-      if (biometricEnabled === 'true') {
-        const result = await LocalAuthentication.authenticateAsync({
-          promptMessage: 'Desbloquear Spendly',
-          cancelLabel: 'Cancelar',
-          disableDeviceFallback: false,
-        });
-
-        setInitialRoute(result.success ? 'Home' : 'Login');
-        return;
-      }
-
-      setInitialRoute('Home');
-      
       if (pinEnabled === 'true') {
         setInitialRoute('PinUnlock');
         return;
       }
-    };
 
-    checkSession();
-  }, []);
+      setInitialRoute('Login');
+      return;
+    }
+
+    if (pinEnabled === 'true') {
+      setInitialRoute('PinUnlock');
+      return;
+    }
+
+    setInitialRoute('Home');
+  };
+
+  checkSession();
+}, []);
 
   if (!initialRoute) {
     return (
@@ -138,25 +148,56 @@ export default function App() {
         />
 
         <Stack.Screen
-          name="Expenses"
-          component={ExpensesScreen}
-          options={{ gestureEnabled: false }}
-        />
+            name="Expenses"
+            options={{ gestureEnabled: false }}
+          >
+            {(props) => (
+              <TransactionListScreen
+                {...props}
+                type="expense"
+              />
+            )}
+          </Stack.Screen>
 
-        <Stack.Screen
-          name="Scan"
-          component={ScanScreen}
-        />
+          <Stack.Screen
+            name="Income"
+            options={{ gestureEnabled: false }}
+          >
+            {(props) => (
+              <TransactionListScreen
+                {...props}
+                type="income"
+              />
+            )}
+          </Stack.Screen>
 
-        <Stack.Screen
-          name="AddExpense"
-          component={AddExpenseScreen}
-        />
+          <Stack.Screen
+            name="Scan"
+            component={ScanScreen}
+          />
 
-        <Stack.Screen
-          name="Stats"
-          component={StatsScreen}
-        />
+          <Stack.Screen name="AddExpense">
+            {(props) => (
+              <AddTransactionScreen
+                {...props}
+                type="expense"
+              />
+            )}
+          </Stack.Screen>
+
+          <Stack.Screen name="AddIncome">
+            {(props) => (
+              <AddTransactionScreen
+                {...props}
+                type="income"
+              />
+            )}
+          </Stack.Screen>
+
+          <Stack.Screen
+            name="Stats"
+            component={StatsScreen}
+          />
 
         <Stack.Screen
           name="Goals"

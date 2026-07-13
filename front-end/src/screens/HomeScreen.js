@@ -13,6 +13,7 @@ import {
   StatusBar,
   Image,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -173,6 +174,7 @@ export default function HomeScreen({ navigation }) {
   const [transactions, setTransactions] = useState([]);
   const [currency, setCurrency] = useState(getCurrencyByCode('ARS'));
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -202,7 +204,16 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
-  const now = new Date();
+const onRefresh = async () => {
+  try {
+    setRefreshing(true);
+    await loadHomeData();
+  } finally {
+    setRefreshing(false);
+  }
+};
+
+const now = new Date();
 
   const monthlyTransactions = transactions.filter((t) =>
     isSameMonth(t.date, now)
@@ -259,6 +270,14 @@ export default function HomeScreen({ navigation }) {
         style={styles.flex}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={COLORS.accent}
+            colors={[COLORS.accent]}
+          />
+        }
       >
         <View style={styles.header}>
           <View>
@@ -665,11 +684,11 @@ export default function HomeScreen({ navigation }) {
           onPress={() => navigation.navigate('Expenses')}
         >
           <AppIcon
-            name="card-outline"
-            size={24}
-            color={COLORS.textMuted}
-          />
-          <Text style={styles.navLabel}>Gastos</Text>
+          name="swap-horizontal-outline"
+          size={24}
+          color={COLORS.textMuted}
+        />
+          <Text style={styles.navLabel}>Movimientos</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
