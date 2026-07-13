@@ -9,6 +9,7 @@
 
 import React, {
   useCallback,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -31,125 +32,107 @@ import {
 
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTheme } from '../context/ThemeContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { createTransaction } from '../services/transactionService';
 import { getCurrentUser } from '../services/authService';
 import { getCurrencyByCode } from '../utils/currency';
 
-const COLORS = {
-  bg: '#0D0F14',
-  surface: '#161A23',
-  surfaceHigh: '#1E2330',
-  border: '#272D3D',
+function getExpenseCategories(COLORS) {
+  return [
+    {
+      label: 'Comida',
+      icon: 'bag-handle-outline',
+      color: COLORS.accent,
+    },
+    {
+      label: 'Transporte',
+      icon: 'car-outline',
+      color: COLORS.blue,
+    },
+    {
+      label: 'Supermercado',
+      icon: 'cart-outline',
+      color: COLORS.orange,
+    },
+    {
+      label: 'Servicios',
+      icon: 'flash-outline',
+      color: COLORS.purple,
+    },
+    {
+      label: 'Salud',
+      icon: 'heart-outline',
+      color: COLORS.pink,
+    },
+    {
+      label: 'Educación',
+      icon: 'book-outline',
+      color: COLORS.blue,
+    },
+    {
+      label: 'Entretenimiento',
+      icon: 'play-circle-outline',
+      color: COLORS.orange,
+    },
+    {
+      label: 'Ropa',
+      icon: 'shirt-outline',
+      color: COLORS.pink,
+    },
+    {
+      label: 'Tecnología',
+      icon: 'hardware-chip-outline',
+      color: COLORS.blue,
+    },
+    {
+      label: 'Otros',
+      icon: 'grid-outline',
+      color: COLORS.textMuted,
+    },
+  ];
+}
 
-  accent: '#4ADE80',
-  accentDim: '#1A3D28',
-
-  textPrimary: '#F0F2F7',
-  textSecondary: '#9CA3AF',
-  textMuted: '#6B748A',
-
-  red: '#F87171',
-  blue: '#60A5FA',
-  orange: '#FB923C',
-  purple: '#C084FC',
-  pink: '#F472B4',
-  yellow: '#FACC15',
-
-  error: '#F87171',
-};
-
-const EXPENSE_CATEGORIES = [
-  {
-    label: 'Comida',
-    icon: 'bag-handle-outline',
-    color: COLORS.accent,
-  },
-  {
-    label: 'Transporte',
-    icon: 'car-outline',
-    color: COLORS.blue,
-  },
-  {
-    label: 'Supermercado',
-    icon: 'cart-outline',
-    color: COLORS.orange,
-  },
-  {
-    label: 'Servicios',
-    icon: 'flash-outline',
-    color: COLORS.purple,
-  },
-  {
-    label: 'Salud',
-    icon: 'heart-outline',
-    color: COLORS.pink,
-  },
-  {
-    label: 'Educación',
-    icon: 'book-outline',
-    color: COLORS.blue,
-  },
-  {
-    label: 'Entretenimiento',
-    icon: 'play-circle-outline',
-    color: COLORS.orange,
-  },
-  {
-    label: 'Ropa',
-    icon: 'shirt-outline',
-    color: COLORS.pink,
-  },
-  {
-    label: 'Tecnología',
-    icon: 'hardware-chip-outline',
-    color: COLORS.blue,
-  },
-  {
-    label: 'Otros',
-    icon: 'grid-outline',
-    color: COLORS.textMuted,
-  },
-];
-
-const INCOME_CATEGORIES = [
-  {
-    label: 'Salario',
-    icon: 'briefcase-outline',
-    color: COLORS.accent,
-  },
-  {
-    label: 'Freelance',
-    icon: 'laptop-outline',
-    color: COLORS.blue,
-  },
-  {
-    label: 'Inversiones',
-    icon: 'trending-up-outline',
-    color: COLORS.purple,
-  },
-  {
-    label: 'Ventas',
-    icon: 'storefront-outline',
-    color: COLORS.orange,
-  },
-  {
-    label: 'Regalos',
-    icon: 'gift-outline',
-    color: COLORS.pink,
-  },
-  {
-    label: 'Reembolsos',
-    icon: 'return-down-back-outline',
-    color: COLORS.yellow,
-  },
-  {
-    label: 'Otros',
-    icon: 'grid-outline',
-    color: COLORS.textMuted,
-  },
-];
+function getIncomeCategories(COLORS) {
+  return [
+    {
+      label: 'Salario',
+      icon: 'briefcase-outline',
+      color: COLORS.accent,
+    },
+    {
+      label: 'Freelance',
+      icon: 'laptop-outline',
+      color: COLORS.blue,
+    },
+    {
+      label: 'Inversiones',
+      icon: 'trending-up-outline',
+      color: COLORS.purple,
+    },
+    {
+      label: 'Ventas',
+      icon: 'storefront-outline',
+      color: COLORS.orange,
+    },
+    {
+      label: 'Regalos',
+      icon: 'gift-outline',
+      color: COLORS.pink,
+    },
+    {
+      label: 'Reembolsos',
+      icon: 'return-down-back-outline',
+      color: COLORS.yellow,
+    },
+    {
+      label: 'Otros',
+      icon: 'grid-outline',
+      color: COLORS.textMuted,
+    },
+  ];
+}
 
 const EXPENSE_METHODS = [
   {
@@ -204,7 +187,7 @@ const INCOME_METHODS = [
 function AppIcon({
   name,
   size = 20,
-  color = COLORS.textSecondary,
+  color = '#9CA3AF',
 }) {
   return (
     <Ionicons
@@ -219,6 +202,7 @@ function FormField({
   label,
   error,
   children,
+  styles,
 }) {
   return (
     <View style={styles.fieldGroup}>
@@ -237,7 +221,10 @@ function FormField({
   );
 }
 
-function getScreenConfig(type) {
+function getScreenConfig(
+  type,
+  COLORS
+) {
   if (type === 'income') {
     return {
       title: 'Nuevo ingreso',
@@ -246,51 +233,60 @@ function getScreenConfig(type) {
         'Ej: Sueldo, venta, trabajo freelance...',
       descriptionFallback:
         'Ingreso sin descripción',
-      categoryLabel: 'Categoría del ingreso *',
+      categoryLabel:
+        'Categoría del ingreso *',
       categoryPlaceholder:
         'Seleccioná una categoría',
-      methodLabel: 'Medio de recepción',
+      methodLabel:
+        'Medio de recepción',
       methodPlaceholder:
         'Transferencia bancaria',
       notePlaceholder:
         'Agregá una nota sobre el ingreso...',
       saveButton: 'Guardar ingreso',
-      savingText: 'Guardando ingreso...',
-      successTitle: 'Ingreso registrado',
+      savingText:
+        'Guardando ingreso...',
+      successTitle:
+        'Ingreso registrado',
       successMessage:
         'El ingreso se guardó correctamente.',
       accentColor: COLORS.accent,
       amountBorder:
         'rgba(74,222,128,0.22)',
-      categories: INCOME_CATEGORIES,
+      categories:
+        getIncomeCategories(COLORS),
       methods: INCOME_METHODS,
     };
   }
 
   return {
     title: 'Nuevo gasto',
-    amountQuestion: '¿Cuánto gastaste?',
+    amountQuestion:
+      '¿Cuánto gastaste?',
     descriptionPlaceholder:
       "Ej: McDonald's, Uber, Netflix...",
     descriptionFallback:
       'Gasto sin descripción',
-    categoryLabel: 'Categoría del gasto *',
+    categoryLabel:
+      'Categoría del gasto *',
     categoryPlaceholder:
       'Seleccioná una categoría',
     methodLabel: 'Método de pago',
-    methodPlaceholder:
-      'Efectivo',
+    methodPlaceholder: 'Efectivo',
     notePlaceholder:
       'Agregá una nota sobre el gasto...',
     saveButton: 'Guardar gasto',
-    savingText: 'Guardando gasto...',
-    successTitle: 'Gasto registrado',
+    savingText:
+      'Guardando gasto...',
+    successTitle:
+      'Gasto registrado',
     successMessage:
       'El gasto se guardó correctamente.',
     accentColor: COLORS.accent,
     amountBorder:
       'rgba(248,113,113,0.20)',
-    categories: EXPENSE_CATEGORIES,
+    categories:
+      getExpenseCategories(COLORS),
     methods: EXPENSE_METHODS,
   };
 }
@@ -300,13 +296,30 @@ export default function AddTransactionScreen({
   route,
   type: typeProp,
 }) {
+
+  const {
+    colors: COLORS,
+    isDark,
+  } = useTheme();
+
+  const styles = useMemo(
+    () => createStyles(COLORS),
+    [COLORS]
+  );
+
   const transactionType =
     route?.params?.type ||
     typeProp ||
     'expense';
 
-  const config =
-    getScreenConfig(transactionType);
+  const config = useMemo(
+  () =>
+    getScreenConfig(
+      transactionType,
+      COLORS
+    ),
+  [transactionType, COLORS]
+);
 
   const now = new Date();
 
@@ -605,7 +618,11 @@ export default function AddTransactionScreen({
       keyboardVerticalOffset={0}
     >
       <StatusBar
-        barStyle="light-content"
+        barStyle={
+          isDark
+            ? 'light-content'
+            : 'dark-content'
+        }
         backgroundColor={COLORS.bg}
       />
 
@@ -699,6 +716,7 @@ export default function AddTransactionScreen({
         </View>
 
         <FormField
+          styles={styles}
           label="Descripción"
           error=""
         >
@@ -725,6 +743,7 @@ export default function AddTransactionScreen({
         </FormField>
 
         <FormField
+          styles={styles}
           label={config.categoryLabel}
           error={categoryError}
         >
@@ -784,6 +803,7 @@ export default function AddTransactionScreen({
         </FormField>
 
         <FormField
+          styles={styles}
           label={config.methodLabel}
           error=""
         >
@@ -992,6 +1012,7 @@ export default function AddTransactionScreen({
           )}
 
         <FormField
+          styles={styles}
           label="Nota (opcional)"
           error=""
         >
@@ -1311,7 +1332,8 @@ export default function AddTransactionScreen({
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(COLORS) {
+  return StyleSheet.create({
   flex: {
     flex: 1,
     backgroundColor: COLORS.bg,
@@ -1655,4 +1677,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.textSecondary,
   },
-});
+  });
+}

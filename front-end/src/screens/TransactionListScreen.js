@@ -23,6 +23,7 @@ import {
 
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTheme } from '../context/ThemeContext';
 
 import {
   getTransactions,
@@ -36,102 +37,88 @@ import {
   formatMoney,
 } from '../utils/currency';
 
-const COLORS = {
-  bg: '#0D0F14',
-  surface: '#161A23',
-  surfaceHigh: '#1E2330',
-  border: '#272D3D',
-  accent: '#4ADE80',
-  accentDim: '#1A3D28',
-  textPrimary: '#F0F2F7',
-  textSecondary: '#9CA3AF',
-  textMuted: '#6B748A',
-  red: '#F87171',
-  blue: '#60A5FA',
-  orange: '#FB923C',
-  purple: '#C084FC',
-  pink: '#F472B4',
-  yellow: '#FACC15',
-};
+function getExpenseCategoryIcons(COLORS) {
+  return {
+    Comida: {
+      icon: 'bag-handle-outline',
+      color: COLORS.accent,
+    },
+    Transporte: {
+      icon: 'car-outline',
+      color: COLORS.blue,
+    },
+    Supermercado: {
+      icon: 'cart-outline',
+      color: COLORS.orange,
+    },
+    Servicios: {
+      icon: 'flash-outline',
+      color: COLORS.purple,
+    },
+    Salud: {
+      icon: 'heart-outline',
+      color: COLORS.pink,
+    },
+    Educación: {
+      icon: 'book-outline',
+      color: COLORS.blue,
+    },
+    Entretenimiento: {
+      icon: 'play-circle-outline',
+      color: COLORS.orange,
+    },
+    Ropa: {
+      icon: 'shirt-outline',
+      color: COLORS.pink,
+    },
+    Tecnología: {
+      icon: 'hardware-chip-outline',
+      color: COLORS.blue,
+    },
+    Otros: {
+      icon: 'grid-outline',
+      color: COLORS.textMuted,
+    },
+  };
+}
 
-const EXPENSE_CATEGORY_ICONS = {
-  Comida: {
-    icon: 'bag-handle-outline',
-    color: COLORS.accent,
-  },
-  Transporte: {
-    icon: 'car-outline',
-    color: COLORS.blue,
-  },
-  Supermercado: {
-    icon: 'cart-outline',
-    color: COLORS.orange,
-  },
-  Servicios: {
-    icon: 'flash-outline',
-    color: COLORS.purple,
-  },
-  Salud: {
-    icon: 'heart-outline',
-    color: COLORS.pink,
-  },
-  Educación: {
-    icon: 'book-outline',
-    color: COLORS.blue,
-  },
-  Entretenimiento: {
-    icon: 'play-circle-outline',
-    color: COLORS.orange,
-  },
-  Ropa: {
-    icon: 'shirt-outline',
-    color: COLORS.pink,
-  },
-  Tecnología: {
-    icon: 'hardware-chip-outline',
-    color: COLORS.blue,
-  },
-  Otros: {
-    icon: 'grid-outline',
-    color: COLORS.textMuted,
-  },
-};
-
-const INCOME_CATEGORY_ICONS = {
-  Salario: {
-    icon: 'briefcase-outline',
-    color: COLORS.accent,
-  },
-  Freelance: {
-    icon: 'laptop-outline',
-    color: COLORS.blue,
-  },
-  Inversiones: {
-    icon: 'trending-up-outline',
-    color: COLORS.purple,
-  },
-  Ventas: {
-    icon: 'storefront-outline',
-    color: COLORS.orange,
-  },
-  Regalos: {
-    icon: 'gift-outline',
-    color: COLORS.pink,
-  },
-  Reembolsos: {
-    icon: 'return-down-back-outline',
-    color: COLORS.yellow,
-  },
-  Otros: {
-    icon: 'grid-outline',
-    color: COLORS.textMuted,
-  },
-};
+function getIncomeCategoryIcons(COLORS) {
+  return {
+    Salario: {
+      icon: 'briefcase-outline',
+      color: COLORS.accent,
+    },
+    Freelance: {
+      icon: 'laptop-outline',
+      color: COLORS.blue,
+    },
+    Inversiones: {
+      icon: 'trending-up-outline',
+      color: COLORS.purple,
+    },
+    Ventas: {
+      icon: 'storefront-outline',
+      color: COLORS.orange,
+    },
+    Regalos: {
+      icon: 'gift-outline',
+      color: COLORS.pink,
+    },
+    Reembolsos: {
+      icon: 'return-down-back-outline',
+      color: COLORS.yellow,
+    },
+    Otros: {
+      icon: 'grid-outline',
+      color: COLORS.textMuted,
+    },
+  };
+}
 
 function AppIcon({
   name,
   size = 20,
-  color = COLORS.textSecondary,
+  color = '#9CA3AF',
 }) {
   return (
     <Ionicons
@@ -189,7 +176,7 @@ function formatDate(dateString) {
   })}, ${time}`;
 }
 
-function getScreenConfig(type) {
+function getScreenConfig(type, COLORS) {
   if (type === 'income') {
     return {
       title: 'Ingresos',
@@ -205,7 +192,7 @@ function getScreenConfig(type) {
       amountColor: COLORS.accent,
       amountPrefix: '+',
       mainIcon: 'cash-outline',
-      categories: INCOME_CATEGORY_ICONS,
+      categories: getIncomeCategoryIcons(COLORS),
     };
   }
 
@@ -223,13 +210,15 @@ function getScreenConfig(type) {
     amountColor: COLORS.red,
     amountPrefix: '-',
     mainIcon: 'receipt-outline',
-    categories: EXPENSE_CATEGORY_ICONS,
+    categories: getExpenseCategoryIcons(COLORS),
   };
 }
 
 function EmptyState({
   config,
   onAdd,
+  styles,
+  COLORS,
 }) {
   return (
     <View style={styles.emptyWrapper}>
@@ -275,15 +264,30 @@ export default function TransactionListScreen({
   route,
   type: typeProp,
 }) {
+
+  const {
+    colors: COLORS,
+    isDark,
+  } = useTheme();
+
+  const styles = useMemo(
+    () => createStyles(COLORS),
+    [COLORS]
+  );
+
   const transactionType =
     route?.params?.type ||
     typeProp ||
     'expense';
 
-  const config = useMemo(
-    () => getScreenConfig(transactionType),
-    [transactionType]
-  );
+ const config = useMemo(
+  () =>
+    getScreenConfig(
+      transactionType,
+      COLORS
+    ),
+  [transactionType, COLORS]
+);
 
   const [transactions, setTransactions] = useState([]);
   const [currency, setCurrency] = useState(
@@ -413,33 +417,34 @@ const onRefresh = async () => {
     }
   };
 
-const filteredTransactions = transactions.filter((transaction) => {
-  const search = searchText.toLowerCase().trim();
+const filteredTransactions = transactions.filter(
+  (transaction) => {
+    const search =
+      searchText.toLowerCase().trim();
 
-  const description = (
-    transaction.description || ''
-  ).toLowerCase();
+    if (!search) {
+      return true;
+    }
 
-  const category = (
-    transaction.category || 'Otros'
-  ).toLowerCase();
+    const description = (
+      transaction.description || ''
+    ).toLowerCase();
 
-  const amount = String(
-    transaction.amount || ''
-  );
+    const category = (
+      transaction.category || 'Otros'
+    ).toLowerCase();
 
-  const matchesSearch =
-    !search ||
-    description.includes(search) ||
-    category.includes(search) ||
-    amount.includes(search);
+    const amount = String(
+      transaction.amount || ''
+    );
 
-      return (
-        description.includes(search) ||
-        category.includes(search) ||
-        amount.includes(search)
-      );
-});
+    return (
+      description.includes(search) ||
+      category.includes(search) ||
+      amount.includes(search)
+    );
+  }
+);
 
 const sortedTransactions = [...filteredTransactions].sort(
   (first, second) => {
@@ -508,7 +513,11 @@ const categoryTotals =
   return (
     <View style={styles.flex}>
       <StatusBar
-        barStyle="light-content"
+        barStyle={
+          isDark
+            ? 'light-content'
+            : 'dark-content'
+        }
         backgroundColor={COLORS.bg}
       />
 
@@ -673,10 +682,7 @@ const categoryTotals =
             style={[
               styles.summaryAmount,
               {
-                color:
-                  transactionType === 'income'
-                    ? COLORS.accent
-                    : COLORS.textPrimary,
+                color: COLORS.textPrimary,
               },
             ]}
           >
@@ -806,6 +812,8 @@ const categoryTotals =
           <EmptyState
             config={config}
             onAdd={goToAddTransaction}
+            styles={styles}
+            COLORS={COLORS}
           />
         ) : sortedTransactions.length === 0 ? (
           <View style={styles.noResultsContainer}>
@@ -923,13 +931,7 @@ const categoryTotals =
                     }
                   >
                     <Text
-                      style={[
-                        styles.transactionAmount,
-                        {
-                          color:
-                            config.amountColor,
-                        },
-                      ]}
+                      style={styles.transactionAmount}
                     >
                       {config.amountPrefix}
                       {formatMoney(
@@ -1076,7 +1078,8 @@ const categoryTotals =
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(COLORS) {
+  return StyleSheet.create({
   flex: {
     flex: 1,
     backgroundColor: COLORS.bg,
@@ -1267,6 +1270,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 3,
+    color: COLORS.textPrimary,
   },
 
   transactionCategory: {
@@ -1359,7 +1363,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(22,26,35,0.97)',
+    backgroundColor: COLORS.surface,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     flexDirection: 'row',
@@ -1506,4 +1510,5 @@ sortButtonText: {
   fontSize: 13,
   fontWeight: '600',
 },
-});
+  });
+}

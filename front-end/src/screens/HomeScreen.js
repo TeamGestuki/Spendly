@@ -3,7 +3,7 @@
  * Pantalla principal de Spendly con datos reales.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, {useState, useCallback, useMemo,} from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import {
 
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTheme } from '../context/ThemeContext';
 
 import { getCurrentUser } from '../services/authService';
 import { getTransactions } from '../services/transactionService';
@@ -27,41 +28,59 @@ import {
   formatMoney,
 } from '../utils/currency';
 
-const COLORS = {
-  bg: '#0D0F14',
-  surface: '#161A23',
-  surfaceHigh: '#1E2330',
-  border: '#272D3D',
-  accent: '#4ADE80',
-  accentDim: '#1A3D28',
-  textPrimary: '#F0F2F7',
-  textSecondary: '#9CA3AF',
-  textMuted: '#6B748A',
-  red: '#F87171',
-  blue: '#60A5FA',
-  orange: '#FB923C',
-  pink: '#F472B4',
-  purple: '#C084FC',
-  slate: '#94A3B8',
-};
-
 const API_BASE_URL =
   'https://spendly-production-1793.up.railway.app';
 
-const CATEGORY_ICONS = {
-  Comida: { icon: 'bag-handle-outline', color: COLORS.accent },
-  Transporte: { icon: 'car-outline', color: COLORS.blue },
-  Supermercado: { icon: 'cart-outline', color: COLORS.orange },
-  Servicios: { icon: 'flash-outline', color: COLORS.purple },
-  Salud: { icon: 'heart-outline', color: COLORS.pink },
-  Educación: { icon: 'book-outline', color: COLORS.blue },
-  Entretenimiento: { icon: 'play-circle-outline', color: COLORS.orange },
-  Ropa: { icon: 'shirt-outline', color: COLORS.pink },
-  Tecnología: { icon: 'hardware-chip-outline', color: COLORS.blue },
-  Otros: { icon: 'grid-outline', color: COLORS.slate },
-};
+function getCategoryIcons(COLORS) {
+  return {
+    Comida: {
+      icon: 'bag-handle-outline',
+      color: COLORS.accent,
+    },
+    Transporte: {
+      icon: 'car-outline',
+      color: COLORS.blue,
+    },
+    Supermercado: {
+      icon: 'cart-outline',
+      color: COLORS.orange,
+    },
+    Servicios: {
+      icon: 'flash-outline',
+      color: COLORS.purple,
+    },
+    Salud: {
+      icon: 'heart-outline',
+      color: COLORS.pink,
+    },
+    Educación: {
+      icon: 'book-outline',
+      color: COLORS.blue,
+    },
+    Entretenimiento: {
+      icon: 'play-circle-outline',
+      color: COLORS.orange,
+    },
+    Ropa: {
+      icon: 'shirt-outline',
+      color: COLORS.pink,
+    },
+    Tecnología: {
+      icon: 'hardware-chip-outline',
+      color: COLORS.blue,
+    },
+    Otros: {
+      icon: 'grid-outline',
+      color: COLORS.slate,
+    },
+  };
+}
 
-function AppIcon({ name, size = 20, color = COLORS.textSecondary }) {
+function AppIcon({
+  name,
+  size = 20,
+  color = '#9CA3AF',
+}) {
   return <Ionicons name={name} size={size} color={color} />;
 }
 
@@ -78,8 +97,17 @@ function getAvatarUrl(url) {
   return `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
 }
 
-function getCategoryMeta(category) {
-  return CATEGORY_ICONS[category] || CATEGORY_ICONS.Otros;
+function getCategoryMeta(
+  category,
+  COLORS
+) {
+  const CATEGORY_ICONS =
+    getCategoryIcons(COLORS);
+
+  return (
+    CATEGORY_ICONS[category] ||
+    CATEGORY_ICONS.Otros
+  );
 }
 
 function isSameMonth(dateString, targetDate) {
@@ -124,7 +152,7 @@ function formatDate(isoString) {
   });
 }
 
-function ProgressBar({ percent, color }) {
+function ProgressBar({percent, color, styles, }) {
   return (
     <View style={styles.progressTrack}>
       <View
@@ -140,7 +168,7 @@ function ProgressBar({ percent, color }) {
   );
 }
 
-function EmptyBlock({ icon, title, text, actionText, onPress }) {
+function EmptyBlock({icon, title, text, actionText, onPress, styles, COLORS, }) {
   return (
     <View style={styles.emptyCard}>
       <View style={styles.emptyIcon}>
@@ -164,6 +192,15 @@ function EmptyBlock({ icon, title, text, actionText, onPress }) {
 }
 
 export default function HomeScreen({ navigation }) {
+  const {
+  colors: COLORS,
+  isDark,
+} = useTheme();
+
+const styles = useMemo(
+  () => createStyles(COLORS),
+  [COLORS]
+);
   const [user, setUser] = useState({
     full_name: 'Usuario',
     email: '',
@@ -252,7 +289,7 @@ const now = new Date();
       name,
       amount,
       percent: totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0,
-      ...getCategoryMeta(name),
+      ...getCategoryMeta(name, COLORS),
     }))
     .sort((a, b) => b.amount - a.amount);
 
@@ -264,7 +301,14 @@ const now = new Date();
 
   return (
     <View style={styles.flex}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+      <StatusBar
+        barStyle={
+          isDark
+            ? 'light-content'
+            : 'dark-content'
+        }
+        backgroundColor={COLORS.bg}
+      />
 
       <ScrollView
         style={styles.flex}
@@ -462,37 +506,6 @@ const now = new Date();
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity
-                style={styles.iaBanner}
-                activeOpacity={0.85}
-                onPress={() => navigation.navigate('Scan')}
-              >
-                
-              <View style={styles.iaLeft}>
-                <View style={styles.iaIconWrapper}>
-                  <AppIcon
-                    name="sparkles"
-                    size={20}
-                    color={COLORS.accent}
-                  />
-                </View>
-
-                <View style={styles.iaTextBlock}>
-                  <Text style={styles.iaTitle}>Escaneá un ticket</Text>
-                  <Text style={styles.iaDesc}>
-                    Sacá una foto y obtenemos automáticamente monto,
-                    categoría y descripción.
-                  </Text>
-                </View>
-              </View>
-
-              <AppIcon
-                name="chevron-forward"
-                size={22}
-                color={COLORS.accent}
-              />
-            </TouchableOpacity>
-
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>Resumen del Mes</Text>
@@ -558,6 +571,8 @@ const now = new Date();
 
             {recentExpenses.length === 0 ? (
               <EmptyBlock
+                styles={styles}
+                COLORS={COLORS}
                 icon="receipt-outline"
                 title="Todavía no hay gastos"
                 text="Cuando cargues tus primeros gastos, van a aparecer acá."
@@ -566,7 +581,11 @@ const now = new Date();
               />
             ) : (
               recentExpenses.map((expense) => {
-                const meta = getCategoryMeta(expense.category);
+                const meta =
+                  getCategoryMeta(
+                    expense.category,
+                    COLORS
+                  );
 
                 return (
                   <TouchableOpacity
@@ -623,7 +642,9 @@ const now = new Date();
 
             {categories.length === 0 ? (
               <EmptyBlock
-                icon="pie-chart-outline"
+                styles={styles}
+                COLORS={COLORS}
+                icon="receipt-outline"
                 title="Sin categorías todavía"
                 text="No gastaste en ninguna categoría durante este mes."
               />
@@ -661,7 +682,11 @@ const now = new Date();
                     </Text>
                   </View>
 
-                  <ProgressBar percent={cat.percent} color={cat.color} />
+                  <ProgressBar
+                    percent={cat.percent}
+                    color={cat.color}
+                    styles={styles}
+                  />
                 </View>
               ))
             )}
@@ -729,7 +754,8 @@ const now = new Date();
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(COLORS) {
+  return StyleSheet.create({
   flex: { flex: 1, backgroundColor: COLORS.bg },
   scrollContent: { paddingHorizontal: 20, paddingTop: 56 },
   header: {
@@ -1048,7 +1074,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(22,26,35,0.97)',
+    backgroundColor: COLORS.surface,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     flexDirection: 'row',
@@ -1070,4 +1096,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: -28,
   },
-});
+  });
+}

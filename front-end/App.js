@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { LanguageProvider, } from './src/context/LanguageContext';
 
 import { ThemeProvider } from './src/context/ThemeContext';
 
@@ -30,6 +31,7 @@ import StatsScreen from './src/screens/StatsScreen';
 import GoalsScreen from './src/screens/GoalsScreen';
 import ScanScreen from './src/screens/ScanScreen';
 import ThemeSettingsScreen from './src/screens/ThemeSettingsScreen';
+import AboutSpendlyScreen from './src/screens/AboutSpendlyScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -117,6 +119,7 @@ export default function App() {
 
   return (
     <ThemeProvider>
+       <LanguageProvider>
       <NavigationContainer>
         <Stack.Navigator
           initialRouteName={initialRoute}
@@ -257,16 +260,12 @@ export default function App() {
 
           <Stack.Screen
             name="CurrencySettings"
-            component={
-              CurrencySettingsScreen
-            }
+            component={CurrencySettingsScreen}
           />
 
           <Stack.Screen
             name="LanguageSettings"
-            component={
-              LanguageSettingsScreen
-            }
+            component={LanguageSettingsScreen}
           />
 
           <Stack.Screen
@@ -296,10 +295,11 @@ export default function App() {
 
           <Stack.Screen
             name="AboutSpendly"
-            component={HomeScreen}
+            component={AboutSpendlyScreen}
           />
         </Stack.Navigator>
       </NavigationContainer>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

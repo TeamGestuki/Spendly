@@ -422,7 +422,7 @@ export default function ProfileScreen({ navigation }) {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Datos y privacidad</Text>
+        <Text style={styles.sectionTitle}>Datos</Text>
         <View style={styles.card}>
           <SettingItem
             icon="download-outline"
@@ -430,22 +430,6 @@ export default function ProfileScreen({ navigation }) {
             label="Exportar datos"
             value="Descargar gastos, ingresos y reportes"
             onPress={() => navigation.navigate('ExportData')}
-          />
-
-          <SettingItem
-            icon="eye-off-outline"
-            iconColor={COLORS.blue}
-            label="Privacidad"
-            value="Control de datos personales"
-            onPress={() => navigation.navigate('Privacy')}
-          />
-
-          <SettingItem
-            icon="document-text-outline"
-            iconColor={COLORS.purple}
-            label="Términos y condiciones"
-            value="Condiciones de uso de Spendly"
-            onPress={() => navigation.navigate('Terms')}
             isLast
           />
         </View>
@@ -472,7 +456,7 @@ export default function ProfileScreen({ navigation }) {
             icon="information-circle-outline"
             iconColor={COLORS.purple}
             label="Acerca de Spendly"
-            value="Versión 1.0.0"
+            value="Versión 1.0.8"
             onPress={() => navigation.navigate('AboutSpendly')}
             isLast
           />

@@ -1,4 +1,8 @@
-import React, { useCallback, useState } from 'react';
+import React, {
+  useCallback,
+  useMemo,
+  useState,
+} from 'react';
 import {
   View,
   Text,
@@ -11,6 +15,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTheme } from '../context/ThemeContext';
 
 import { getTransactions } from '../services/transactionService';
 import { getCurrentUser } from '../services/authService';
@@ -19,36 +24,56 @@ import {
   formatMoney,
 } from '../utils/currency';
 
-const COLORS = {
-  bg: '#0D0F14',
-  surface: '#161A23',
-  surfaceHigh: '#1E2330',
-  border: '#272D3D',
-  accent: '#4ADE80',
-  accentDim: '#1A3D28',
-  textPrimary: '#F0F2F7',
-  textSecondary: '#9CA3AF',
-  textMuted: '#6B748A',
-  red: '#F87171',
-  blue: '#60A5FA',
-  orange: '#FB923C',
-  purple: '#C084FC',
-};
+function getCategoryIcons(COLORS) {
+  return {
+    Comida: {
+      icon: 'bag-handle-outline',
+      color: COLORS.accent,
+    },
+    Transporte: {
+      icon: 'car-outline',
+      color: COLORS.blue,
+    },
+    Supermercado: {
+      icon: 'cart-outline',
+      color: COLORS.orange,
+    },
+    Servicios: {
+      icon: 'flash-outline',
+      color: COLORS.purple,
+    },
+    Salud: {
+      icon: 'heart-outline',
+      color: COLORS.pink,
+    },
+    Educación: {
+      icon: 'book-outline',
+      color: COLORS.blue,
+    },
+    Entretenimiento: {
+      icon: 'play-circle-outline',
+      color: COLORS.orange,
+    },
+    Ropa: {
+      icon: 'shirt-outline',
+      color: COLORS.pink,
+    },
+    Tecnología: {
+      icon: 'hardware-chip-outline',
+      color: COLORS.blue,
+    },
+    Otros: {
+      icon: 'grid-outline',
+      color: COLORS.textMuted,
+    },
+  };
+}
 
-const CATEGORY_ICONS = {
-  Comida: { icon: 'bag-handle-outline', color: COLORS.accent },
-  Transporte: { icon: 'car-outline', color: COLORS.blue },
-  Supermercado: { icon: 'cart-outline', color: COLORS.orange },
-  Servicios: { icon: 'flash-outline', color: COLORS.purple },
-  Salud: { icon: 'heart-outline', color: '#F472B4' },
-  Educación: { icon: 'book-outline', color: COLORS.blue },
-  Entretenimiento: { icon: 'play-circle-outline', color: COLORS.orange },
-  Ropa: { icon: 'shirt-outline', color: '#F472B4' },
-  Tecnología: { icon: 'hardware-chip-outline', color: COLORS.blue },
-  Otros: { icon: 'grid-outline', color: COLORS.textMuted },
-};
-
-function AppIcon({ name, size = 20, color = COLORS.textSecondary }) {
+function AppIcon({
+  name,
+  size = 20,
+  color = '#9CA3AF',
+}) {
   return <Ionicons name={name} size={size} color={color} />;
 }
 
@@ -74,11 +99,27 @@ function getMonthName(date) {
   });
 }
 
-function getCategoryMeta(category) {
-  return CATEGORY_ICONS[category] || CATEGORY_ICONS.Otros;
+function getCategoryMeta(
+  category,
+  COLORS
+) {
+  const categoryIcons =
+    getCategoryIcons(COLORS);
+
+  return (
+    categoryIcons[category] ||
+    categoryIcons.Otros
+  );
 }
 
-function StatCard({ icon, iconColor, label, value, sub }) {
+function StatCard({
+  icon,
+  iconColor,
+  label,
+  value,
+  sub,
+  styles,
+}) {
   return (
     <View style={styles.statCard}>
       <View style={[styles.statIcon, { backgroundColor: `${iconColor}18` }]}>
@@ -94,6 +135,16 @@ function StatCard({ icon, iconColor, label, value, sub }) {
 }
 
 export default function StatsScreen({ navigation }) {
+
+  const {
+    colors: COLORS,
+    isDark,
+  } = useTheme();
+
+  const styles = useMemo(
+    () => createStyles(COLORS),
+    [COLORS]
+  );
   const [expenses, setExpenses] = useState([]);
   const [currency, setCurrency] = useState(getCurrencyByCode('ARS'));
   const [loading, setLoading] = useState(true);
@@ -192,7 +243,14 @@ export default function StatsScreen({ navigation }) {
 
   return (
     <View style={styles.flex}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+      <StatusBar
+        barStyle={
+          isDark
+            ? 'light-content'
+            : 'dark-content'
+        }
+        backgroundColor={COLORS.bg}
+      />
 
       <ScrollView
         style={styles.flex}
@@ -268,6 +326,7 @@ export default function StatsScreen({ navigation }) {
 
             <View style={styles.statsGrid}>
               <StatCard
+                styles={styles}
                 icon="receipt-outline"
                 iconColor={COLORS.accent}
                 label="Gastos"
@@ -276,6 +335,7 @@ export default function StatsScreen({ navigation }) {
               />
 
               <StatCard
+                styles={styles}
                 icon="calculator-outline"
                 iconColor={COLORS.blue}
                 label="Promedio"
@@ -284,6 +344,7 @@ export default function StatsScreen({ navigation }) {
               />
 
               <StatCard
+                styles={styles}
                 icon={
                   topCategory
                     ? getCategoryMeta(topCategory.category).icon
@@ -304,6 +365,7 @@ export default function StatsScreen({ navigation }) {
               />
 
               <StatCard
+                styles={styles}
                 icon="calendar-outline"
                 iconColor={COLORS.orange}
                 label="Mes anterior"
@@ -329,7 +391,10 @@ export default function StatsScreen({ navigation }) {
             ) : (
               <View style={styles.card}>
                 {topCategories.map((item, index) => {
-                  const meta = getCategoryMeta(item.category);
+                  const meta = getCategoryMeta(
+                    item.category,
+                    COLORS
+                  );
 
                   return (
                     <View
@@ -393,7 +458,10 @@ export default function StatsScreen({ navigation }) {
             ) : (
               <View style={styles.card}>
                 {recentExpenses.map((expense, index) => {
-                  const meta = getCategoryMeta(expense.category);
+                  const meta = getCategoryMeta(
+                    expense.category,
+                    COLORS
+                  );
 
                   return (
                     <View
@@ -494,7 +562,8 @@ export default function StatsScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(COLORS) {
+  return StyleSheet.create({
   flex: {
     flex: 1,
     backgroundColor: COLORS.bg,
@@ -757,7 +826,7 @@ const styles = StyleSheet.create({
   recentAmount: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.red,
+    color: COLORS.textPrimary,
   },
 
   emptyCard: {
@@ -800,7 +869,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(22,26,35,0.97)',
+    backgroundColor: COLORS.surface,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     flexDirection: 'row',
@@ -845,4 +914,5 @@ const styles = StyleSheet.create({
     elevation: 8,
     marginTop: -28,
   },
-});
+  });
+}

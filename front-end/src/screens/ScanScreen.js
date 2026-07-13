@@ -1,4 +1,8 @@
-import React, { useState } from 'react';
+import React, {
+  useMemo,
+  useState,
+} from 'react';
+
 import {
   View,
   Text,
@@ -14,24 +18,21 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 
 import { Ionicons } from '@expo/vector-icons';
-
-const COLORS = {
-  bg: '#0D0F14',
-  surface: '#161A23',
-  surfaceHigh: '#1E2330',
-  border: '#272D3D',
-  accent: '#4ADE80',
-  accentSoft: '#173326',
-  textPrimary: '#F0F2F7',
-  textSecondary: '#9CA3AF',
-  textMuted: '#6B748A',
-  danger: '#EF4444',
-};
+import { useTheme } from '../context/ThemeContext';
 
 const API_BASE_URL =
   'https://spendly-production-1793.up.railway.app';
 
 export default function ScanScreen({ navigation }) {
+    const {
+    colors: COLORS,
+    isDark,
+  } = useTheme();
+
+  const styles = useMemo(
+    () => createStyles(COLORS),
+    [COLORS]
+  );
   const [image, setImage] = useState(null);
 
   const [loading, setLoading] = useState(false);
@@ -143,7 +144,11 @@ export default function ScanScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <StatusBar
-        barStyle="light-content"
+        barStyle={
+          isDark
+            ? 'light-content'
+            : 'dark-content'
+        }
         backgroundColor={COLORS.bg}
       />
 
@@ -171,8 +176,7 @@ export default function ScanScreen({ navigation }) {
         </Text>
 
         <Text style={styles.subtitle}>
-          Sacá una foto o elegí una imagen
-          para que la IA detecte el gasto.
+          Sacá una foto o elegí una imagen de tu ticket o comprobante de compra para poder extraer sus datos.
         </Text>
 
         <View style={styles.actions}>
@@ -245,21 +249,25 @@ export default function ScanScreen({ navigation }) {
             </Text>
 
             <Info
+              styles={styles}
               label="Monto"
               value={`${result.currency} ${result.amount}`}
             />
 
             <Info
+              styles={styles}
               label="Categoría"
               value={result.category}
             />
 
             <Info
+              styles={styles}
               label="Descripción"
               value={result.description}
             />
 
             <Info
+              styles={styles}
               label="Fecha"
               value={result.date}
             />
@@ -282,7 +290,11 @@ export default function ScanScreen({ navigation }) {
   );
 }
 
-function Info({ label, value }) {
+function Info({
+  label,
+  value,
+  styles,
+}) {
   return (
     <View style={styles.infoRow}>
       <Text style={styles.infoLabel}>
@@ -296,7 +308,8 @@ function Info({ label, value }) {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(COLORS) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.bg,
@@ -427,4 +440,5 @@ backText: {
     color: COLORS.accent,
     fontWeight: '700',
   },
-});
+  });
+}

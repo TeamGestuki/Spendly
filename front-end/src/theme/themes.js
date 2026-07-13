@@ -6,6 +6,7 @@ export const lightTheme = {
 
   accent: '#22C55E',
   accentDim: '#DCFCE7',
+  accentSoft: '#DCFCE7',
 
   textPrimary: '#111827',
   textSecondary: '#4B5563',
@@ -29,6 +30,7 @@ export const darkTheme = {
 
   accent: '#4ADE80',
   accentDim: '#1A3D28',
+  accentSoft: '#173326',
 
   textPrimary: '#F0F2F7',
   textSecondary: '#9CA3AF',
