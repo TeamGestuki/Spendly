@@ -65,26 +65,42 @@ export default {
     activeAccount: '账户已激活',
 
     inactiveAccount: '账户未激活',
+
+    defaultUser: '用户',
+    verifyIdentity: '验证身份',
+    versionValue: '版本 1.0.8',
+    profilePhoto: '个人资料照片',
+    viewProfilePhoto: '查看个人资料照片',
+    updatePhoto: '更新照片',
+    addPhoto: '添加照片',
+    deletePhoto: '删除照片',
+
+  },
+
+  navigation: {
+    home: '首页',
+    transactions: '交易',
+    stats: '统计',
+    goals: '目标',
   },
 
   language: {
     title: '语言',
-
     subtitle: '选择应用程序语言',
-
     spanish: '西班牙语',
-
     english: '英语',
-
     portuguese: '葡萄牙语',
-
     russian: '俄语',
-
     chinese: '中文',
-
     french: '法语',
-
     german: '德语',
+
+    currentLanguage: '当前语言',
+    availableLanguages: '可用语言',
+    current: '当前',
+    saving: '正在保存语言...',
+    changeInfo:
+      '语言更改会立即应用于已完成翻译的页面。',
   },
 
   about: {

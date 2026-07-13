@@ -80,6 +80,23 @@ export default {
 
     inactiveAccount:
       'Konto inaktiv',
+
+    defaultUser: 'Benutzer',
+    verifyIdentity: 'Identität bestätigen',
+    versionValue: 'Version 1.0.8',
+    profilePhoto: 'Profilbild',
+    viewProfilePhoto: 'Profilbild ansehen',
+    updatePhoto: 'Foto aktualisieren',
+    addPhoto: 'Foto hinzufügen',
+    deletePhoto: 'Foto löschen',
+
+  },
+
+  navigation: {
+    home: 'Startseite',
+    transactions: 'Transaktionen',
+    stats: 'Statistiken',
+    goals: 'Ziele',
   },
 
   language: {
@@ -109,6 +126,13 @@ export default {
 
     german:
       'Deutsch',
+
+    currentLanguage: 'Aktuelle Sprache',
+    availableLanguages: 'Verfügbare Sprachen',
+    current: 'Aktuell',
+    saving: 'Sprache wird gespeichert...',
+    changeInfo:
+      'Die Änderung wird sofort auf bereits übersetzten Bildschirmen angewendet.',
   },
 
   about: {

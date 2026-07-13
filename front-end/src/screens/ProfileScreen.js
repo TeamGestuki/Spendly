@@ -15,7 +15,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
-  Switch,
   Modal,
   Image,
   ActivityIndicator,
@@ -25,10 +24,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getCurrencyByCode, setPreferredCurrency as savePreferredCurrency, } from '../utils/currency';
-import { getPreferredLanguage } from '../utils/language';
 import * as ImagePicker from 'expo-image-picker';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 import {
   getCurrentUser,
@@ -37,6 +36,26 @@ import {
 } from '../services/authService';
 
 const API_BASE_URL = 'https://spendly-production-1793.up.railway.app';
+
+const LANGUAGE_TRANSLATION_KEYS = {
+  es: 'spanish',
+  en: 'english',
+  pt: 'portuguese',
+  ru: 'russian',
+  zh: 'chinese',
+  fr: 'french',
+  de: 'german',
+};
+
+const LANGUAGE_FLAGS = {
+  es: '🇪🇸',
+  en: '🇺🇸',
+  pt: '🇧🇷',
+  ru: '🇷🇺',
+  zh: '🇨🇳',
+  fr: '🇫🇷',
+  de: '🇩🇪',
+};
 
 function AppIcon({
   name,
@@ -67,10 +86,14 @@ function getAvatarUrl(url) {
 
 export default function ProfileScreen({ navigation }) {
   const {
-      colors: COLORS,
-      isDark,
-    } = useTheme();
+    colors: COLORS,
+    isDark,
+  } = useTheme();
 
+  const {
+    language,
+    t,
+  } = useLanguage();
 
   const styles = useMemo(
     () => createStyles(COLORS),
@@ -139,11 +162,10 @@ export default function ProfileScreen({ navigation }) {
   const [loadingUser, setLoadingUser] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [preferredCurrency, setPreferredCurrency] = useState(null);
-  const [preferredLanguage, setPreferredLanguage] = useState(null);
 
   const [user, setUser] = useState({
     id: null,
-    full_name: 'Usuario',
+    full_name: '',
     email: '',
     profile_image_url: null,
     is_active: true,
@@ -170,12 +192,9 @@ export default function ProfileScreen({ navigation }) {
 
     await savePreferredCurrency(currency.code);
 
-    const language = await getPreferredLanguage();
-    setPreferredLanguage(language);
-
     setUser({
       id: data.id,
-      full_name: data.full_name || 'Usuario',
+      full_name: data.full_name || t('profile.defaultUser'),
       email: data.email || '',
       profile_image_url: data.profile_image_url || null,
       is_active: data.is_active,
@@ -193,8 +212,8 @@ export default function ProfileScreen({ navigation }) {
 
     if (biometricEnabled === 'true') {
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Verificar identidad',
-        cancelLabel: 'Cancelar',
+        promptMessage: t('profile.verifyIdentity'),
+        cancelLabel: t('common.cancel'),
         disableDeviceFallback: false,
       });
 
@@ -245,7 +264,7 @@ export default function ProfileScreen({ navigation }) {
 
         setUser({
           id: updatedUser.id,
-          full_name: updatedUser.full_name || 'Usuario',
+          full_name: updatedUser.full_name || t('profile.defaultUser'),
           email: updatedUser.email || '',
           profile_image_url: updatedUser.profile_image_url || null,
           is_active: updatedUser.is_active,
@@ -271,7 +290,7 @@ export default function ProfileScreen({ navigation }) {
 
       setUser({
         id: updatedUser.id,
-        full_name: updatedUser.full_name || 'Usuario',
+        full_name: updatedUser.full_name || t('profile.defaultUser'),
         email: updatedUser.email || '',
         profile_image_url: updatedUser.profile_image_url || null,
         is_active: updatedUser.is_active,
@@ -308,7 +327,7 @@ export default function ProfileScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Mi Perfil</Text>
+          <Text style={styles.headerTitle}>{t('profile.title')}</Text>
 
           <TouchableOpacity
             style={styles.iconBtn}
@@ -334,9 +353,9 @@ export default function ProfileScreen({ navigation }) {
 
             <View style={styles.avatarEditBadge}>
               {uploadingAvatar ? (
-                <ActivityIndicator size="small" color="#0D1A12" />
+                <ActivityIndicator size="small" color={COLORS.onAccent || COLORS.bg} />
               ) : (
-                <AppIcon name="camera-outline" size={13} color="#0D1A12" />
+                <AppIcon name="camera-outline" size={13} color={COLORS.onAccent || COLORS.bg} />
               )}
             </View>
           </TouchableOpacity>
@@ -351,51 +370,53 @@ export default function ProfileScreen({ navigation }) {
               <View style={styles.statusBadge}>
                 <View style={styles.statusDot} />
                 <Text style={styles.statusText}>
-                  {user.is_active ? 'Cuenta activa' : 'Cuenta inactiva'}
+                  {user.is_active
+                    ? t('profile.activeAccount')
+                    : t('profile.inactiveAccount')}
                 </Text>
               </View>
             </>
           )}
         </View>
 
-        <Text style={styles.sectionTitle}>Cuenta</Text>
+        <Text style={styles.sectionTitle}>{t('profile.account')}</Text>
         <View style={styles.card}>
           <SettingItem
             icon="person-outline"
             iconColor={COLORS.accent}
-            label="Editar datos personales"
-            value="Nombre, email y direcciones"
+            label={t('profile.editPersonalData')}
+            value={t('profile.editPersonalDataSubtitle')}
             onPress={() => navigation.navigate('EditProfile')}
           />
 
           <SettingItem
             icon="shield-checkmark-outline"
             iconColor={COLORS.purple}
-            label="Seguridad y acceso"
-            value="Autenticación, sesiones y acceso"
+            label={t('profile.security')}
+            value={t('profile.securitySubtitle')}
             onPress={handleOpenSecurity}
             isLast
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Preferencias</Text>
+        <Text style={styles.sectionTitle}>{t('profile.preferences')}</Text>
         <View style={styles.card}>
           <SettingItem
             icon="moon-outline"
             iconColor={COLORS.purple}
-            label="Apariencia"
-            value="Claro, oscuro o automático"
+            label={t('profile.appearance')}
+            value={t('profile.appearanceSubtitle')}
             onPress={() => navigation.navigate('ThemeSettings')}
           />
 
           <SettingItem
             icon="cash-outline"
             iconColor={COLORS.orange}
-            label="Moneda principal"
+            label={t('profile.currency')}
             value={
               preferredCurrency
                 ? `${preferredCurrency.code} · ${preferredCurrency.name}`
-                : 'Cargando...'
+                : t('common.loading')
             }
             onPress={() => navigation.navigate('CurrencySettings')}
           />
@@ -403,72 +424,74 @@ export default function ProfileScreen({ navigation }) {
           <SettingItem
             icon="language-outline"
             iconColor={COLORS.blue}
-            label="Idioma"
-            value={
-              preferredLanguage
-                ? `${preferredLanguage.flag} ${preferredLanguage.name}`
-                : 'Cargando...'
-            }
+            label={t('profile.language')}
+            value={`${LANGUAGE_FLAGS[language] || ''} ${t(
+              `language.${LANGUAGE_TRANSLATION_KEYS[language] || 'spanish'}`
+            )}`.trim()}
             onPress={() => navigation.navigate('LanguageSettings')}
           />
 
           <SettingItem
             icon="notifications-outline"
             iconColor={COLORS.orange}
-            label="Notificaciones"
-            value="Alertas, recordatorios y resúmenes"
+            label={t('profile.notifications')}
+            value={t('profile.notificationsSubtitle')}
             onPress={() => navigation.navigate('NotificationSettings')}
             isLast
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Datos</Text>
+        <Text style={styles.sectionTitle}>{t('profile.data')}</Text>
         <View style={styles.card}>
           <SettingItem
             icon="download-outline"
             iconColor={COLORS.accent}
-            label="Exportar datos"
-            value="Descargar gastos, ingresos y reportes"
+            label={t('profile.exportData')}
+            value={t('profile.exportDataSubtitle')}
             onPress={() => navigation.navigate('ExportData')}
             isLast
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Soporte</Text>
+        <Text style={styles.sectionTitle}>{t('profile.support')}</Text>
         <View style={styles.card}>
           <SettingItem
             icon="help-circle-outline"
             iconColor={COLORS.blue}
-            label="Centro de ayuda"
-            value="Preguntas frecuentes y guías"
+            label={t('profile.helpCenter')}
+            value={t('profile.helpCenterSubtitle')}
             onPress={() => navigation.navigate('HelpCenter')}
           />
 
           <SettingItem
             icon="bug-outline"
             iconColor={COLORS.orange}
-            label="Reportar un problema"
-            value="Avisanos si algo no funciona"
+            label={t('profile.reportProblem')}
+            value={t('profile.reportProblemSubtitle')}
             onPress={() => navigation.navigate('ReportProblem')}
           />
 
           <SettingItem
             icon="information-circle-outline"
             iconColor={COLORS.purple}
-            label="Acerca de Spendly"
-            value="Versión 1.0.8"
+            label={t('profile.about')}
+            value={t('profile.versionValue')}
             onPress={() => navigation.navigate('AboutSpendly')}
             isLast
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Sesión</Text>
+        <Text style={styles.sectionTitle}>{t('profile.session')}</Text>
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.8}>
           <AppIcon name="log-out-outline" size={20} color={COLORS.red} />
-          <Text style={styles.logoutText}>Cerrar sesión</Text>
+          <Text style={styles.logoutText}>{t('profile.logout')}</Text>
         </TouchableOpacity>
 
-        <View style={{ height: 90 }} />
+        <Text style={styles.footerText}>
+          Spendly © 2026
+        </Text>
+
+        <View style={styles.bottomSpacer} />
       </ScrollView>
 
       <Modal
@@ -483,12 +506,12 @@ export default function ProfileScreen({ navigation }) {
           onPress={closeAvatarMenu}
         >
           <View style={styles.actionSheet}>
-            <Text style={styles.actionSheetTitle}>Foto de perfil</Text>
+            <Text style={styles.actionSheetTitle}>{t('profile.profilePhoto')}</Text>
 
             {avatarUrl && (
               <TouchableOpacity style={styles.actionSheetItem} onPress={handleViewAvatar}>
                 <AppIcon name="eye-outline" size={20} color={COLORS.blue} />
-                <Text style={styles.actionSheetText}>Ver foto de perfil</Text>
+                <Text style={styles.actionSheetText}>{t('profile.viewProfilePhoto')}</Text>
               </TouchableOpacity>
             )}
 
@@ -499,7 +522,9 @@ export default function ProfileScreen({ navigation }) {
                 color={COLORS.accent}
               />
               <Text style={styles.actionSheetText}>
-                {avatarUrl ? 'Actualizar foto' : 'Agregar foto'}
+                {avatarUrl
+                  ? t('profile.updatePhoto')
+                  : t('profile.addPhoto')}
               </Text>
             </TouchableOpacity>
 
@@ -507,13 +532,13 @@ export default function ProfileScreen({ navigation }) {
               <TouchableOpacity style={styles.actionSheetItem} onPress={handleDeleteAvatar}>
                 <AppIcon name="trash-outline" size={20} color={COLORS.red} />
                 <Text style={[styles.actionSheetText, { color: COLORS.red }]}>
-                  Eliminar foto
+                  {t('profile.deletePhoto')}
                 </Text>
               </TouchableOpacity>
             )}
 
             <TouchableOpacity style={styles.actionSheetCancel} onPress={closeAvatarMenu}>
-              <Text style={styles.actionSheetCancelText}>Cancelar</Text>
+              <Text style={styles.actionSheetCancelText}>{t('common.cancel')}</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -549,10 +574,10 @@ export default function ProfileScreen({ navigation }) {
               <AppIcon name="log-out-outline" size={26} color={COLORS.red} />
             </View>
 
-            <Text style={styles.modalTitle}>Cerrar sesión</Text>
+            <Text style={styles.modalTitle}>{t('profile.logoutConfirmTitle')}</Text>
 
             <Text style={styles.modalText}>
-              ¿Estás seguro de que querés cerrar sesión en Spendly?
+              {t('profile.logoutConfirmText')}
             </Text>
 
             <View style={styles.modalActions}>
@@ -561,7 +586,7 @@ export default function ProfileScreen({ navigation }) {
                 onPress={() => setLogoutModalVisible(false)}
                 activeOpacity={0.8}
               >
-                <Text style={styles.cancelButtonText}>Cancelar</Text>
+                <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -569,7 +594,7 @@ export default function ProfileScreen({ navigation }) {
                 onPress={confirmLogout}
                 activeOpacity={0.8}
               >
-                <Text style={styles.confirmLogoutText}>Cerrar sesión</Text>
+                <Text style={styles.confirmLogoutText}>{t('profile.logout')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -579,12 +604,12 @@ export default function ProfileScreen({ navigation }) {
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
           <AppIcon name="home-outline" size={24} color={COLORS.textMuted} />
-          <Text style={styles.navLabel}>Home</Text>
+          <Text style={styles.navLabel}>{t('navigation.home')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Expenses')}>
           <AppIcon name="swap-horizontal" size={24} color={COLORS.accent} />
-          <Text style={styles.navLabel}>Movimientos</Text>
+          <Text style={styles.navLabel}>{t('navigation.transactions')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -596,7 +621,7 @@ export default function ProfileScreen({ navigation }) {
             <AppIcon
               name="scan-outline"
               size={26}
-              color="#0D1A12"
+              color={COLORS.onAccent || COLORS.bg}
             />
           </View>
         </TouchableOpacity>
@@ -610,12 +635,12 @@ export default function ProfileScreen({ navigation }) {
             size={24}
             color={COLORS.textMuted}
           />
-          <Text style={styles.navLabel}>Stats</Text>
+          <Text style={styles.navLabel}>{t('navigation.stats')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Goals')}>
           <AppIcon name="flag-outline" size={24} color={COLORS.textMuted} />
-          <Text style={styles.navLabel}>Metas</Text>
+          <Text style={styles.navLabel}>{t('navigation.goals')}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -648,7 +673,7 @@ function createStyles(COLORS) {
     borderRadius: 24,
     padding: 24,
     borderWidth: 1,
-    borderColor: 'rgba(74,222,128,0.15)',
+    borderColor: `${COLORS.accent}26`,
     marginBottom: 24,
     alignItems: 'center',
   },
@@ -657,7 +682,7 @@ function createStyles(COLORS) {
     height: 84,
     borderRadius: 42,
     borderWidth: 2,
-    borderColor: 'rgba(74,222,128,0.35)',
+    borderColor: `${COLORS.accent}59`,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,
@@ -696,7 +721,7 @@ function createStyles(COLORS) {
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderWidth: 1,
-    borderColor: 'rgba(74,222,128,0.25)',
+    borderColor: `${COLORS.accent}40`,
   },
   statusDot: {
     width: 6,
@@ -748,7 +773,7 @@ function createStyles(COLORS) {
     backgroundColor: COLORS.surface,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(248,113,113,0.25)',
+    borderColor: `${COLORS.red}40`,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
@@ -757,6 +782,16 @@ function createStyles(COLORS) {
     marginBottom: 10,
   },
   logoutText: { fontSize: 15, fontWeight: '600', color: COLORS.red },
+  footerText: {
+    marginTop: 8,
+    textAlign: 'center',
+    fontSize: 12,
+    color: COLORS.textMuted,
+    fontWeight: '600',
+  },
+  bottomSpacer: {
+    height: 90,
+  },
   bottomNav: {
     position: 'absolute',
     bottom: 0,
@@ -854,7 +889,7 @@ function createStyles(COLORS) {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(248,113,113,0.12)',
+    backgroundColor: `${COLORS.red}1F`,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -883,9 +918,9 @@ function createStyles(COLORS) {
     flex: 1,
     height: 48,
     borderRadius: 14,
-    backgroundColor: 'rgba(248,113,113,0.14)',
+    backgroundColor: `${COLORS.red}24`,
     borderWidth: 1,
-    borderColor: 'rgba(248,113,113,0.35)',
+    borderColor: `${COLORS.red}59`,
     alignItems: 'center',
     justifyContent: 'center',
   },

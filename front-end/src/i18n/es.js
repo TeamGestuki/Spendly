@@ -47,6 +47,23 @@ export default {
 
     activeAccount: 'Cuenta activa',
     inactiveAccount: 'Cuenta inactiva',
+
+    defaultUser: 'Usuario',
+    verifyIdentity: 'Verificar identidad',
+    versionValue: 'Versión 1.0.8',
+    profilePhoto: 'Foto de perfil',
+    viewProfilePhoto: 'Ver foto de perfil',
+    updatePhoto: 'Actualizar foto',
+    addPhoto: 'Agregar foto',
+    deletePhoto: 'Eliminar foto',
+
+  },
+
+  navigation: {
+    home: 'Inicio',
+    transactions: 'Movimientos',
+    stats: 'Estadísticas',
+    goals: 'Metas',
   },
 
   language: {
@@ -59,6 +76,13 @@ export default {
     chinese: 'Chino',
     french: 'Francés',
     german: 'Alemán',
+
+    currentLanguage: 'Idioma actual',
+    availableLanguages: 'Idiomas disponibles',
+    current: 'Actual',
+    saving: 'Guardando idioma...',
+    changeInfo:
+      'El cambio se aplica inmediatamente en las pantallas que ya tienen traducción.',
   },
 
   about: {

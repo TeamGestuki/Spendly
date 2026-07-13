@@ -47,6 +47,23 @@ export default {
 
     activeAccount: 'Active account',
     inactiveAccount: 'Inactive account',
+
+    defaultUser: 'User',
+    verifyIdentity: 'Verify identity',
+    versionValue: 'Version 1.0.8',
+    profilePhoto: 'Profile photo',
+    viewProfilePhoto: 'View profile photo',
+    updatePhoto: 'Update photo',
+    addPhoto: 'Add photo',
+    deletePhoto: 'Delete photo',
+
+  },
+
+  navigation: {
+    home: 'Home',
+    transactions: 'Transactions',
+    stats: 'Stats',
+    goals: 'Goals',
   },
 
   language: {
@@ -59,6 +76,13 @@ export default {
     chinese: 'Chinese',
     french: 'French',
     german: 'German',
+
+    currentLanguage: 'Current language',
+    availableLanguages: 'Available languages',
+    current: 'Current',
+    saving: 'Saving language...',
+    changeInfo:
+      'The change is applied immediately on screens that already have translations.',
   },
 
   about: {

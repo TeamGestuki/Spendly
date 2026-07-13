@@ -80,35 +80,51 @@ export default {
 
     inactiveAccount:
       'Compte inactif',
+
+    defaultUser: 'Utilisateur',
+    verifyIdentity: 'Vérifier l’identité',
+    versionValue: 'Version 1.0.8',
+    profilePhoto: 'Photo de profil',
+    viewProfilePhoto: 'Voir la photo de profil',
+    updatePhoto: 'Modifier la photo',
+    addPhoto: 'Ajouter une photo',
+    deletePhoto: 'Supprimer la photo',
+
+  },
+
+  navigation: {
+    home: 'Accueil',
+    transactions: 'Mouvements',
+    stats: 'Statistiques',
+    goals: 'Objectifs',
   },
 
   language: {
     title:
       'Langue',
-
     subtitle:
       'Choisissez la langue de l’application',
-
     spanish:
       'Espagnol',
-
     english:
       'Anglais',
-
     portuguese:
       'Portugais',
-
     russian:
       'Russe',
-
     chinese:
       'Chinois',
-
     french:
       'Français',
-
     german:
       'Allemand',
+
+    currentLanguage: 'Langue actuelle',
+    availableLanguages: 'Langues disponibles',
+    current: 'Actuelle',
+    saving: 'Enregistrement de la langue...',
+    changeInfo:
+      'Le changement s’applique immédiatement aux écrans déjà traduits.',
   },
 
   about: {
