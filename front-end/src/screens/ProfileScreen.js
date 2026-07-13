@@ -608,7 +608,7 @@ export default function ProfileScreen({ navigation }) {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Expenses')}>
-          <AppIcon name="swap-horizontal" size={24} color={COLORS.accent} />
+          <AppIcon name="swap-horizontal" size={24} color={COLORS.textMuted} />
           <Text style={styles.navLabel}>{t('navigation.transactions')}</Text>
         </TouchableOpacity>
 
