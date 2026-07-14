@@ -15,3 +15,5 @@ class User(Base):
     
     # Relaciones inversas (Un usuario tiene una lista de transacciones)
     transactions = relationship("Transaction", back_populates="owner")
+    goals = relationship("Goal", back_populates="owner", cascade="all, delete-orphan")
+    goal_movements = relationship("GoalMovement", back_populates="owner", cascade="all, delete-orphan")
