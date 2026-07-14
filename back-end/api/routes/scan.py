@@ -114,7 +114,8 @@ async def escanear_ticket(
 
     try:
         # ID de usuario fijo provisional (ID 1) hasta que vuelvan a activar 'current_user'
-        id_usuario = current_user
+        usuario = db.query(User).filter(User.email == current_user.email).first()
+        id_usuario = usuario.id if usuario else 1
 
         nueva_transaccion = Transaction(
             type="expense",
