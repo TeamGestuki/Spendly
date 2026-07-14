@@ -3,10 +3,13 @@ from datetime import date, datetime
 from typing import Optional, Literal, List
 from schemas.goal_movement import GoalMovementResponse
 
+
 class GoalCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=255)
-    target_amount: float = Field(..., gt=0, description="Monto objetivo debe ser mayor a cero")
+    target_amount: float = Field(
+        ..., gt=0, description="Monto objetivo debe ser mayor a cero"
+    )
     currency: Optional[str] = Field("ARS", max_length=3)
     target_date: Optional[date] = None
     category: Optional[str] = Field(None, max_length=50)
@@ -22,6 +25,7 @@ class GoalCreate(BaseModel):
         if v:
             return v.upper()
         return v
+
 
 class GoalUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
@@ -43,6 +47,7 @@ class GoalUpdate(BaseModel):
             return v.upper()
         return v
 
+
 class GoalResponse(BaseModel):
     id: int
     name: str
@@ -61,7 +66,7 @@ class GoalResponse(BaseModel):
     completed_at: Optional[datetime]
     automatic_contribution_config: Optional[str]
     owner_id: int
-    
+
     # Campos calculados
     porcentaje_progreso: float
     monto_restante: float
