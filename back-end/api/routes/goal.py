@@ -26,17 +26,15 @@ def get_user_goal(goal_id: int, user_id: int, db: Session) -> Goal:
 
 def serialize_goal_obj(goal: Goal) -> GoalResponse:
     today = datetime.now(timezone.utc).date()
-    current_amount = float(goal.current_amount)
-    target_amount = float(goal.target_amount)
 
     # 1. Porcentaje de progreso
-    if target_amount > 0:
-        porcentaje_progreso = round((current_amount / target_amount) * 100, 2)
+    if goal.target_amount > 0:
+        porcentaje_progreso = round((goal.current_amount / goal.target_amount) * 100, 2)
     else:
         porcentaje_progreso = 0.0
 
     # 2. Monto restante
-    monto_restante = max(0.0, round(target_amount - current_amount, 2))
+    monto_restante = max(0.0, round(goal.target_amount - goal.current_amount, 2))
 
     # 3. Días restantes
     dias_restantes = None
@@ -45,8 +43,8 @@ def serialize_goal_obj(goal: Goal) -> GoalResponse:
 
     # 4. Aporte mensual estimado
     aporte_mensual_estimado = None
-    if current_amount < target_amount:
-        remaining = target_amount - current_amount
+    if goal.current_amount < goal.target_amount:
+        remaining = goal.target_amount - goal.current_amount
         if goal.target_date:
             days = (goal.target_date - today).days
             if days <= 0:
@@ -84,8 +82,8 @@ def serialize_goal_obj(goal: Goal) -> GoalResponse:
         id=goal.id,
         name=goal.name,
         description=goal.description,
-        target_amount=target_amount,
-        current_amount=current_amount,
+        target_amount=goal.target_amount,
+        current_amount=goal.current_amount,
         currency=goal.currency,
         target_date=goal.target_date,
         category=goal.category,
@@ -113,7 +111,7 @@ def create_goal(
     current_user: User = Depends(get_current_user),
 ):
     try:
-        if goal_data.target_amount <= 0:
+        if goal_data.goal.target_amount <= 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="El monto objetivo debe ser mayor a cero",
@@ -123,7 +121,7 @@ def create_goal(
         new_goal = Goal(
             name=goal_data.name,
             description=goal_data.description,
-            target_amount=goal_data.target_amount,
+            target_amount=goal_data.goal.target_amount,
             current_amount=0.0,
             currency=goal_data.currency.upper() if goal_data.currency else "ARS",
             target_date=goal_data.target_date,
@@ -189,6 +187,10 @@ def update_goal(
 ):
     goal = get_user_goal(goal_id, current_user.id, db)
     try:
+        # Inicializar variables para recálculo preciso
+        current_amount = goal.current_amount
+        target_amount = goal.target_amount
+
         # Validar monto objetivo si se actualiza
         if goal_data.target_amount is not None:
             if goal_data.target_amount <= 0:
@@ -196,6 +198,7 @@ def update_goal(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="El monto objetivo debe ser mayor a cero",
                 )
+            goal.target_amount = goal_data.target_amount
             target_amount = goal_data.target_amount
 
         # Actualizar campos opcionales
@@ -288,22 +291,26 @@ def add_contribution(
 
     try:
         # Calcular nuevo monto actual de la meta
+        current_amount = goal.current_amount
         if mtype == "aporte":
             current_amount += amount
         elif mtype == "retiro":
-            if amount > current_amount:
+            if amount > goal.current_amount:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="No se puede retirar más dinero del disponible",
                 )
             current_amount -= amount
         elif mtype == "ajuste":
-            if current_amount + amount < 0:
+            if goal.current_amount + amount < 0:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="El ajuste resultaría en un monto actual negativo",
                 )
             current_amount += amount
+
+        # Actualizar monto actual
+        goal.current_amount = current_amount
 
         # Crear movimiento de meta
         movement = GoalMovement(
@@ -319,6 +326,7 @@ def add_contribution(
         db.add(movement)
 
         # Manejo de completado automático y reactivación
+        target_amount = goal.target_amount
         if current_amount >= target_amount:
             if goal.status != "completed":
                 goal.status = "completed"
@@ -390,6 +398,7 @@ def delete_contribution(
 
     try:
         # Deshacer el impacto del movimiento eliminado en el progreso de la meta
+        current_amount = goal.current_amount
         if movement.type == "aporte":
             current_amount = max(0.0, current_amount - movement.amount)
         elif movement.type == "retiro":
@@ -397,10 +406,14 @@ def delete_contribution(
         elif movement.type == "ajuste":
             current_amount = max(0.0, current_amount - movement.amount)
 
+        # Actualizar monto actual
+        goal.current_amount = current_amount
+
         # Eliminar movimiento
         db.delete(movement)
 
         # Ajustar estado de completado
+        target_amount = goal.target_amount
         if current_amount >= target_amount:
             if goal.status != "completed":
                 goal.status = "completed"
@@ -428,6 +441,10 @@ def pause_goal(
 ):
     goal = get_user_goal(goal_id, current_user.id, db)
     try:
+        # Guardar estado actual antes de pausar para posibles reanudaciones
+        current_amount = goal.current_amount
+        target_amount = goal.target_amount
+
         goal.status = "paused"
         db.commit()
         db.refresh(goal)
@@ -449,12 +466,16 @@ def resume_goal(
     goal = get_user_goal(goal_id, current_user.id, db)
     try:
         # Volver a activa o completada según el monto actual
+        current_amount = goal.current_amount
+        target_amount = goal.target_amount
+
         if current_amount >= target_amount:
             goal.status = "completed"
             goal.completed_at = datetime.now(timezone.utc)
         else:
             goal.status = "active"
             goal.completed_at = None
+
         db.commit()
         db.refresh(goal)
         return serialize_goal_obj(goal)
