@@ -33,6 +33,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { createTransaction } from '../services/transactionService';
@@ -42,52 +43,62 @@ import { getCurrencyByCode } from '../utils/currency';
 function getExpenseCategories(COLORS) {
   return [
     {
-      label: 'Comida',
+      value: 'Comida',
+      translationKey: 'food',
       icon: 'bag-handle-outline',
       color: COLORS.accent,
     },
     {
-      label: 'Transporte',
+      value: 'Transporte',
+      translationKey: 'transport',
       icon: 'car-outline',
       color: COLORS.blue,
     },
     {
-      label: 'Supermercado',
+      value: 'Supermercado',
+      translationKey: 'supermarket',
       icon: 'cart-outline',
       color: COLORS.orange,
     },
     {
-      label: 'Servicios',
+      value: 'Servicios',
+      translationKey: 'services',
       icon: 'flash-outline',
       color: COLORS.purple,
     },
     {
-      label: 'Salud',
+      value: 'Salud',
+      translationKey: 'health',
       icon: 'heart-outline',
       color: COLORS.pink,
     },
     {
-      label: 'Educación',
+      value: 'Educación',
+      translationKey: 'education',
       icon: 'book-outline',
       color: COLORS.blue,
     },
     {
-      label: 'Entretenimiento',
+      value: 'Entretenimiento',
+      translationKey: 'entertainment',
       icon: 'play-circle-outline',
       color: COLORS.orange,
     },
     {
-      label: 'Ropa',
+      value: 'Ropa',
+      translationKey: 'clothing',
       icon: 'shirt-outline',
       color: COLORS.pink,
     },
     {
-      label: 'Tecnología',
+      value: 'Tecnología',
+      translationKey: 'technology',
       icon: 'hardware-chip-outline',
       color: COLORS.blue,
     },
     {
-      label: 'Otros',
+      value: 'Otros',
+      translationKey: 'other',
       icon: 'grid-outline',
       color: COLORS.textMuted,
     },
@@ -97,37 +108,44 @@ function getExpenseCategories(COLORS) {
 function getIncomeCategories(COLORS) {
   return [
     {
-      label: 'Salario',
+      value: 'Salario',
+      translationKey: 'salary',
       icon: 'briefcase-outline',
       color: COLORS.accent,
     },
     {
-      label: 'Freelance',
+      value: 'Freelance',
+      translationKey: 'freelance',
       icon: 'laptop-outline',
       color: COLORS.blue,
     },
     {
-      label: 'Inversiones',
+      value: 'Inversiones',
+      translationKey: 'investments',
       icon: 'trending-up-outline',
       color: COLORS.purple,
     },
     {
-      label: 'Ventas',
+      value: 'Ventas',
+      translationKey: 'sales',
       icon: 'storefront-outline',
       color: COLORS.orange,
     },
     {
-      label: 'Regalos',
+      value: 'Regalos',
+      translationKey: 'gifts',
       icon: 'gift-outline',
       color: COLORS.pink,
     },
     {
-      label: 'Reembolsos',
+      value: 'Reembolsos',
+      translationKey: 'refunds',
       icon: 'return-down-back-outline',
       color: COLORS.yellow,
     },
     {
-      label: 'Otros',
+      value: 'Otros',
+      translationKey: 'other',
       icon: 'grid-outline',
       color: COLORS.textMuted,
     },
@@ -136,50 +154,61 @@ function getIncomeCategories(COLORS) {
 
 const EXPENSE_METHODS = [
   {
-    label: 'Efectivo',
+    value: 'Efectivo',
+      translationKey: 'cash',
     icon: 'cash-outline',
   },
   {
-    label: 'Tarjeta de débito',
+    value: 'Tarjeta de débito',
+      translationKey: 'debitCard',
     icon: 'card-outline',
   },
   {
-    label: 'Tarjeta de crédito',
+    value: 'Tarjeta de crédito',
+      translationKey: 'creditCard',
     icon: 'card-outline',
   },
   {
-    label: 'Transferencia',
+    value: 'Transferencia',
+      translationKey: 'transfer',
     icon: 'swap-horizontal-outline',
   },
   {
-    label: 'Mercado Pago',
+    value: 'Mercado Pago',
+      translationKey: 'mercadoPago',
     icon: 'phone-portrait-outline',
   },
   {
-    label: 'Otro',
+    value: 'Otro',
+      translationKey: 'other',
     icon: 'ellipsis-horizontal-outline',
   },
 ];
 
 const INCOME_METHODS = [
   {
-    label: 'Transferencia bancaria',
+    value: 'Transferencia bancaria',
+      translationKey: 'bankTransfer',
     icon: 'swap-horizontal-outline',
   },
   {
-    label: 'Efectivo',
+    value: 'Efectivo',
+      translationKey: 'cash',
     icon: 'cash-outline',
   },
   {
-    label: 'Mercado Pago',
+    value: 'Mercado Pago',
+      translationKey: 'mercadoPago',
     icon: 'phone-portrait-outline',
   },
   {
-    label: 'Depósito',
+    value: 'Depósito',
+      translationKey: 'deposit',
     icon: 'business-outline',
   },
   {
-    label: 'Otro',
+    value: 'Otro',
+      translationKey: 'other',
     icon: 'ellipsis-horizontal-outline',
   },
 ];
@@ -221,72 +250,64 @@ function FormField({
   );
 }
 
+function getDateLocale(language) {
+  const locales = {
+    es: 'es-AR',
+    en: 'en-US',
+    pt: 'pt-BR',
+    ru: 'ru-RU',
+    zh: 'zh-CN',
+    fr: 'fr-FR',
+    de: 'de-DE',
+  };
+
+  return locales[language] || locales.es;
+}
+
 function getScreenConfig(
   type,
-  COLORS
+  COLORS,
+  t
 ) {
   if (type === 'income') {
     return {
-      title: 'Nuevo ingreso',
-      amountQuestion: '¿Cuánto recibiste?',
-      descriptionPlaceholder:
-        'Ej: Sueldo, venta, trabajo freelance...',
-      descriptionFallback:
-        'Ingreso sin descripción',
-      categoryLabel:
-        'Categoría del ingreso *',
-      categoryPlaceholder:
-        'Seleccioná una categoría',
-      methodLabel:
-        'Medio de recepción',
-      methodPlaceholder:
-        'Transferencia bancaria',
-      notePlaceholder:
-        'Agregá una nota sobre el ingreso...',
-      saveButton: 'Guardar ingreso',
-      savingText:
-        'Guardando ingreso...',
-      successTitle:
-        'Ingreso registrado',
-      successMessage:
-        'El ingreso se guardó correctamente.',
+      title: t('addTransaction.income.title'),
+      amountQuestion: t('addTransaction.income.amountQuestion'),
+      descriptionPlaceholder: t('addTransaction.income.descriptionPlaceholder'),
+      descriptionFallback: t('addTransaction.income.descriptionFallback'),
+      categoryLabel: t('addTransaction.income.categoryLabel'),
+      categoryPlaceholder: t('addTransaction.categoryPlaceholder'),
+      methodLabel: t('addTransaction.income.methodLabel'),
+      methodPlaceholder: t('methods.bankTransfer'),
+      notePlaceholder: t('addTransaction.income.notePlaceholder'),
+      saveButton: t('addTransaction.income.saveButton'),
+      savingText: t('addTransaction.income.savingText'),
+      successTitle: t('addTransaction.income.successTitle'),
+      successMessage: t('addTransaction.income.successMessage'),
       accentColor: COLORS.accent,
-      amountBorder:
-        'rgba(74,222,128,0.22)',
-      categories:
-        getIncomeCategories(COLORS),
+      amountBorder: `${COLORS.accent}38`,
+      categories: getIncomeCategories(COLORS),
       methods: INCOME_METHODS,
     };
   }
 
   return {
-    title: 'Nuevo gasto',
-    amountQuestion:
-      '¿Cuánto gastaste?',
-    descriptionPlaceholder:
-      "Ej: McDonald's, Uber, Netflix...",
-    descriptionFallback:
-      'Gasto sin descripción',
-    categoryLabel:
-      'Categoría del gasto *',
-    categoryPlaceholder:
-      'Seleccioná una categoría',
-    methodLabel: 'Método de pago',
-    methodPlaceholder: 'Efectivo',
-    notePlaceholder:
-      'Agregá una nota sobre el gasto...',
-    saveButton: 'Guardar gasto',
-    savingText:
-      'Guardando gasto...',
-    successTitle:
-      'Gasto registrado',
-    successMessage:
-      'El gasto se guardó correctamente.',
+    title: t('addTransaction.expense.title'),
+    amountQuestion: t('addTransaction.expense.amountQuestion'),
+    descriptionPlaceholder: t('addTransaction.expense.descriptionPlaceholder'),
+    descriptionFallback: t('addTransaction.expense.descriptionFallback'),
+    categoryLabel: t('addTransaction.expense.categoryLabel'),
+    categoryPlaceholder: t('addTransaction.categoryPlaceholder'),
+    methodLabel: t('addTransaction.expense.methodLabel'),
+    methodPlaceholder: t('methods.cash'),
+    notePlaceholder: t('addTransaction.expense.notePlaceholder'),
+    saveButton: t('addTransaction.expense.saveButton'),
+    savingText: t('addTransaction.expense.savingText'),
+    successTitle: t('addTransaction.expense.successTitle'),
+    successMessage: t('addTransaction.expense.successMessage'),
     accentColor: COLORS.accent,
-    amountBorder:
-      'rgba(248,113,113,0.20)',
-    categories:
-      getExpenseCategories(COLORS),
+    amountBorder: `${COLORS.red}33`,
+    categories: getExpenseCategories(COLORS),
     methods: EXPENSE_METHODS,
   };
 }
@@ -302,6 +323,11 @@ export default function AddTransactionScreen({
     isDark,
   } = useTheme();
 
+  const {
+    language,
+    t,
+  } = useLanguage();
+
   const styles = useMemo(
     () => createStyles(COLORS),
     [COLORS]
@@ -316,9 +342,10 @@ export default function AddTransactionScreen({
   () =>
     getScreenConfig(
       transactionType,
-      COLORS
+      COLORS,
+      t
     ),
-  [transactionType, COLORS]
+  [transactionType, COLORS, t]
 );
 
   const now = new Date();
@@ -446,7 +473,7 @@ export default function AddTransactionScreen({
 
     if (!value.trim()) {
       setAmountError(
-        'El monto es obligatorio'
+        t('addTransaction.errors.amountRequired')
       );
       return;
     }
@@ -456,7 +483,7 @@ export default function AddTransactionScreen({
       numericValue <= 0
     ) {
       setAmountError(
-        'El monto debe ser mayor a 0'
+        t('addTransaction.errors.amountPositive')
       );
       return;
     }
@@ -466,7 +493,7 @@ export default function AddTransactionScreen({
 
   const formattedDate =
     date.toLocaleDateString(
-      'es-AR',
+      getDateLocale(language),
       {
         weekday: 'short',
         day: '2-digit',
@@ -477,7 +504,7 @@ export default function AddTransactionScreen({
 
   const formattedTime =
     date.toLocaleTimeString(
-      'es-AR',
+      getDateLocale(language),
       {
         hour: '2-digit',
         minute: '2-digit',
@@ -501,13 +528,13 @@ export default function AddTransactionScreen({
   const selectedCategory =
     config.categories.find(
       (item) =>
-        item.label === category
+        item.value === category
     );
 
   const selectedMethod =
     config.methods.find(
       (item) =>
-        item.label === method
+        item.value === method
     );
 
   const handleSave = async () => {
@@ -526,8 +553,8 @@ export default function AddTransactionScreen({
     ) {
       setAmountError(
         !amount.trim()
-          ? 'El monto es obligatorio'
-          : 'El monto debe ser mayor a 0'
+          ? t('addTransaction.errors.amountRequired')
+          : t('addTransaction.errors.amountPositive')
       );
 
       hasError = true;
@@ -535,7 +562,7 @@ export default function AddTransactionScreen({
 
     if (!category) {
       setCategoryError(
-        'Seleccioná una categoría'
+        t('addTransaction.errors.categoryRequired')
       );
 
       hasError = true;
@@ -580,7 +607,7 @@ export default function AddTransactionScreen({
         config.successMessage,
         [
           {
-            text: 'Aceptar',
+            text: t('common.accept'),
             onPress: () =>
               navigation.goBack(),
           },
@@ -593,9 +620,9 @@ export default function AddTransactionScreen({
       );
 
       Alert.alert(
-        'No se pudo guardar',
+        t('addTransaction.saveErrorTitle'),
         error.message ||
-          'Ocurrió un error al registrar la transacción.'
+          t('addTransaction.saveErrorMessage')
       );
     } finally {
       setLoading(false);
@@ -717,7 +744,7 @@ export default function AddTransactionScreen({
 
         <FormField
           styles={styles}
-          label="Descripción"
+          label={t('addTransaction.description')}
           error=""
         >
           <View
@@ -779,7 +806,7 @@ export default function AddTransactionScreen({
                     styles.selectorValue
                   }
                 >
-                  {category}
+                  {t(`categories.${selectedCategory?.translationKey || 'other'}`)}
                 </Text>
               </>
             ) : (
@@ -831,7 +858,7 @@ export default function AddTransactionScreen({
                     styles.selectorValue
                   }
                 >
-                  {method}
+                  {t(`methods.${selectedMethod?.translationKey || 'other'}`)}
                 </Text>
               </>
             ) : (
@@ -855,7 +882,7 @@ export default function AddTransactionScreen({
         </FormField>
 
         <Text style={styles.label}>
-          Fecha y hora
+          {t('addTransaction.dateTime')}
         </Text>
 
         <View style={styles.dateRow}>
@@ -980,7 +1007,7 @@ export default function AddTransactionScreen({
                 textColor={
                   COLORS.textPrimary
                 }
-                locale="es-AR"
+                locale={getDateLocale(language)}
                 maximumDate={
                   datePickerMode ===
                   'date'
@@ -1005,7 +1032,7 @@ export default function AddTransactionScreen({
                       .iosPickerCloseText
                   }
                 >
-                  Listo
+                  {t('common.done')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1013,7 +1040,7 @@ export default function AddTransactionScreen({
 
         <FormField
           styles={styles}
-          label="Nota (opcional)"
+          label={t('addTransaction.noteOptional')}
           error=""
         >
           <View
@@ -1077,7 +1104,7 @@ export default function AddTransactionScreen({
               <>
                 <ActivityIndicator
                   size="small"
-                  color="#0D1A12"
+                  color={COLORS.textPrimary}
                 />
 
                 <Text
@@ -1095,7 +1122,7 @@ export default function AddTransactionScreen({
                 <AppIcon
                   name="checkmark-circle-outline"
                   size={20}
-                  color="#0D1A12"
+                  color={COLORS.textPrimary}
                 />
 
                 <Text
@@ -1130,7 +1157,7 @@ export default function AddTransactionScreen({
             />
 
             <Text style={styles.modalTitle}>
-              Categoría
+              {t('addTransaction.category')}
             </Text>
 
             <ScrollView
@@ -1142,11 +1169,11 @@ export default function AddTransactionScreen({
                 (item) => {
                   const isSelected =
                     category ===
-                    item.label;
+                    item.value;
 
                   return (
                     <TouchableOpacity
-                      key={item.label}
+                      key={item.value}
                       style={[
                         styles.modalItem,
                         isSelected &&
@@ -1154,7 +1181,7 @@ export default function AddTransactionScreen({
                       ]}
                       onPress={() => {
                         setCategory(
-                          item.label
+                          item.value
                         );
 
                         setCategoryError(
@@ -1191,7 +1218,7 @@ export default function AddTransactionScreen({
                           },
                         ]}
                       >
-                        {item.label}
+                        {t(`categories.${item.translationKey}`)}
                       </Text>
 
                       {isSelected && (
@@ -1222,7 +1249,7 @@ export default function AddTransactionScreen({
                   styles.modalCancelText
                 }
               >
-                Cancelar
+                {t('common.cancel')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -1250,18 +1277,18 @@ export default function AddTransactionScreen({
             {config.methods.map(
               (item) => {
                 const isSelected =
-                  method === item.label;
+                  method === item.value;
 
                 return (
                   <TouchableOpacity
-                    key={item.label}
+                    key={item.value}
                     style={[
                       styles.modalItem,
                       isSelected &&
                         styles.modalItemActive,
                     ]}
                     onPress={() => {
-                      setMethod(item.label);
+                      setMethod(item.value);
 
                       setShowMethodModal(
                         false
@@ -1274,7 +1301,7 @@ export default function AddTransactionScreen({
                         styles.modalItemIcon,
                         {
                           backgroundColor:
-                            'rgba(96,165,250,0.12)',
+                            `${COLORS.blue}1F`,
                         },
                       ]}
                     >
@@ -1294,7 +1321,7 @@ export default function AddTransactionScreen({
                         },
                       ]}
                     >
-                      {item.label}
+                      {t(`methods.${item.translationKey}`)}
                     </Text>
 
                     {isSelected && (
@@ -1322,7 +1349,7 @@ export default function AddTransactionScreen({
                   styles.modalCancelText
                 }
               >
-                Cancelar
+                {t('common.cancel')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -1591,7 +1618,7 @@ function createStyles(COLORS) {
   saveButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#0D1A12',
+    color: COLORS.textPrimary,
     letterSpacing: 0.3,
   },
 
@@ -1642,7 +1669,7 @@ function createStyles(COLORS) {
 
   modalItemActive: {
     backgroundColor:
-      'rgba(74,222,128,0.02)',
+      `${COLORS.accent}05`,
   },
 
   modalItemIcon: {

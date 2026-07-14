@@ -32,6 +32,7 @@ import GoalsScreen from './src/screens/GoalsScreen';
 import ScanScreen from './src/screens/ScanScreen';
 import ThemeSettingsScreen from './src/screens/ThemeSettingsScreen';
 import AboutSpendlyScreen from './src/screens/AboutSpendlyScreen';
+import HelpCenterScreen from './src/screens/HelpCenterScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -285,7 +286,8 @@ export default function App() {
 
           <Stack.Screen
             name="HelpCenter"
-            component={HomeScreen}
+            component={HelpCenterScreen}
+            options={{headerShown: false,}}
           />
 
           <Stack.Screen

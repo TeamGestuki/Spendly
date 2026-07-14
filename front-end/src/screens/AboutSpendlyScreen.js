@@ -1,3 +1,8 @@
+/**
+ * AboutSpendlyScreen.js
+ * Información general y documentación legal de Spendly.
+ */
+
 import React, {
   useMemo,
 } from 'react';
@@ -13,14 +18,20 @@ import {
 
 import { Ionicons } from '@expo/vector-icons';
 
-import { useTheme } from '../context/ThemeContext';
+import {
+  useTheme,
+} from '../context/ThemeContext';
 
-const APP_VERSION = '1.0.8';
+import {
+  useLanguage,
+} from '../context/LanguageContext';
+
+const APP_VERSION = '1.1.0';
 
 function AppIcon({
   name,
   size = 20,
-  color = '#9CA3AF',
+  color,
 }) {
   return (
     <Ionicons
@@ -44,14 +55,16 @@ function InfoRow({
     <View
       style={[
         styles.infoRow,
-        isLast && styles.infoRowLast,
+        isLast &&
+          styles.infoRowLast,
       ]}
     >
       <View
         style={[
           styles.infoIcon,
           {
-            backgroundColor: `${iconColor}18`,
+            backgroundColor:
+              `${iconColor}18`,
           },
         ]}
       >
@@ -81,6 +94,61 @@ function InfoRow({
   );
 }
 
+function DocumentationItem({
+  icon,
+  iconColor,
+  title,
+  subtitle,
+  onPress,
+  isLast,
+  styles,
+  COLORS,
+}) {
+  return (
+    <TouchableOpacity
+      style={[
+        styles.infoRow,
+        isLast &&
+          styles.infoRowLast,
+      ]}
+      activeOpacity={0.8}
+      onPress={onPress}
+    >
+      <View
+        style={[
+          styles.infoIcon,
+          {
+            backgroundColor:
+              `${iconColor}18`,
+          },
+        ]}
+      >
+        <AppIcon
+          name={icon}
+          size={20}
+          color={iconColor}
+        />
+      </View>
+
+      <View style={styles.infoBody}>
+        <Text style={styles.infoValue}>
+          {title}
+        </Text>
+
+        <Text style={styles.infoLabel}>
+          {subtitle}
+        </Text>
+      </View>
+
+      <AppIcon
+        name="chevron-forward"
+        size={18}
+        color={COLORS.textMuted}
+      />
+    </TouchableOpacity>
+  );
+}
+
 export default function AboutSpendlyScreen({
   navigation,
 }) {
@@ -88,6 +156,10 @@ export default function AboutSpendlyScreen({
     colors: COLORS,
     isDark,
   } = useTheme();
+
+  const {
+    t,
+  } = useLanguage();
 
   const styles = useMemo(
     () => createStyles(COLORS),
@@ -121,7 +193,7 @@ export default function AboutSpendlyScreen({
         </TouchableOpacity>
 
         <Text style={styles.topBarTitle}>
-          Acerca de Spendly
+          {t('about.title')}
         </Text>
 
         <View style={styles.topBarSpacer} />
@@ -132,7 +204,9 @@ export default function AboutSpendlyScreen({
         contentContainerStyle={
           styles.scrollContent
         }
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={
+          false
+        }
       >
         <View style={styles.heroCard}>
           <View style={styles.logoWrapper}>
@@ -148,43 +222,40 @@ export default function AboutSpendlyScreen({
           </Text>
 
           <Text style={styles.appSubtitle}>
-            Gestión inteligente de gastos,
-            ingresos y metas financieras.
+            {t('about.appSubtitle')}
           </Text>
 
           <View style={styles.versionBadge}>
             <View style={styles.versionDot} />
 
             <Text style={styles.versionText}>
-              Versión {APP_VERSION}
+              {t('about.versionPrefix')}{' '}
+              {APP_VERSION}
             </Text>
           </View>
         </View>
 
         <Text style={styles.sectionTitle}>
-          Sobre la aplicación
+          {t('about.aboutApp')}
         </Text>
 
         <View style={styles.card}>
           <Text style={styles.description}>
-            Spendly es una aplicación móvil
-            pensada para ayudarte a registrar,
-            organizar y comprender tus
-            movimientos financieros de forma
-            simple.
+            {t('about.descriptionOne')}
           </Text>
 
-          <Text style={styles.description}>
-            Permite administrar gastos e
-            ingresos, consultar estadísticas,
-            escanear tickets mediante
-            inteligencia artificial y trabajar
-            con metas de ahorro.
+          <Text
+            style={[
+              styles.description,
+              styles.descriptionLast,
+            ]}
+          >
+            {t('about.descriptionTwo')}
           </Text>
         </View>
 
         <Text style={styles.sectionTitle}>
-          Información
+          {t('about.information')}
         </Text>
 
         <View style={styles.card}>
@@ -193,7 +264,9 @@ export default function AboutSpendlyScreen({
             COLORS={COLORS}
             icon="layers-outline"
             iconColor={COLORS.purple}
-            label="Versión actual"
+            label={t(
+              'about.currentVersion'
+            )}
             value={APP_VERSION}
           />
 
@@ -202,8 +275,8 @@ export default function AboutSpendlyScreen({
             COLORS={COLORS}
             icon="construct-outline"
             iconColor={COLORS.orange}
-            label="Estado"
-            value="Beta"
+            label={t('about.status')}
+            value={t('about.beta')}
           />
 
           <InfoRow
@@ -211,110 +284,58 @@ export default function AboutSpendlyScreen({
             COLORS={COLORS}
             icon="phone-portrait-outline"
             iconColor={COLORS.blue}
-            label="Plataforma"
-            value="Aplicación móvil"
+            label={t('about.platform')}
+            value={t('about.mobileApp')}
             isLast
           />
         </View>
 
-            <Text style={styles.sectionTitle}>
-            Documentación
-            </Text>
+        <Text style={styles.sectionTitle}>
+          {t('about.documentation')}
+        </Text>
 
-            <View style={styles.card}>
+        <View style={styles.card}>
+          <DocumentationItem
+            styles={styles}
+            COLORS={COLORS}
+            icon="document-text-outline"
+            iconColor={COLORS.orange}
+            title={t('about.terms')}
+            subtitle={t(
+              'about.termsSubtitle'
+            )}
+            onPress={() =>
+              navigation.navigate('Terms')
+            }
+          />
 
-            <TouchableOpacity
-                style={styles.infoRow}
-                activeOpacity={0.8}
-                onPress={() =>
-                navigation.navigate('Terms')
-                }
-            >
-                <View
-                style={[
-                    styles.infoIcon,
-                    {
-                    backgroundColor: `${COLORS.orange}18`,
-                    },
-                ]}
-                >
-                <AppIcon
-                    name="document-text-outline"
-                    size={20}
-                    color={COLORS.orange}
-                />
-                </View>
-
-                <View style={styles.infoBody}>
-                <Text style={styles.infoValue}>
-                    Términos y condiciones
-                </Text>
-
-                <Text style={styles.infoLabel}>
-                    Condiciones de uso de Spendly
-                </Text>
-                </View>
-
-                <AppIcon
-                name="chevron-forward"
-                size={18}
-                color={COLORS.textMuted}
-                />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-                style={[
-                styles.infoRow,
-                styles.infoRowLast,
-                ]}
-                activeOpacity={0.8}
-                onPress={() =>
-                navigation.navigate('Privacy')
-                }
-            >
-                <View
-                style={[
-                    styles.infoIcon,
-                    {
-                    backgroundColor: `${COLORS.blue}18`,
-                    },
-                ]}
-                >
-                <AppIcon
-                    name="shield-checkmark-outline"
-                    size={20}
-                    color={COLORS.blue}
-                />
-                </View>
-
-                <View style={styles.infoBody}>
-                <Text style={styles.infoValue}>
-                    Política de privacidad
-                </Text>
-
-                <Text style={styles.infoLabel}>
-                    Cómo protegemos tus datos
-                </Text>
-                </View>
-
-                <AppIcon
-                name="chevron-forward"
-                size={18}
-                color={COLORS.textMuted}
-                />
-            </TouchableOpacity>
-
-            </View>
+          <DocumentationItem
+            styles={styles}
+            COLORS={COLORS}
+            icon="shield-checkmark-outline"
+            iconColor={COLORS.blue}
+            title={t('about.privacy')}
+            subtitle={t(
+              'about.privacySubtitle'
+            )}
+            onPress={() =>
+              navigation.navigate(
+                'Privacy'
+              )
+            }
+            isLast
+          />
+        </View>
 
         <Text style={styles.footerText}>
           Spendly © 2026
         </Text>
 
         <Text style={styles.footerSubtext}>
-          Todos los derechos reservados.
+          {t('about.rights')}
         </Text>
 
-        <View style={{ height: 30 }} />
+        <View style={styles.bottomSpacer} />
       </ScrollView>
     </View>
   );
@@ -330,7 +351,8 @@ function createStyles(COLORS) {
     topBar: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      justifyContent:
+        'space-between',
       paddingTop: 56,
       paddingBottom: 16,
       paddingHorizontal: 20,
@@ -341,7 +363,8 @@ function createStyles(COLORS) {
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: COLORS.surface,
+      backgroundColor:
+        COLORS.surface,
       borderWidth: 1,
       borderColor: COLORS.border,
       alignItems: 'center',
@@ -365,7 +388,8 @@ function createStyles(COLORS) {
     },
 
     heroCard: {
-      backgroundColor: COLORS.surface,
+      backgroundColor:
+        COLORS.surface,
       borderRadius: 26,
       borderWidth: 1,
       borderColor: COLORS.border,
@@ -378,12 +402,14 @@ function createStyles(COLORS) {
       width: 86,
       height: 86,
       borderRadius: 26,
-      backgroundColor: COLORS.accentDim,
+      backgroundColor:
+        COLORS.accentDim,
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: 16,
       borderWidth: 1,
-      borderColor: `${COLORS.accent}40`,
+      borderColor:
+        `${COLORS.accent}40`,
     },
 
     appName: {
@@ -406,7 +432,8 @@ function createStyles(COLORS) {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 7,
-      backgroundColor: COLORS.surfaceHigh,
+      backgroundColor:
+        COLORS.surfaceHigh,
       borderRadius: 999,
       borderWidth: 1,
       borderColor: COLORS.border,
@@ -418,7 +445,8 @@ function createStyles(COLORS) {
       width: 7,
       height: 7,
       borderRadius: 4,
-      backgroundColor: COLORS.accent,
+      backgroundColor:
+        COLORS.accent,
     },
 
     versionText: {
@@ -438,7 +466,8 @@ function createStyles(COLORS) {
     },
 
     card: {
-      backgroundColor: COLORS.surface,
+      backgroundColor:
+        COLORS.surface,
       borderRadius: 20,
       borderWidth: 1,
       borderColor: COLORS.border,
@@ -453,12 +482,17 @@ function createStyles(COLORS) {
       marginBottom: 10,
     },
 
+    descriptionLast: {
+      marginBottom: 0,
+    },
+
     infoRow: {
       flexDirection: 'row',
       alignItems: 'center',
       paddingVertical: 12,
       borderBottomWidth: 1,
-      borderBottomColor: COLORS.border,
+      borderBottomColor:
+        COLORS.border,
     },
 
     infoRowLast: {
@@ -490,82 +524,6 @@ function createStyles(COLORS) {
       color: COLORS.textPrimary,
     },
 
-    featuresGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 12,
-      marginBottom: 22,
-    },
-
-    featureCard: {
-      width: '48%',
-      backgroundColor: COLORS.surface,
-      borderRadius: 20,
-      borderWidth: 1,
-      borderColor: COLORS.border,
-      padding: 16,
-    },
-
-    featureIcon: {
-      width: 42,
-      height: 42,
-      borderRadius: 14,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: 12,
-    },
-
-    featureTitle: {
-      fontSize: 14,
-      fontWeight: '800',
-      color: COLORS.textPrimary,
-      marginBottom: 5,
-    },
-
-    featureText: {
-      fontSize: 11,
-      lineHeight: 17,
-      color: COLORS.textSecondary,
-    },
-
-    developmentCard: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 13,
-      backgroundColor: COLORS.surface,
-      borderRadius: 22,
-      borderWidth: 1,
-      borderColor: `${COLORS.accent}45`,
-      padding: 18,
-      marginBottom: 28,
-    },
-
-    developmentIcon: {
-      width: 50,
-      height: 50,
-      borderRadius: 16,
-      backgroundColor: COLORS.accentDim,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-
-    developmentBody: {
-      flex: 1,
-    },
-
-    developmentTitle: {
-      fontSize: 15,
-      fontWeight: '800',
-      color: COLORS.textPrimary,
-      marginBottom: 4,
-    },
-
-    developmentText: {
-      fontSize: 11,
-      color: COLORS.textSecondary,
-      lineHeight: 17,
-    },
-
     footerText: {
       fontSize: 13,
       fontWeight: '700',
@@ -578,6 +536,10 @@ function createStyles(COLORS) {
       fontSize: 11,
       color: COLORS.textMuted,
       textAlign: 'center',
+    },
+
+    bottomSpacer: {
+      height: 30,
     },
   });
 }

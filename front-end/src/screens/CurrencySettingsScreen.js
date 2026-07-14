@@ -1,4 +1,14 @@
-import React, { useEffect, useState } from 'react';
+/**
+ * CurrencySettingsScreen.js
+ * Selección de la moneda principal de Spendly.
+ */
+
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+
 import {
   View,
   Text,
@@ -7,53 +17,77 @@ import {
   StyleSheet,
   StatusBar,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
+
 import {
   CURRENCIES,
   getPreferredCurrency,
   setPreferredCurrency,
   formatMoney,
 } from '../utils/currency';
-import { updateCurrentUser } from '../services/authService';
 
-const COLORS = {
-  bg: '#0D0F14',
-  surface: '#161A23',
-  surfaceHigh: '#1E2330',
-  border: '#272D3D',
-  accent: '#4ADE80',
-  accentDim: '#1A3D28',
-  textPrimary: '#F0F2F7',
-  textSecondary: '#9CA3AF',
-  textMuted: '#6B748A',
-  blue: '#60A5FA',
-};
+import {
+  updateCurrentUser,
+} from '../services/authService';
 
-function AppIcon({ name, size = 20, color = COLORS.textSecondary }) {
-  return <Ionicons name={name} size={size} color={color} />;
+import {
+  useTheme,
+} from '../context/ThemeContext';
+
+import {
+  useLanguage,
+} from '../context/LanguageContext';
+
+function AppIcon({
+  name,
+  size = 20,
+  color,
+}) {
+  return (
+    <Ionicons
+      name={name}
+      size={size}
+      color={color}
+    />
+  );
+}
+
+function getCurrencyTranslationKey(code) {
+  return `currency.currencies.${code.toLowerCase()}`;
 }
 
 function CurrencyItem({
   currency,
+  translatedName,
   selected,
+  saving,
   onPress,
   isLast,
+  styles,
+  COLORS,
+  currentText,
 }) {
   return (
     <TouchableOpacity
       style={[
         styles.currencyItem,
-        selected && styles.currencyItemSelected,
-        isLast && styles.currencyItemLast,
+        selected &&
+          styles.currencyItemSelected,
+        isLast &&
+          styles.currencyItemLast,
       ]}
       onPress={onPress}
       activeOpacity={0.78}
+      disabled={saving}
     >
       <View
         style={[
           styles.currencyIcon,
-          selected && styles.currencyIconSelected,
+          selected &&
+            styles.currencyIconSelected,
         ]}
       >
         <Text style={styles.currencySymbol}>
@@ -70,14 +104,14 @@ function CurrencyItem({
           {selected && (
             <View style={styles.selectedBadge}>
               <Text style={styles.selectedBadgeText}>
-                Actual
+                {currentText}
               </Text>
             </View>
           )}
         </View>
 
         <Text style={styles.currencyName}>
-          {currency.name}
+          {translatedName}
         </Text>
       </View>
 
@@ -87,7 +121,12 @@ function CurrencyItem({
         </Text>
       </View>
 
-      {selected ? (
+      {saving ? (
+        <ActivityIndicator
+          size="small"
+          color={COLORS.accent}
+        />
+      ) : selected ? (
         <AppIcon
           name="checkmark-circle"
           size={22}
@@ -104,45 +143,117 @@ function CurrencyItem({
   );
 }
 
-export default function CurrencySettingsScreen({ navigation }) {
-  const [selectedCurrency, setSelectedCurrency] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [savingCode, setSavingCode] = useState(null);
+export default function CurrencySettingsScreen({
+  navigation,
+}) {
+  const {
+    colors: COLORS,
+    isDark,
+  } = useTheme();
+
+  const {
+    t,
+  } = useLanguage();
+
+  const styles = useMemo(
+    () => createStyles(COLORS),
+    [COLORS]
+  );
+
+  const [
+    selectedCurrency,
+    setSelectedCurrency,
+  ] = useState(null);
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+  const [
+    savingCode,
+    setSavingCode,
+  ] = useState(null);
 
   useEffect(() => {
     loadCurrency();
   }, []);
 
+  const translateCurrencyName = (
+    currency
+  ) => {
+    const key =
+      getCurrencyTranslationKey(
+        currency.code
+      );
+
+    const translated = t(key);
+
+    return translated === key
+      ? currency.name
+      : translated;
+  };
+
   const loadCurrency = async () => {
     try {
       setLoading(true);
 
-      const currency = await getPreferredCurrency();
+      const currency =
+        await getPreferredCurrency();
 
       setSelectedCurrency(currency);
     } catch (error) {
-      console.log('Error cargando moneda:', error);
+      console.log(
+        'Error cargando moneda:',
+        error.message
+      );
+
+      Alert.alert(
+        t('common.error'),
+        t('currency.loadError')
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSelectCurrency = async (currency) => {
-    if (savingCode) return;
+  const handleSelectCurrency = async (
+    currency
+  ) => {
+    if (
+      savingCode ||
+      selectedCurrency?.code ===
+        currency.code
+    ) {
+      return;
+    }
 
     try {
       setSavingCode(currency.code);
 
       const savedCurrency =
-        await setPreferredCurrency(currency.code);
+        await setPreferredCurrency(
+          currency.code
+        );
 
       await updateCurrentUser({
-        preferred_currency: currency.code,
+        preferred_currency:
+          currency.code,
       });
 
-      setSelectedCurrency(savedCurrency);
+      setSelectedCurrency(
+        savedCurrency
+      );
     } catch (error) {
-      console.log('Error guardando moneda:', error);
+      console.log(
+        'Error guardando moneda:',
+        error.message
+      );
+
+      Alert.alert(
+        t('common.error'),
+        t('currency.saveError')
+      );
     } finally {
       setSavingCode(null);
     }
@@ -151,28 +262,39 @@ export default function CurrencySettingsScreen({ navigation }) {
   return (
     <View style={styles.flex}>
       <StatusBar
-        barStyle="light-content"
+        barStyle={
+          isDark
+            ? 'light-content'
+            : 'dark-content'
+        }
         backgroundColor={COLORS.bg}
       />
 
       <View style={styles.topBar}>
         <TouchableOpacity
           style={styles.backBtn}
-          onPress={() => navigation.goBack()}
+          onPress={() =>
+            navigation.goBack()
+          }
           activeOpacity={0.8}
+          disabled={!!savingCode}
         >
           <AppIcon
             name="chevron-back"
             size={22}
-            color={COLORS.textPrimary}
+            color={
+              savingCode
+                ? COLORS.textMuted
+                : COLORS.textPrimary
+            }
           />
         </TouchableOpacity>
 
         <Text style={styles.topBarTitle}>
-          Moneda principal
+          {t('currency.title')}
         </Text>
 
-        <View style={{ width: 40 }} />
+        <View style={styles.topBarSpacer} />
       </View>
 
       {loading ? (
@@ -181,15 +303,20 @@ export default function CurrencySettingsScreen({ navigation }) {
             size="large"
             color={COLORS.accent}
           />
+
           <Text style={styles.loadingText}>
-            Cargando monedas...
+            {t('currency.loading')}
           </Text>
         </View>
       ) : (
         <ScrollView
           style={styles.flex}
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
+          contentContainerStyle={
+            styles.content
+          }
+          showsVerticalScrollIndicator={
+            false
+          }
         >
           <View style={styles.heroCard}>
             <View style={styles.heroIcon}>
@@ -201,310 +328,404 @@ export default function CurrencySettingsScreen({ navigation }) {
             </View>
 
             <Text style={styles.heroTitle}>
-              Elegí tu moneda
+              {t('currency.chooseCurrency')}
             </Text>
 
             <Text style={styles.heroText}>
-              Esta moneda se usará como referencia para mostrar gastos,
-              reportes, presupuestos y estadísticas dentro de Spendly.
+              {t('currency.description')}
             </Text>
 
             {selectedCurrency && (
-              <View style={styles.currentCurrencyBox}>
-                <Text style={styles.currentCurrencyLabel}>
-                  Moneda actual
+              <View
+                style={
+                  styles.currentCurrencyBox
+                }
+              >
+                <Text
+                  style={
+                    styles.currentCurrencyLabel
+                  }
+                >
+                  {t(
+                    'currency.currentCurrency'
+                  )}
                 </Text>
 
-                <Text style={styles.currentCurrencyValue}>
-                  {selectedCurrency.code} — {selectedCurrency.name}
+                <Text
+                  style={
+                    styles.currentCurrencyValue
+                  }
+                >
+                  {selectedCurrency.code}
+                  {' — '}
+                  {translateCurrencyName(
+                    selectedCurrency
+                  )}
                 </Text>
 
-                <Text style={styles.currentCurrencyPreview}>
-                  Ejemplo: {formatMoney(1250, selectedCurrency)}
+                <Text
+                  style={
+                    styles.currentCurrencyPreview
+                  }
+                >
+                  {t('currency.example')}
+                  {': '}
+                  {formatMoney(
+                    1250,
+                    selectedCurrency
+                  )}
                 </Text>
               </View>
             )}
           </View>
 
           <Text style={styles.sectionTitle}>
-            Monedas disponibles
+            {t(
+              'currency.availableCurrencies'
+            )}
           </Text>
 
           <View style={styles.card}>
-            {CURRENCIES.map((currency, index) => {
-              const selected =
-                selectedCurrency?.code === currency.code;
+            {CURRENCIES.map(
+              (currency, index) => {
+                const selected =
+                  selectedCurrency?.code ===
+                  currency.code;
 
-              return (
-                <CurrencyItem
-                  key={currency.code}
-                  currency={currency}
-                  selected={selected}
-                  isLast={index === CURRENCIES.length - 1}
-                  onPress={() => handleSelectCurrency(currency)}
-                />
-              );
-            })}
+                const saving =
+                  savingCode ===
+                  currency.code;
+
+                return (
+                  <CurrencyItem
+                    key={currency.code}
+                    currency={currency}
+                    translatedName={
+                      translateCurrencyName(
+                        currency
+                      )
+                    }
+                    selected={selected}
+                    saving={saving}
+                    isLast={
+                      index ===
+                      CURRENCIES.length - 1
+                    }
+                    onPress={() =>
+                      handleSelectCurrency(
+                        currency
+                      )
+                    }
+                    styles={styles}
+                    COLORS={COLORS}
+                    currentText={t(
+                      'currency.current'
+                    )}
+                  />
+                );
+              }
+            )}
           </View>
 
-          <Text style={styles.infoText}>
-            Por ahora esta preferencia se guarda en este dispositivo.
-            Más adelante se podrá sincronizar con tu cuenta para mantenerla
-            en todos tus dispositivos.
-          </Text>
-
           {!!savingCode && (
-            <Text style={styles.savingText}>
-              Guardando {savingCode}...
-            </Text>
+            <View style={styles.savingBox}>
+              <ActivityIndicator
+                size="small"
+                color={COLORS.accent}
+              />
+
+              <Text style={styles.savingText}>
+                {t('currency.saving')}
+                {' '}
+                {savingCode}...
+              </Text>
+            </View>
           )}
 
-          <View style={{ height: 40 }} />
+          <Text style={styles.footerText}>
+            Spendly © 2026
+          </Text>
+
+          <View style={styles.bottomSpacer} />
         </ScrollView>
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-    backgroundColor: COLORS.bg,
-  },
+function createStyles(COLORS) {
+  return StyleSheet.create({
+    flex: {
+      flex: 1,
+      backgroundColor: COLORS.bg,
+    },
 
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 56,
-    paddingBottom: 16,
-    paddingHorizontal: 20,
-    backgroundColor: COLORS.bg,
-  },
+    topBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent:
+        'space-between',
+      paddingTop: 56,
+      paddingBottom: 16,
+      paddingHorizontal: 20,
+      backgroundColor: COLORS.bg,
+    },
 
-  backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    backBtn: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor:
+        COLORS.surface,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
 
-  topBarTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-  },
+    topBarTitle: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: COLORS.textPrimary,
+    },
 
-  loadingBox: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    topBarSpacer: {
+      width: 40,
+    },
 
-  loadingText: {
-    marginTop: 12,
-    fontSize: 13,
-    color: COLORS.textSecondary,
-  },
+    loadingBox: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
 
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 30,
-  },
+    loadingText: {
+      marginTop: 12,
+      fontSize: 13,
+      color: COLORS.textSecondary,
+    },
 
-  heroCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(74,222,128,0.16)',
-    padding: 22,
-    marginBottom: 24,
-    alignItems: 'center',
-  },
+    content: {
+      paddingHorizontal: 20,
+      paddingTop: 8,
+      paddingBottom: 30,
+    },
 
-  heroIcon: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    backgroundColor: COLORS.accentDim,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-  },
+    heroCard: {
+      backgroundColor:
+        COLORS.surface,
+      borderRadius: 24,
+      borderWidth: 1,
+      borderColor:
+        `${COLORS.accent}29`,
+      padding: 22,
+      marginBottom: 24,
+      alignItems: 'center',
+    },
 
-  heroTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-    marginBottom: 6,
-  },
+    heroIcon: {
+      width: 58,
+      height: 58,
+      borderRadius: 29,
+      backgroundColor:
+        COLORS.accentDim,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 14,
+    },
 
-  heroText: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
+    heroTitle: {
+      fontSize: 20,
+      fontWeight: '800',
+      color: COLORS.textPrimary,
+      marginBottom: 6,
+    },
 
-  currentCurrencyBox: {
-    width: '100%',
-    marginTop: 18,
-    backgroundColor: COLORS.surfaceHigh,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(74,222,128,0.20)',
-    padding: 16,
-    alignItems: 'center',
-  },
+    heroText: {
+      fontSize: 13,
+      color: COLORS.textSecondary,
+      textAlign: 'center',
+      lineHeight: 20,
+    },
 
-  currentCurrencyLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: 6,
-  },
+    currentCurrencyBox: {
+      width: '100%',
+      marginTop: 18,
+      backgroundColor:
+        COLORS.surfaceHigh,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor:
+        `${COLORS.accent}33`,
+      padding: 16,
+      alignItems: 'center',
+    },
 
-  currentCurrencyValue: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-    marginBottom: 4,
-  },
+    currentCurrencyLabel: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: COLORS.textMuted,
+      textTransform: 'uppercase',
+      letterSpacing: 0.8,
+      marginBottom: 6,
+    },
 
-  currentCurrencyPreview: {
-    fontSize: 12,
-    color: COLORS.accent,
-    fontWeight: '700',
-  },
+    currentCurrencyValue: {
+      fontSize: 15,
+      fontWeight: '800',
+      color: COLORS.textPrimary,
+      marginBottom: 4,
+      textAlign: 'center',
+    },
 
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: 10,
-    marginLeft: 2,
-  },
+    currentCurrencyPreview: {
+      fontSize: 12,
+      color: COLORS.accent,
+      fontWeight: '700',
+    },
 
-  card: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginBottom: 20,
-    overflow: 'hidden',
-  },
+    sectionTitle: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: COLORS.textMuted,
+      textTransform: 'uppercase',
+      letterSpacing: 0.8,
+      marginBottom: 10,
+      marginLeft: 2,
+    },
 
-  currencyItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    gap: 12,
-  },
+    card: {
+      backgroundColor:
+        COLORS.surface,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      marginBottom: 20,
+      overflow: 'hidden',
+    },
 
-  currencyItemSelected: {
-    backgroundColor: 'rgba(74,222,128,0.06)',
-  },
+    currencyItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 14,
+      paddingVertical: 15,
+      borderBottomWidth: 1,
+      borderBottomColor:
+        COLORS.border,
+      gap: 12,
+    },
 
-  currencyItemLast: {
-    borderBottomWidth: 0,
-  },
+    currencyItemSelected: {
+      backgroundColor:
+        COLORS.accentDim,
+    },
 
-  currencyIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    backgroundColor: COLORS.surfaceHigh,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    currencyItemLast: {
+      borderBottomWidth: 0,
+    },
 
-  currencyIconSelected: {
-    backgroundColor: COLORS.accentDim,
-    borderColor: 'rgba(74,222,128,0.25)',
-  },
+    currencyIcon: {
+      width: 42,
+      height: 42,
+      borderRadius: 14,
+      backgroundColor:
+        COLORS.surfaceHigh,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
 
-  currencySymbol: {
-    fontSize: 15,
-    fontWeight: '900',
-    color: COLORS.accent,
-  },
+    currencyIconSelected: {
+      backgroundColor:
+        COLORS.surface,
+      borderColor:
+        `${COLORS.accent}40`,
+    },
 
-  currencyBody: {
-    flex: 1,
-  },
+    currencySymbol: {
+      fontSize: 15,
+      fontWeight: '900',
+      color: COLORS.accent,
+    },
 
-  currencyTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 2,
-  },
+    currencyBody: {
+      flex: 1,
+    },
 
-  currencyCode: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-  },
+    currencyTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      marginBottom: 2,
+      flexWrap: 'wrap',
+    },
 
-  currencyName: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-  },
+    currencyCode: {
+      fontSize: 14,
+      fontWeight: '800',
+      color: COLORS.textPrimary,
+    },
 
-  selectedBadge: {
-    backgroundColor: COLORS.accentDim,
-    borderRadius: 999,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderWidth: 1,
-    borderColor: 'rgba(74,222,128,0.25)',
-  },
+    currencyName: {
+      fontSize: 11,
+      color: COLORS.textSecondary,
+    },
 
-  selectedBadgeText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: COLORS.accent,
-    textTransform: 'uppercase',
-  },
+    selectedBadge: {
+      backgroundColor:
+        COLORS.surface,
+      borderRadius: 999,
+      paddingHorizontal: 7,
+      paddingVertical: 2,
+      borderWidth: 1,
+      borderColor:
+        `${COLORS.accent}40`,
+    },
 
-  previewBox: {
-    maxWidth: 105,
-    alignItems: 'flex-end',
-  },
+    selectedBadgeText: {
+      fontSize: 9,
+      fontWeight: '800',
+      color: COLORS.accent,
+      textTransform: 'uppercase',
+    },
 
-  previewText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
+    previewBox: {
+      maxWidth: 105,
+      alignItems: 'flex-end',
+    },
 
-  infoText: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    lineHeight: 18,
-    textAlign: 'center',
-    paddingHorizontal: 8,
-  },
+    previewText: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: COLORS.textSecondary,
+    },
 
-  savingText: {
-    marginTop: 14,
-    fontSize: 12,
-    color: COLORS.accent,
-    textAlign: 'center',
-    fontWeight: '700',
-  },
-});
+    savingBox: {
+      marginTop: 14,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+    },
+
+    savingText: {
+      fontSize: 12,
+      color: COLORS.accent,
+      textAlign: 'center',
+      fontWeight: '700',
+    },
+
+    footerText: {
+      marginTop: 28,
+      textAlign: 'center',
+      fontSize: 12,
+      color: COLORS.textMuted,
+      fontWeight: '600',
+    },
+
+    bottomSpacer: {
+      height: 40,
+    },
+  });
+}

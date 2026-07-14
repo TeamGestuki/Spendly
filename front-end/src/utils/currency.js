@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const CURRENCY_STORAGE_KEY = 'preferred_currency';
+const CURRENCY_STORAGE_KEY =
+  'preferred_currency';
 
 export const CURRENCIES = [
   {
@@ -51,47 +52,80 @@ export const CURRENCIES = [
     symbol: '$',
     locale: 'es-MX',
   },
+  {
+    code: 'RUB',
+    name: 'Rublo ruso',
+    symbol: '₽',
+    locale: 'ru-RU',
+  },
+  {
+    code: 'CNY',
+    name: 'Yuan chino',
+    symbol: '¥',
+    locale: 'zh-CN',
+  },
 ];
 
-export const DEFAULT_CURRENCY = CURRENCIES[0];
+export const DEFAULT_CURRENCY =
+  CURRENCIES[0];
 
-export const getCurrencyByCode = (code) => {
+export const getCurrencyByCode = (
+  code
+) => {
   return (
-    CURRENCIES.find((currency) => currency.code === code) ||
-    DEFAULT_CURRENCY
+    CURRENCIES.find(
+      (currency) =>
+        currency.code === code
+    ) || DEFAULT_CURRENCY
   );
 };
 
-export const getPreferredCurrency = async () => {
-  const savedCode = await AsyncStorage.getItem(CURRENCY_STORAGE_KEY);
-  return getCurrencyByCode(savedCode);
-};
+export const getPreferredCurrency =
+  async () => {
+    const savedCode =
+      await AsyncStorage.getItem(
+        CURRENCY_STORAGE_KEY
+      );
 
-export const setPreferredCurrency = async (code) => {
-  const currency = getCurrencyByCode(code);
+    return getCurrencyByCode(
+      savedCode
+    );
+  };
 
-  await AsyncStorage.setItem(
-    CURRENCY_STORAGE_KEY,
-    currency.code
-  );
+export const setPreferredCurrency =
+  async (code) => {
+    const currency =
+      getCurrencyByCode(code);
 
-  return currency;
-};
+    await AsyncStorage.setItem(
+      CURRENCY_STORAGE_KEY,
+      currency.code
+    );
+
+    return currency;
+  };
 
 export const formatMoney = (
   amount,
   currency = DEFAULT_CURRENCY
 ) => {
-  const value = Number(amount) || 0;
+  const value =
+    Number(amount) || 0;
 
   try {
-    return new Intl.NumberFormat(currency.locale, {
-      style: 'currency',
-      currency: currency.code,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
+    return new Intl.NumberFormat(
+      currency.locale,
+      {
+        style: 'currency',
+        currency: currency.code,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }
+    ).format(value);
   } catch {
-    return `${currency.symbol} ${value.toFixed(2)}`;
+    return (
+      `${currency.symbol} ` +
+      value.toFixed(2)
+    );
   }
 };

@@ -24,6 +24,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 import {
   getTransactions,
@@ -129,12 +130,30 @@ function AppIcon({
   );
 }
 
-function formatDate(dateString) {
+function getDateLocale(language) {
+  const locales = {
+    es: 'es-AR',
+    en: 'en-US',
+    pt: 'pt-BR',
+    ru: 'ru-RU',
+    zh: 'zh-CN',
+    fr: 'fr-FR',
+    de: 'de-DE',
+  };
+
+  return locales[language] || locales.es;
+}
+
+function formatDate(
+  dateString,
+  language,
+  t
+) {
   const date = new Date(dateString);
   const now = new Date();
 
   if (Number.isNaN(date.getTime())) {
-    return 'Fecha desconocida';
+    return t('transactionList.unknownDate');
   }
 
   const isToday =
@@ -150,45 +169,47 @@ function formatDate(dateString) {
     date.getMonth() === yesterday.getMonth() &&
     date.getFullYear() === yesterday.getFullYear();
 
-  const hours = date
-    .getHours()
-    .toString()
-    .padStart(2, '0');
-
-  const minutes = date
-    .getMinutes()
-    .toString()
-    .padStart(2, '0');
-
-  const time = `${hours}:${minutes}`;
+  const time = date.toLocaleTimeString(
+    getDateLocale(language),
+    {
+      hour: '2-digit',
+      minute: '2-digit',
+    }
+  );
 
   if (isToday) {
-    return `Hoy, ${time}`;
+    return `${t('transactionList.today')}, ${time}`;
   }
 
   if (isYesterday) {
-    return `Ayer, ${time}`;
+    return `${t('transactionList.yesterday')}, ${time}`;
   }
 
-  return `${date.toLocaleDateString('es-AR', {
-    day: '2-digit',
-    month: 'short',
-  })}, ${time}`;
+  return `${date.toLocaleDateString(
+    getDateLocale(language),
+    {
+      day: '2-digit',
+      month: 'short',
+    }
+  )}, ${time}`;
 }
 
-function getScreenConfig(type, COLORS) {
+function getScreenConfig(
+  type,
+  COLORS,
+  t
+) {
   if (type === 'income') {
     return {
-      title: 'Ingresos',
-      subtitle: 'Controlá el dinero que recibís',
-      summaryLabel: 'Total ingresado este mes',
-      singular: 'ingreso',
-      plural: 'ingresos',
-      emptyTitle: 'Sin ingresos registrados',
-      emptyDescription:
-        'Todavía no registraste ningún ingreso este mes.',
-      emptyButton: 'Agregar primer ingreso',
-      defaultDescription: 'Ingreso sin descripción',
+      title: t('transactionList.income.title'),
+      subtitle: t('transactionList.income.subtitle'),
+      summaryLabel: t('transactionList.income.summaryLabel'),
+      singular: t('transactionList.income.singular'),
+      plural: t('transactionList.income.plural'),
+      emptyTitle: t('transactionList.income.emptyTitle'),
+      emptyDescription: t('transactionList.income.emptyDescription'),
+      emptyButton: t('transactionList.income.emptyButton'),
+      defaultDescription: t('transactionList.income.defaultDescription'),
       amountColor: COLORS.accent,
       amountPrefix: '+',
       mainIcon: 'cash-outline',
@@ -197,16 +218,15 @@ function getScreenConfig(type, COLORS) {
   }
 
   return {
-    title: 'Gastos',
-    subtitle: 'Controlá tus movimientos recientes',
-    summaryLabel: 'Total gastado este mes',
-    singular: 'gasto',
-    plural: 'gastos',
-    emptyTitle: 'Sin gastos registrados',
-    emptyDescription:
-      'Todavía no cargaste ningún gasto este mes.',
-    emptyButton: 'Agregar primer gasto',
-    defaultDescription: 'Gasto sin descripción',
+    title: t('transactionList.expense.title'),
+    subtitle: t('transactionList.expense.subtitle'),
+    summaryLabel: t('transactionList.expense.summaryLabel'),
+    singular: t('transactionList.expense.singular'),
+    plural: t('transactionList.expense.plural'),
+    emptyTitle: t('transactionList.expense.emptyTitle'),
+    emptyDescription: t('transactionList.expense.emptyDescription'),
+    emptyButton: t('transactionList.expense.emptyButton'),
+    defaultDescription: t('transactionList.expense.defaultDescription'),
     amountColor: COLORS.red,
     amountPrefix: '-',
     mainIcon: 'receipt-outline',
@@ -214,11 +234,35 @@ function getScreenConfig(type, COLORS) {
   };
 }
 
+function getCategoryTranslationKey(category) {
+  const keys = {
+    Comida: 'food',
+    Transporte: 'transport',
+    Supermercado: 'supermarket',
+    Servicios: 'services',
+    Salud: 'health',
+    Educación: 'education',
+    Entretenimiento: 'entertainment',
+    Ropa: 'clothing',
+    Tecnología: 'technology',
+    Salario: 'salary',
+    Freelance: 'freelance',
+    Inversiones: 'investments',
+    Ventas: 'sales',
+    Regalos: 'gifts',
+    Reembolsos: 'refunds',
+    Otros: 'other',
+  };
+
+  return keys[category] || 'other';
+}
+
 function EmptyState({
   config,
   onAdd,
   styles,
   COLORS,
+  t,
 }) {
   return (
     <View style={styles.emptyWrapper}>
@@ -237,7 +281,7 @@ function EmptyState({
       <Text style={styles.emptyDescription}>
         {config.emptyDescription}
         {'\n'}
-        Empezá agregando uno ahora.
+        {t('transactionList.startAdding')}
       </Text>
 
       <TouchableOpacity
@@ -248,7 +292,7 @@ function EmptyState({
         <AppIcon
           name="add"
           size={18}
-          color="#0D1A12"
+          color={COLORS.textPrimary}
         />
 
         <Text style={styles.emptyButtonText}>
@@ -270,6 +314,11 @@ export default function TransactionListScreen({
     isDark,
   } = useTheme();
 
+  const {
+    language,
+    t,
+  } = useLanguage();
+
   const styles = useMemo(
     () => createStyles(COLORS),
     [COLORS]
@@ -284,9 +333,10 @@ export default function TransactionListScreen({
   () =>
     getScreenConfig(
       transactionType,
-      COLORS
+      COLORS,
+      t
     ),
-  [transactionType, COLORS]
+  [transactionType, COLORS, t]
 );
 
   const [transactions, setTransactions] = useState([]);
@@ -330,8 +380,8 @@ export default function TransactionListScreen({
       );
 
       Alert.alert(
-        'Error',
-        `No se pudieron cargar los ${config.plural}.`
+        t('common.error'),
+        t('transactionList.loadError').replace('{items}', config.plural)
       );
     } finally {
       setLoading(false);
@@ -366,18 +416,19 @@ const onRefresh = async () => {
 
   const confirmDelete = (transaction) => {
     Alert.alert(
-      `Eliminar ${config.singular}`,
-      `¿Seguro que querés eliminar "${
+      t('transactionList.deleteTitle').replace('{item}', config.singular),
+      t('transactionList.deleteConfirm').replace(
+        '{description}',
         transaction.description ||
-        config.defaultDescription
-      }"?`,
+          config.defaultDescription
+      ),
       [
         {
-          text: 'Cancelar',
+          text: t('common.cancel'),
           style: 'cancel',
         },
         {
-          text: 'Eliminar',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: () =>
             handleDelete(transaction.id),
@@ -409,8 +460,8 @@ const onRefresh = async () => {
       );
 
       Alert.alert(
-        'Error',
-        `No se pudo eliminar el ${config.singular}.`
+        t('common.error'),
+        t('transactionList.deleteError').replace('{item}', config.singular)
       );
     } finally {
       setDeletingId(null);
@@ -430,8 +481,16 @@ const filteredTransactions = transactions.filter(
       transaction.description || ''
     ).toLowerCase();
 
-    const category = (
-      transaction.category || 'Otros'
+    const rawCategory =
+      transaction.category || 'Otros';
+
+    const category =
+      rawCategory.toLowerCase();
+
+    const translatedCategory = t(
+      `categories.${getCategoryTranslationKey(
+        rawCategory
+      )}`
     ).toLowerCase();
 
     const amount = String(
@@ -441,6 +500,7 @@ const filteredTransactions = transactions.filter(
     return (
       description.includes(search) ||
       category.includes(search) ||
+      translatedCategory.includes(search) ||
       amount.includes(search)
     );
   }
@@ -575,7 +635,7 @@ const categoryTotals =
 
           <TextInput
             style={styles.searchInput}
-            placeholder={`Buscar ${config.plural}...`}
+            placeholder={t('transactionList.searchPlaceholder').replace('{items}', config.plural)}
             placeholderTextColor={COLORS.textMuted}
             value={searchText}
             onChangeText={setSearchText}
@@ -601,27 +661,27 @@ const categoryTotals =
           style={styles.sortButton}
           onPress={() => {
             Alert.alert(
-              'Ordenar movimientos',
+              t('transactionList.sortTitle'),
               '',
               [
                 {
-                  text: 'Más recientes',
+                  text: t('transactionList.sort.recent'),
                   onPress: () => setSortBy('recent'),
                 },
                 {
-                  text: 'Más antiguos',
+                  text: t('transactionList.sort.oldest'),
                   onPress: () => setSortBy('oldest'),
                 },
                 {
-                  text: 'Mayor monto',
+                  text: t('transactionList.sort.highest'),
                   onPress: () => setSortBy('highest'),
                 },
                 {
-                  text: 'Menor monto',
+                  text: t('transactionList.sort.lowest'),
                   onPress: () => setSortBy('lowest'),
                 },
                 {
-                  text: 'Cancelar',
+                  text: t('common.cancel'),
                   style: 'cancel',
                 },
               ]
@@ -629,13 +689,7 @@ const categoryTotals =
           }}
         >
           <Text style={styles.sortButtonText}>
-            {sortBy === 'recent'
-              ? 'Más recientes'
-              : sortBy === 'oldest'
-              ? 'Más antiguos'
-              : sortBy === 'highest'
-              ? 'Mayor monto'
-              : 'Menor monto'}
+            {t(`transactionList.sort.${sortBy}`)}
           </Text>
 
           <AppIcon
@@ -658,7 +712,7 @@ const categoryTotals =
             />
 
             <Text style={styles.clearFiltersRowText}>
-              Limpiar búsqueda
+              {t('transactionList.clearSearch')}
             </Text>
           </TouchableOpacity>
         )}
@@ -669,8 +723,8 @@ const categoryTotals =
             {
               borderColor:
                 transactionType === 'income'
-                  ? 'rgba(74,222,128,0.25)'
-                  : 'rgba(248,113,113,0.22)',
+                  ? `${COLORS.accent}40`
+                  : `${COLORS.red}38`,
             },
           ]}
         >
@@ -701,8 +755,8 @@ const categoryTotals =
                     backgroundColor:
                       transactionType ===
                       'income'
-                        ? 'rgba(74,222,128,0.12)'
-                        : 'rgba(248,113,113,0.12)',
+                        ? `${COLORS.accent}1F`
+                        : `${COLORS.red}1F`,
                   },
                 ]}
               >
@@ -732,7 +786,7 @@ const categoryTotals =
                     styles.summaryItemLabel
                   }
                 >
-                  Registros
+                  {t('transactionList.records')}
                 </Text>
               </View>
             </View>
@@ -747,7 +801,7 @@ const categoryTotals =
                   styles.summaryIconWrapper,
                   {
                     backgroundColor:
-                      'rgba(96,165,250,0.12)',
+                      `${COLORS.blue}1F`,
                   },
                 ]}
               >
@@ -771,13 +825,19 @@ const categoryTotals =
                   style={styles.summaryItemValue}
                   numberOfLines={1}
                 >
-                  {topCategory}
+                  {topCategory === '—'
+                    ? topCategory
+                    : t(
+                        `categories.${getCategoryTranslationKey(
+                          topCategory
+                        )}`
+                      )}
                 </Text>
 
                 <Text
                   style={styles.summaryItemLabel}
                 >
-                  Cat. principal
+                  {t('transactionList.mainCategory')}
                 </Text>
               </View>
             </View>
@@ -786,7 +846,7 @@ const categoryTotals =
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
-            Movimientos
+            {t('navigation.transactions')}
           </Text>
 
           <Text style={styles.sectionCount}>
@@ -805,7 +865,7 @@ const categoryTotals =
             />
 
             <Text style={styles.loadingText}>
-              Cargando {config.plural}...
+              {t('transactionList.loading').replace('{items}', config.plural)}
             </Text>
           </View>
         ) : transactions.length === 0 ? (
@@ -814,6 +874,7 @@ const categoryTotals =
             onAdd={goToAddTransaction}
             styles={styles}
             COLORS={COLORS}
+            t={t}
           />
         ) : sortedTransactions.length === 0 ? (
           <View style={styles.noResultsContainer}>
@@ -826,11 +887,11 @@ const categoryTotals =
             </View>
 
             <Text style={styles.noResultsTitle}>
-              No se encontraron resultados
+              {t('transactionList.noResultsTitle')}
             </Text>
 
             <Text style={styles.noResultsText}>
-              Probá con otra búsqueda o quitá los filtros aplicados.
+              {t('transactionList.noResultsText')}
             </Text>
 
             <TouchableOpacity
@@ -841,7 +902,7 @@ const categoryTotals =
               activeOpacity={0.85}
             >
               <Text style={styles.clearFiltersButtonText}>
-                Limpiar filtros
+                {t('transactionList.clearFilters')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -920,7 +981,9 @@ const categoryTotals =
                       }
                     >
                       {formatDate(
-                        transaction.date
+                        transaction.date,
+                        language,
+                        t
                       )}
                     </Text>
                   </View>
@@ -946,8 +1009,12 @@ const categoryTotals =
                       }
                       numberOfLines={1}
                     >
-                      {transaction.category ||
-                        'Otros'}
+                      {t(
+                        `categories.${getCategoryTranslationKey(
+                          transaction.category ||
+                            'Otros'
+                        )}`
+                      )}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -958,8 +1025,7 @@ const categoryTotals =
 
         {transactions.length > 0 && (
           <Text style={styles.deleteHint}>
-            Mantené presionado un movimiento
-            para eliminarlo
+            {t('transactionList.deleteHint')}
           </Text>
         )}
 
@@ -979,7 +1045,7 @@ const categoryTotals =
           <AppIcon
             name="add"
             size={28}
-            color="#0D1A12"
+            color={COLORS.textPrimary}
           />
         </TouchableOpacity>
       )}
@@ -998,7 +1064,7 @@ const categoryTotals =
           />
 
           <Text style={styles.navLabel}>
-            Home
+            {t('navigation.home')}
           </Text>
         </TouchableOpacity>
 
@@ -1020,7 +1086,7 @@ const categoryTotals =
               styles.navLabelActive,
             ]}
           >
-            Movimientos
+            {t('navigation.transactions')}
           </Text>
         </TouchableOpacity>
 
@@ -1035,7 +1101,7 @@ const categoryTotals =
             <AppIcon
               name="scan-outline"
               size={26}
-              color="#0D1A12"
+              color={COLORS.textPrimary}
             />
           </View>
         </TouchableOpacity>
@@ -1053,7 +1119,7 @@ const categoryTotals =
           />
 
           <Text style={styles.navLabel}>
-            Stats
+            {t('navigation.stats')}
           </Text>
         </TouchableOpacity>
 
@@ -1070,7 +1136,7 @@ const categoryTotals =
           />
 
           <Text style={styles.navLabel}>
-            Metas
+            {t('navigation.goals')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -1126,7 +1192,7 @@ function createStyles(COLORS) {
     borderWidth: 1,
     padding: 24,
     marginBottom: 24,
-    shadowColor: '#000',
+    shadowColor: COLORS.textPrimary,
     shadowOffset: {
       width: 0,
       height: 8,
@@ -1331,7 +1397,7 @@ function createStyles(COLORS) {
   emptyButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#0D1A12',
+    color: COLORS.textPrimary,
   },
 
   fab: {
@@ -1474,7 +1540,7 @@ clearFiltersButton: {
 clearFiltersButtonText: {
   fontSize: 13,
   fontWeight: '800',
-  color: '#0D1A12',
+  color: COLORS.textPrimary,
 },
 
 clearFiltersRow: {
