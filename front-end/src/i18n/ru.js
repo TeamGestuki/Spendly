@@ -145,7 +145,9 @@ methods: {
   creditCard: "Кредитная карта",
   transfer: "Перевод",
   bankTransfer: "Банковский перевод",
-  mercadoPago: "Mercado Pago",
+  digitalWallet: 'Цифровой кошелёк',
+  contactlessPayment: 'Бесконтактная оплата',
+  bankAccount: 'Банковский счёт',
   deposit: "Депозит",
   other: "Другое"
 },
@@ -539,6 +541,15 @@ editProfile: {
     fullNameTooShort:
       'Полное имя должно содержать не менее 3 символов.',
   },
+},
+
+stats: {
+  title: 'Статистика', loading: 'Загрузка статистики...', loadError: 'Не удалось загрузить статистику.', periodLabel: 'Период', noPreviousComparison: 'Нет данных для сравнения', comparisonValue: '{value} к предыдущему периоду', noData: 'Нет данных', noDescription: 'Без описания', percentageOfTotal: '{value}% от общей суммы', topCategory: 'Главная категория', monthlyEvolution: 'Динамика за последние 6 месяцев', expenseByCategory: 'Расходы по категориям', incomeByCategory: 'Доходы по категориям', recentTransactions: 'Последние операции', searchPlaceholder: 'Найти операцию или категорию...', emptyCategoriesTitle: 'Нет данных по категориям', emptyCategoriesText: 'После добавления операций за этот период здесь появится разбивка.', emptyTransactionsTitle: 'Нет операций', emptyTransactionsText: 'За выбранный период операций пока нет.', noSearchResults: 'Операции по вашему запросу не найдены.', clearSearch: 'Очистить поиск', addExpense: 'Добавить расход', addIncome: 'Добавить доход',
+  periods: { currentMonth: 'Этот месяц', previousMonth: 'Прошлый месяц', threeMonths: 'Последние 3 месяца', sixMonths: 'Последние 6 месяцев', currentYear: 'Этот год', all: 'Всё время' },
+  views: { overview: 'Обзор', expense: 'Расходы', income: 'Доходы' },
+  hero: { balance: 'Баланс за период', totalExpenses: 'Общие расходы', totalIncome: 'Общие доходы' },
+  metrics: { income: 'Доходы', expenses: 'Расходы', balance: 'Баланс', records: 'Записи', savingsRate: 'Норма сбережений: {value}', recordsBreakdown: '{expenses} расходов · {income} доходов' },
+  insights: { averageExpense: 'Средний расход', averageIncome: 'Средний доход', perExpense: 'на расход', perIncome: 'на доход', highestExpense: 'Крупнейший расход', highestIncome: 'Крупнейший доход' },
 },
 
 

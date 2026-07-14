@@ -138,7 +138,9 @@ methods: {
   creditCard: "Cartão de crédito",
   transfer: "Transferência",
   bankTransfer: "Transferência bancária",
-  mercadoPago: "Mercado Pago",
+  digitalWallet: 'Carteira digital',
+  contactlessPayment: 'Pagamento por aproximação',
+  bankAccount: 'Conta bancária',
   deposit: "Depósito",
   other: "Outro"
 },
@@ -534,5 +536,15 @@ editProfile: {
       'O nome completo deve ter pelo menos 3 caracteres.',
   },
 },
+
+stats: {
+  title: 'Estatísticas', loading: 'Carregando estatísticas...', loadError: 'Não foi possível carregar as estatísticas.', periodLabel: 'Período', noPreviousComparison: 'Sem comparação anterior', comparisonValue: '{value} vs. período anterior', noData: 'Sem dados', noDescription: 'Sem descrição', percentageOfTotal: '{value}% do total', topCategory: 'Categoria principal', monthlyEvolution: 'Evolução dos últimos 6 meses', expenseByCategory: 'Despesas por categoria', incomeByCategory: 'Receitas por categoria', recentTransactions: 'Movimentações recentes', searchPlaceholder: 'Buscar movimentação ou categoria...', emptyCategoriesTitle: 'Sem dados por categoria', emptyCategoriesText: 'Quando você registrar movimentações neste período, o detalhamento aparecerá aqui.', emptyTransactionsTitle: 'Nenhuma movimentação', emptyTransactionsText: 'Ainda não existem movimentações no período selecionado.', noSearchResults: 'Nenhuma movimentação corresponde à busca.', clearSearch: 'Limpar busca', addExpense: 'Adicionar despesa', addIncome: 'Adicionar receita',
+  periods: { currentMonth: 'Este mês', previousMonth: 'Mês anterior', threeMonths: 'Últimos 3 meses', sixMonths: 'Últimos 6 meses', currentYear: 'Este ano', all: 'Todo o período' },
+  views: { overview: 'Resumo', expense: 'Despesas', income: 'Receitas' },
+  hero: { balance: 'Saldo do período', totalExpenses: 'Total de despesas', totalIncome: 'Total de receitas' },
+  metrics: { income: 'Receitas', expenses: 'Despesas', balance: 'Saldo', records: 'Registros', savingsRate: 'Taxa de economia: {value}', recordsBreakdown: '{expenses} despesas · {income} receitas' },
+  insights: { averageExpense: 'Despesa média', averageIncome: 'Receita média', perExpense: 'por despesa', perIncome: 'por receita', highestExpense: 'Maior despesa', highestIncome: 'Maior receita' },
+},
+
 
 };

@@ -168,8 +168,10 @@ methods: {
   creditCard: "Kreditkarte",
   transfer: "Überweisung",
   bankTransfer: "Banküberweisung",
-  mercadoPago: "Mercado Pago",
   deposit: "Einzahlung",
+  digitalWallet: 'Digitale Geldbörse',
+  contactlessPayment: 'Kontaktlose Zahlung',
+  bankAccount: 'Bankkonto',
   other: "Andere"
 },
 
@@ -564,6 +566,15 @@ editProfile: {
     fullNameTooShort:
       'Der vollständige Name muss mindestens 3 Zeichen enthalten.',
   },
+},
+
+stats: {
+  title: 'Statistiken', loading: 'Statistiken werden geladen...', loadError: 'Die Statistiken konnten nicht geladen werden.', periodLabel: 'Zeitraum', noPreviousComparison: 'Kein vorheriger Vergleich', comparisonValue: '{value} gegenüber dem vorherigen Zeitraum', noData: 'Keine Daten', noDescription: 'Keine Beschreibung', percentageOfTotal: '{value}% der Gesamtsumme', topCategory: 'Hauptkategorie', monthlyEvolution: 'Entwicklung der letzten 6 Monate', expenseByCategory: 'Ausgaben nach Kategorie', incomeByCategory: 'Einnahmen nach Kategorie', recentTransactions: 'Letzte Transaktionen', searchPlaceholder: 'Transaktion oder Kategorie suchen...', emptyCategoriesTitle: 'Keine Kategoriedaten', emptyCategoriesText: 'Sobald du in diesem Zeitraum Transaktionen erfasst, erscheint hier die Aufschlüsselung.', emptyTransactionsTitle: 'Keine Transaktionen', emptyTransactionsText: 'Für den ausgewählten Zeitraum gibt es noch keine Transaktionen.', noSearchResults: 'Keine Transaktion entspricht deiner Suche.', clearSearch: 'Suche löschen', addExpense: 'Ausgabe hinzufügen', addIncome: 'Einnahme hinzufügen',
+  periods: { currentMonth: 'Dieser Monat', previousMonth: 'Vorheriger Monat', threeMonths: 'Letzte 3 Monate', sixMonths: 'Letzte 6 Monate', currentYear: 'Dieses Jahr', all: 'Gesamter Zeitraum' },
+  views: { overview: 'Übersicht', expense: 'Ausgaben', income: 'Einnahmen' },
+  hero: { balance: 'Saldo des Zeitraums', totalExpenses: 'Gesamtausgaben', totalIncome: 'Gesamteinnahmen' },
+  metrics: { income: 'Einnahmen', expenses: 'Ausgaben', balance: 'Saldo', records: 'Einträge', savingsRate: 'Sparquote: {value}', recordsBreakdown: '{expenses} Ausgaben · {income} Einnahmen' },
+  insights: { averageExpense: 'Durchschnittliche Ausgabe', averageIncome: 'Durchschnittliche Einnahme', perExpense: 'pro Ausgabe', perIncome: 'pro Einnahme', highestExpense: 'Höchste Ausgabe', highestIncome: 'Höchste Einnahme' },
 },
 
 };

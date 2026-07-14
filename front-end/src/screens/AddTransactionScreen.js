@@ -155,60 +155,70 @@ function getIncomeCategories(COLORS) {
 const EXPENSE_METHODS = [
   {
     value: 'Efectivo',
-      translationKey: 'cash',
+    translationKey: 'cash',
     icon: 'cash-outline',
   },
   {
     value: 'Tarjeta de débito',
-      translationKey: 'debitCard',
+    translationKey: 'debitCard',
     icon: 'card-outline',
   },
   {
     value: 'Tarjeta de crédito',
-      translationKey: 'creditCard',
+    translationKey: 'creditCard',
     icon: 'card-outline',
   },
   {
-    value: 'Transferencia',
-      translationKey: 'transfer',
+    value: 'Transferencia bancaria',
+    translationKey: 'bankTransfer',
     icon: 'swap-horizontal-outline',
   },
   {
-    value: 'Mercado Pago',
-      translationKey: 'mercadoPago',
+    value: 'Billetera digital',
+    translationKey: 'digitalWallet',
     icon: 'phone-portrait-outline',
   },
   {
+    value: 'Pago sin contacto',
+    translationKey: 'contactlessPayment',
+    icon: 'wifi-outline',
+  },
+  {
     value: 'Otro',
-      translationKey: 'other',
+    translationKey: 'other',
     icon: 'ellipsis-horizontal-outline',
   },
 ];
 
 const INCOME_METHODS = [
   {
-    value: 'Transferencia bancaria',
-      translationKey: 'bankTransfer',
+    value: 'Cuenta bancaria',
+    translationKey: 'bankAccount',
+    icon: 'business-outline',
+  },
+  {
+    value: 'Transferencia',
+    translationKey: 'transfer',
     icon: 'swap-horizontal-outline',
   },
   {
     value: 'Efectivo',
-      translationKey: 'cash',
+    translationKey: 'cash',
     icon: 'cash-outline',
   },
   {
-    value: 'Mercado Pago',
-      translationKey: 'mercadoPago',
+    value: 'Billetera digital',
+    translationKey: 'digitalWallet',
     icon: 'phone-portrait-outline',
   },
   {
     value: 'Depósito',
-      translationKey: 'deposit',
-    icon: 'business-outline',
+    translationKey: 'deposit',
+    icon: 'download-outline',
   },
   {
     value: 'Otro',
-      translationKey: 'other',
+    translationKey: 'other',
     icon: 'ellipsis-horizontal-outline',
   },
 ];
@@ -278,7 +288,7 @@ function getScreenConfig(
       categoryLabel: t('addTransaction.income.categoryLabel'),
       categoryPlaceholder: t('addTransaction.categoryPlaceholder'),
       methodLabel: t('addTransaction.income.methodLabel'),
-      methodPlaceholder: t('methods.bankTransfer'),
+      methodPlaceholder: t('methods.bankAccount'),
       notePlaceholder: t('addTransaction.income.notePlaceholder'),
       saveButton: t('addTransaction.income.saveButton'),
       savingText: t('addTransaction.income.savingText'),

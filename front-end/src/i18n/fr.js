@@ -180,7 +180,9 @@ methods: {
   creditCard: "Carte de crédit",
   transfer: "Virement",
   bankTransfer: "Virement bancaire",
-  mercadoPago: "Mercado Pago",
+  digitalWallet: 'Portefeuille numérique',
+  contactlessPayment: 'Paiement sans contact',
+  bankAccount: 'Compte bancaire',
   deposit: "Dépôt",
   other: "Autre"
 },
@@ -575,5 +577,15 @@ editProfile: {
       'Le nom complet doit contenir au moins 3 caractères.',
   },
 },
+
+stats: {
+  title: 'Statistiques', loading: 'Chargement des statistiques...', loadError: 'Impossible de charger les statistiques.', periodLabel: 'Période', noPreviousComparison: 'Aucune comparaison précédente', comparisonValue: '{value} par rapport à la période précédente', noData: 'Aucune donnée', noDescription: 'Sans description', percentageOfTotal: '{value}% du total', topCategory: 'Catégorie principale', monthlyEvolution: 'Évolution des 6 derniers mois', expenseByCategory: 'Dépenses par catégorie', incomeByCategory: 'Revenus par catégorie', recentTransactions: 'Mouvements récents', searchPlaceholder: 'Rechercher un mouvement ou une catégorie...', emptyCategoriesTitle: 'Aucune donnée par catégorie', emptyCategoriesText: 'Lorsque vous enregistrerez des mouvements sur cette période, le détail apparaîtra ici.', emptyTransactionsTitle: 'Aucun mouvement', emptyTransactionsText: 'Aucun mouvement n’existe encore pour la période sélectionnée.', noSearchResults: 'Aucun mouvement ne correspond à votre recherche.', clearSearch: 'Effacer la recherche', addExpense: 'Ajouter une dépense', addIncome: 'Ajouter un revenu',
+  periods: { currentMonth: 'Ce mois-ci', previousMonth: 'Mois précédent', threeMonths: '3 derniers mois', sixMonths: '6 derniers mois', currentYear: 'Cette année', all: 'Toute la période' },
+  views: { overview: 'Résumé', expense: 'Dépenses', income: 'Revenus' },
+  hero: { balance: 'Solde de la période', totalExpenses: 'Total des dépenses', totalIncome: 'Total des revenus' },
+  metrics: { income: 'Revenus', expenses: 'Dépenses', balance: 'Solde', records: 'Enregistrements', savingsRate: 'Taux d’épargne : {value}', recordsBreakdown: '{expenses} dépenses · {income} revenus' },
+  insights: { averageExpense: 'Dépense moyenne', averageIncome: 'Revenu moyen', perExpense: 'par dépense', perIncome: 'par revenu', highestExpense: 'Dépense la plus élevée', highestIncome: 'Revenu le plus élevé' },
+},
+
 
 };

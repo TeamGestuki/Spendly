@@ -156,7 +156,9 @@ methods: {
   creditCard: "信用卡",
   transfer: "转账",
   bankTransfer: "银行转账",
-  mercadoPago: "Mercado Pago",
+  digitalWallet: '数字钱包',
+  contactlessPayment: 'NFC 无接触支付',
+  bankAccount: '银行账户',
   deposit: "存款",
   other: "其他"
 },
@@ -550,6 +552,15 @@ editProfile: {
     fullNameTooShort:
       '完整姓名至少需要 3 个字符。',
   },
+},
+
+stats: {
+  title: '统计', loading: '正在加载统计数据...', loadError: '无法加载统计数据。', periodLabel: '期间', noPreviousComparison: '无上一期间可比较', comparisonValue: '较上一期间 {value}', noData: '暂无数据', noDescription: '无说明', percentageOfTotal: '占总额的 {value}%', topCategory: '主要类别', monthlyEvolution: '最近 6 个月趋势', expenseByCategory: '按类别统计支出', incomeByCategory: '按类别统计收入', recentTransactions: '最近交易', searchPlaceholder: '搜索交易或类别...', emptyCategoriesTitle: '暂无类别数据', emptyCategoriesText: '在此期间记录交易后，分类明细将显示在这里。', emptyTransactionsTitle: '暂无交易', emptyTransactionsText: '所选期间尚无交易记录。', noSearchResults: '没有找到符合搜索条件的交易。', clearSearch: '清除搜索', addExpense: '添加支出', addIncome: '添加收入',
+  periods: { currentMonth: '本月', previousMonth: '上个月', threeMonths: '最近 3 个月', sixMonths: '最近 6 个月', currentYear: '今年', all: '全部' },
+  views: { overview: '概览', expense: '支出', income: '收入' },
+  hero: { balance: '期间余额', totalExpenses: '支出总额', totalIncome: '收入总额' },
+  metrics: { income: '收入', expenses: '支出', balance: '余额', records: '记录', savingsRate: '储蓄率：{value}', recordsBreakdown: '{expenses} 笔支出 · {income} 笔收入' },
+  insights: { averageExpense: '平均支出', averageIncome: '平均收入', perExpense: '每笔支出', perIncome: '每笔收入', highestExpense: '最大支出', highestIncome: '最大收入' },
 },
 
 

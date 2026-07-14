@@ -1,254 +1,525 @@
-import React, {
-  useCallback,
-  useMemo,
-  useState,
-} from 'react';
+/**
+ * StatsScreen.js
+ * Estadísticas profesionales de Spendly.
+ */
+
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
+  TextInput,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
   StatusBar,
   ActivityIndicator,
   RefreshControl,
+  Alert,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import { useTheme } from '../context/ThemeContext';
 
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { getTransactions } from '../services/transactionService';
 import { getCurrentUser } from '../services/authService';
-import {
-  getCurrencyByCode,
-  formatMoney,
-} from '../utils/currency';
+import { getCurrencyByCode, formatMoney } from '../utils/currency';
 
-function getCategoryIcons(COLORS) {
-  return {
-    Comida: {
-      icon: 'bag-handle-outline',
-      color: COLORS.accent,
-    },
-    Transporte: {
-      icon: 'car-outline',
-      color: COLORS.blue,
-    },
-    Supermercado: {
-      icon: 'cart-outline',
-      color: COLORS.orange,
-    },
-    Servicios: {
-      icon: 'flash-outline',
-      color: COLORS.purple,
-    },
-    Salud: {
-      icon: 'heart-outline',
-      color: COLORS.pink,
-    },
-    Educación: {
-      icon: 'book-outline',
-      color: COLORS.blue,
-    },
-    Entretenimiento: {
-      icon: 'play-circle-outline',
-      color: COLORS.orange,
-    },
-    Ropa: {
-      icon: 'shirt-outline',
-      color: COLORS.pink,
-    },
-    Tecnología: {
-      icon: 'hardware-chip-outline',
-      color: COLORS.blue,
-    },
-    Otros: {
-      icon: 'grid-outline',
-      color: COLORS.textMuted,
-    },
-  };
+const PERIODS = [
+  'currentMonth',
+  'previousMonth',
+  'threeMonths',
+  'sixMonths',
+  'currentYear',
+  'all',
+];
+
+const VIEWS = ['overview', 'expense', 'income'];
+
+const LOCALES = {
+  es: 'es-AR',
+  en: 'en-US',
+  pt: 'pt-BR',
+  ru: 'ru-RU',
+  zh: 'zh-CN',
+  fr: 'fr-FR',
+  de: 'de-DE',
+};
+
+const API_BASE_URL =
+  'https://spendly-production-1793.up.railway.app';
+
+function getInitials(fullName = '') {
+  const parts = fullName
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+
+  if (parts.length === 1) {
+    return parts[0][0].toUpperCase();
+  }
+
+  return 'U';
 }
 
-function AppIcon({
-  name,
-  size = 20,
-  color = '#9CA3AF',
-}) {
+function getAvatarUrl(url) {
+  if (!url) {
+    return null;
+  }
+
+  if (url.startsWith('http')) {
+    return url;
+  }
+
+  return `${API_BASE_URL}${
+    url.startsWith('/')
+      ? url
+      : `/${url}`
+  }`;
+}
+
+function AppIcon({ name, size = 20, color }) {
   return <Ionicons name={name} size={size} color={color} />;
 }
 
-function isSameMonth(dateString, targetDate) {
-  const date = new Date(dateString);
-
-  return (
-    date.getMonth() === targetDate.getMonth() &&
-    date.getFullYear() === targetDate.getFullYear()
-  );
+function getLocale(language) {
+  return LOCALES[language] || LOCALES.es;
 }
 
-function getPreviousMonth(date) {
-  const previous = new Date(date);
-  previous.setMonth(previous.getMonth() - 1);
-  return previous;
+function getCategoryTranslationKey(category) {
+  const keys = {
+    Comida: 'food',
+    Transporte: 'transport',
+    Supermercado: 'supermarket',
+    Servicios: 'services',
+    Salud: 'health',
+    Educación: 'education',
+    Entretenimiento: 'entertainment',
+    Ropa: 'clothing',
+    Tecnología: 'technology',
+    Salario: 'salary',
+    Freelance: 'freelance',
+    Inversiones: 'investments',
+    Ventas: 'sales',
+    Regalos: 'gifts',
+    Reembolsos: 'refunds',
+    Otros: 'other',
+  };
+
+  return keys[category] || 'other';
 }
 
-function getMonthName(date) {
-  return date.toLocaleDateString('es-AR', {
-    month: 'long',
+function getCategoryIcons(COLORS) {
+  return {
+    Comida: { icon: 'bag-handle-outline', color: COLORS.accent },
+    Transporte: { icon: 'car-outline', color: COLORS.blue },
+    Supermercado: { icon: 'cart-outline', color: COLORS.orange },
+    Servicios: { icon: 'flash-outline', color: COLORS.purple },
+    Salud: { icon: 'heart-outline', color: COLORS.pink },
+    Educación: { icon: 'book-outline', color: COLORS.blue },
+    Entretenimiento: { icon: 'play-circle-outline', color: COLORS.orange },
+    Ropa: { icon: 'shirt-outline', color: COLORS.pink },
+    Tecnología: { icon: 'hardware-chip-outline', color: COLORS.blue },
+    Salario: { icon: 'briefcase-outline', color: COLORS.accent },
+    Freelance: { icon: 'laptop-outline', color: COLORS.blue },
+    Inversiones: { icon: 'trending-up-outline', color: COLORS.purple },
+    Ventas: { icon: 'storefront-outline', color: COLORS.orange },
+    Regalos: { icon: 'gift-outline', color: COLORS.pink },
+    Reembolsos: { icon: 'return-down-back-outline', color: COLORS.yellow },
+    Otros: { icon: 'grid-outline', color: COLORS.textMuted },
+  };
+}
+
+function getCategoryMeta(category, COLORS) {
+  const icons = getCategoryIcons(COLORS);
+  return icons[category] || icons.Otros;
+}
+
+function startOfDay(date) {
+  const value = new Date(date);
+  value.setHours(0, 0, 0, 0);
+  return value;
+}
+
+function endOfDay(date) {
+  const value = new Date(date);
+  value.setHours(23, 59, 59, 999);
+  return value;
+}
+
+function startOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function endOfMonth(date) {
+  return endOfDay(new Date(date.getFullYear(), date.getMonth() + 1, 0));
+}
+
+function shiftMonths(date, amount) {
+  const value = new Date(date);
+  value.setMonth(value.getMonth() + amount);
+  return value;
+}
+
+function getPeriodRange(period, now = new Date()) {
+  if (period === 'previousMonth') {
+    const previous = shiftMonths(now, -1);
+    return { start: startOfMonth(previous), end: endOfMonth(previous) };
+  }
+
+  if (period === 'threeMonths') {
+    return { start: startOfMonth(shiftMonths(now, -2)), end: endOfDay(now) };
+  }
+
+  if (period === 'sixMonths') {
+    return { start: startOfMonth(shiftMonths(now, -5)), end: endOfDay(now) };
+  }
+
+  if (period === 'currentYear') {
+    return { start: new Date(now.getFullYear(), 0, 1), end: endOfDay(now) };
+  }
+
+  if (period === 'all') {
+    return { start: null, end: null };
+  }
+
+  return { start: startOfMonth(now), end: endOfDay(now) };
+}
+
+function getPreviousRange(period) {
+  const current = getPeriodRange(period);
+  if (!current.start || !current.end) return { start: null, end: null };
+
+  const duration = current.end.getTime() - current.start.getTime();
+  const end = endOfDay(new Date(current.start.getTime() - 1));
+  const start = startOfDay(new Date(end.getTime() - duration));
+  return { start, end };
+}
+
+function inRange(value, range) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return false;
+  if (!range.start || !range.end) return true;
+  return date >= range.start && date <= range.end;
+}
+
+function sum(items) {
+  return items.reduce((total, item) => total + Number(item.amount || 0), 0);
+}
+
+function variation(current, previous) {
+  if (previous === 0) return null;
+  return ((current - previous) / previous) * 100;
+}
+
+function periodLabel(period, language, t) {
+  const now = new Date();
+  const locale = getLocale(language);
+
+  if (period === 'currentMonth') {
+    return now.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
+  }
+
+  if (period === 'previousMonth') {
+    return shiftMonths(now, -1).toLocaleDateString(locale, {
+      month: 'long',
+      year: 'numeric',
+    });
+  }
+
+  return t(`stats.periods.${period}`);
+}
+
+function shortDate(value, language) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+
+  return date.toLocaleDateString(getLocale(language), {
+    day: '2-digit',
+    month: 'short',
     year: 'numeric',
   });
 }
 
-function getCategoryMeta(
-  category,
-  COLORS
-) {
-  const categoryIcons =
-    getCategoryIcons(COLORS);
-
+function MetricCard({ icon, color, label, value, sub, styles }) {
   return (
-    categoryIcons[category] ||
-    categoryIcons.Otros
+    <View style={styles.metricCard}>
+      <View style={[styles.metricIcon, { backgroundColor: `${color}18` }]}>
+        <AppIcon name={icon} size={20} color={color} />
+      </View>
+      <Text style={styles.metricLabel}>{label}</Text>
+      <Text style={styles.metricValue} numberOfLines={1} adjustsFontSizeToFit>
+        {value}
+      </Text>
+      {!!sub && <Text style={styles.metricSub}>{sub}</Text>}
+    </View>
   );
 }
 
-function StatCard({
-  icon,
-  iconColor,
-  label,
-  value,
-  sub,
-  styles,
-}) {
+function EmptyState({ icon, title, text, action, onPress, styles, COLORS }) {
   return (
-    <View style={styles.statCard}>
-      <View style={[styles.statIcon, { backgroundColor: `${iconColor}18` }]}>
-        <AppIcon name={icon} size={20} color={iconColor} />
+    <View style={styles.emptyCard}>
+      <View style={styles.emptyIcon}>
+        <AppIcon name={icon} size={32} color={COLORS.textMuted} />
       </View>
-
-      <Text style={styles.statLabel}>{label}</Text>
-      <Text style={styles.statValue}>{value}</Text>
-
-      {!!sub && <Text style={styles.statSub}>{sub}</Text>}
+      <Text style={styles.emptyTitle}>{title}</Text>
+      <Text style={styles.emptyText}>{text}</Text>
+      {!!action && (
+        <TouchableOpacity style={styles.emptyButton} onPress={onPress}>
+          <Text style={styles.emptyButtonText}>{action}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
 
 export default function StatsScreen({ navigation }) {
+  const { colors: COLORS, isDark } = useTheme();
+  const { language, t } = useLanguage();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
-  const {
-    colors: COLORS,
-    isDark,
-  } = useTheme();
+  const [user, setUser] = useState({
+  full_name: 'Usuario',
+  email: '',
+  profile_image_url: null,
+  preferred_currency: 'ARS',
+  });
 
-  const styles = useMemo(
-    () => createStyles(COLORS),
-    [COLORS]
-  );
-  const [expenses, setExpenses] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [currency, setCurrency] = useState(getCurrencyByCode('ARS'));
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState('currentMonth');
+  const [selectedView, setSelectedView] = useState('overview');
+  const [searchText, setSearchText] = useState('');
+
+  const loadStats = useCallback(async () => {
+    try {
+      setLoading(true);
+      const userData = await getCurrentUser();
+
+      setUser(userData);
+
+      setCurrency(
+        getCurrencyByCode(
+          userData.preferred_currency ||
+            'ARS'
+        )
+      );
+
+      const data = await getTransactions();
+      setTransactions(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.log('Error cargando estadísticas:', error.message);
+      Alert.alert(t('common.error'), t('stats.loadError'));
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
 
   useFocusEffect(
     useCallback(() => {
       loadStats();
-    }, [])
+    }, [loadStats])
   );
 
-  const loadStats = async () => {
+  const onRefresh = async () => {
     try {
-      setLoading(true);
-
-      const userData = await getCurrentUser();
-
-      const userCurrency = getCurrencyByCode(
-        userData.preferred_currency || 'ARS'
-      );
-
-      setCurrency(userCurrency);
-
-      const data = await getTransactions();
-
-      const onlyExpenses = Array.isArray(data)
-        ? data.filter((transaction) => transaction.type === 'expense')
-        : [];
-
-      setExpenses(onlyExpenses);
-    } catch (error) {
-      console.log('Error cargando estadísticas:', error.message);
+      setRefreshing(true);
+      await loadStats();
     } finally {
-      setLoading(false);
+      setRefreshing(false);
     }
   };
 
-
-  const onRefresh = async () => {
-  try {
-    setRefreshing(true);
-    await loadStats();
-  } finally {
-    setRefreshing(false);
-  }
-};  
-  const now = new Date();
-  const previousMonth = getPreviousMonth(now);
-
-  const currentMonthExpenses = expenses.filter((expense) =>
-    isSameMonth(expense.date, now)
+  const currentRange = useMemo(
+    () => getPeriodRange(selectedPeriod),
+    [selectedPeriod]
   );
 
-  const previousMonthExpenses = expenses.filter((expense) =>
-    isSameMonth(expense.date, previousMonth)
+  const previousRange = useMemo(
+    () => getPreviousRange(selectedPeriod),
+    [selectedPeriod]
   );
 
-  const totalMonth = currentMonthExpenses.reduce(
-    (sum, expense) => sum + Number(expense.amount || 0),
-    0
-  );
+  const current = transactions.filter((item) => inRange(item.date, currentRange));
+  const previous = previousRange.start
+    ? transactions.filter((item) => inRange(item.date, previousRange))
+    : [];
 
-  const previousTotal = previousMonthExpenses.reduce(
-    (sum, expense) => sum + Number(expense.amount || 0),
-    0
-  );
+  const expenses = current.filter((item) => item.type === 'expense');
+  const incomes = current.filter((item) => item.type === 'income');
+  const previousExpenses = previous.filter((item) => item.type === 'expense');
+  const previousIncomes = previous.filter((item) => item.type === 'income');
 
-  const expenseCount = currentMonthExpenses.length;
+  const totalExpenses = sum(expenses);
+  const totalIncome = sum(incomes);
+  const balance = totalIncome - totalExpenses;
+  const previousExpenseTotal = sum(previousExpenses);
+  const previousIncomeTotal = sum(previousIncomes);
+  const previousBalance = previousIncomeTotal - previousExpenseTotal;
 
-  const averageExpense =
-    expenseCount > 0 ? totalMonth / expenseCount : 0;
+  const expenseChange = variation(totalExpenses, previousExpenseTotal);
+  const incomeChange = variation(totalIncome, previousIncomeTotal);
+  const balanceChange = variation(balance, previousBalance);
+  const savingsRate = totalIncome > 0 ? (balance / totalIncome) * 100 : 0;
 
-  const categoryTotals = currentMonthExpenses.reduce((acc, expense) => {
-    const category = expense.category || 'Otros';
-    acc[category] = (acc[category] || 0) + Number(expense.amount || 0);
+  const averageExpense = expenses.length ? totalExpenses / expenses.length : 0;
+  const averageIncome = incomes.length ? totalIncome / incomes.length : 0;
+  const highestExpense = [...expenses].sort((a, b) => b.amount - a.amount)[0];
+  const highestIncome = [...incomes].sort((a, b) => b.amount - a.amount)[0];
+
+  const selectedTransactions =
+    selectedView === 'expense'
+      ? expenses
+      : selectedView === 'income'
+        ? incomes
+        : current;
+
+  const categorySource = selectedView === 'income' ? incomes : expenses;
+  const categoryTotal = sum(categorySource);
+  const categoryMap = categorySource.reduce((acc, item) => {
+    const category = item.category || 'Otros';
+    acc[category] = (acc[category] || 0) + Number(item.amount || 0);
     return acc;
   }, {});
 
-  const topCategories = Object.entries(categoryTotals)
-    .map(([category, total]) => ({
+  const categories = Object.entries(categoryMap)
+    .map(([category, amount]) => ({
       category,
-      total,
-      percentage: totalMonth > 0 ? (total / totalMonth) * 100 : 0,
+      amount,
+      percentage: categoryTotal > 0 ? (amount / categoryTotal) * 100 : 0,
     }))
-    .sort((a, b) => b.total - a.total);
+    .sort((a, b) => b.amount - a.amount);
 
-  const topCategory = topCategories[0];
+  const topCategory = categories[0];
 
-  const monthlyDifference = totalMonth - previousTotal;
-  const monthlyPercentage =
-    previousTotal > 0 ? (monthlyDifference / previousTotal) * 100 : 0;
+  const evolution = useMemo(() => {
+    const now = new Date();
+    return Array.from({ length: 6 }, (_, index) => {
+      const month = shiftMonths(now, index - 5);
+      const items = transactions.filter((item) => {
+        const date = new Date(item.date);
+        return (
+          date.getMonth() === month.getMonth() &&
+          date.getFullYear() === month.getFullYear()
+        );
+      });
 
-  const recentExpenses = [...currentMonthExpenses]
+      return {
+        key: `${month.getFullYear()}-${month.getMonth()}`,
+        label: month.toLocaleDateString(getLocale(language), { month: 'short' }),
+        income: sum(items.filter((item) => item.type === 'income')),
+        expenses: sum(items.filter((item) => item.type === 'expense')),
+      };
+    });
+  }, [transactions, language]);
+
+  const maxEvolution = Math.max(
+    ...evolution.flatMap((item) => [item.income, item.expenses]),
+    1
+  );
+
+  const normalizedSearch = searchText.trim().toLowerCase();
+  const recent = [...selectedTransactions]
+    .filter((item) => {
+      if (!normalizedSearch) return true;
+      const rawCategory = item.category || 'Otros';
+      const translated = t(
+        `categories.${getCategoryTranslationKey(rawCategory)}`
+      ).toLowerCase();
+
+      return (
+        (item.description || '').toLowerCase().includes(normalizedSearch) ||
+        rawCategory.toLowerCase().includes(normalizedSearch) ||
+        translated.includes(normalizedSearch) ||
+        String(item.amount || '').includes(normalizedSearch)
+      );
+    })
     .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 5);
+    .slice(0, 10);
+
+  const heroValue =
+    selectedView === 'expense'
+      ? totalExpenses
+      : selectedView === 'income'
+        ? totalIncome
+        : balance;
+
+  const heroLabel =
+    selectedView === 'expense'
+      ? t('stats.hero.totalExpenses')
+      : selectedView === 'income'
+        ? t('stats.hero.totalIncome')
+        : t('stats.hero.balance');
+
+  const comparison =
+    selectedView === 'expense'
+      ? expenseChange
+      : selectedView === 'income'
+        ? incomeChange
+        : balanceChange;
+
+  const positiveComparison =
+    selectedView === 'expense' ? (comparison ?? 0) <= 0 : (comparison ?? 0) >= 0;
+
+  const metrics = [
+    {
+      icon: 'trending-up-outline',
+      color: COLORS.accent,
+      label: t('stats.metrics.income'),
+      value: formatMoney(totalIncome, currency),
+      sub:
+        incomeChange === null
+          ? t('stats.noPreviousComparison')
+          : t('stats.comparisonValue').replace(
+              '{value}',
+              `${incomeChange >= 0 ? '+' : ''}${incomeChange.toFixed(1)}%`
+            ),
+    },
+    {
+      icon: 'trending-down-outline',
+      color: COLORS.red,
+      label: t('stats.metrics.expenses'),
+      value: formatMoney(totalExpenses, currency),
+      sub:
+        expenseChange === null
+          ? t('stats.noPreviousComparison')
+          : t('stats.comparisonValue').replace(
+              '{value}',
+              `${expenseChange >= 0 ? '+' : ''}${expenseChange.toFixed(1)}%`
+            ),
+    },
+    {
+      icon: 'wallet-outline',
+      color: balance >= 0 ? COLORS.blue : COLORS.red,
+      label: t('stats.metrics.balance'),
+      value: formatMoney(balance, currency),
+      sub: t('stats.metrics.savingsRate').replace(
+        '{value}',
+        `${savingsRate.toFixed(1)}%`
+      ),
+    },
+    {
+      icon: 'receipt-outline',
+      color: COLORS.orange,
+      label: t('stats.metrics.records'),
+      value: String(current.length),
+      sub: t('stats.metrics.recordsBreakdown')
+        .replace('{expenses}', expenses.length)
+        .replace('{income}', incomes.length),
+    },
+  ];
 
   return (
     <View style={styles.flex}>
       <StatusBar
-        barStyle={
-          isDark
-            ? 'light-content'
-            : 'dark-content'
-        }
+        barStyle={isDark ? 'light-content' : 'dark-content'}
         backgroundColor={COLORS.bg}
       />
 
@@ -267,142 +538,251 @@ export default function StatsScreen({ navigation }) {
       >
         <View style={styles.header}>
           <View>
-            <Text style={styles.headerTitle}>Estadísticas</Text>
-            <Text style={styles.headerSub}>
-              Resumen de {getMonthName(now)}
+            <Text style={styles.headerTitle}>{t('stats.title')}</Text>
+            <Text style={styles.headerSubtitle}>
+              {periodLabel(selectedPeriod, language, t)}
             </Text>
           </View>
+
+          <TouchableOpacity
+              style={styles.avatarRing}
+              onPress={() => navigation.navigate('Profile')}
+              activeOpacity={0.8}
+          >
+              {getAvatarUrl(user.profile_image_url) ? (
+                  <Image
+                      source={{
+                          uri: getAvatarUrl(user.profile_image_url),
+                      }}
+                      style={styles.avatarImage}
+                  />
+              ) : (
+                  <View style={styles.avatarFallback}>
+                      <Text style={styles.avatarText}>
+                          {getInitials(user.full_name)}
+                      </Text>
+                  </View>
+              )}
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.filterLabel}>{t('stats.periodLabel')}</Text>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipsRow}
+        >
+          {PERIODS.map((period) => {
+            const active = period === selectedPeriod;
+            return (
+              <TouchableOpacity
+                key={period}
+                style={[styles.chip, active && styles.chipActive]}
+                onPress={() => setSelectedPeriod(period)}
+              >
+                <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                  {t(`stats.periods.${period}`)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        <View style={styles.viewSelector}>
+          {VIEWS.map((view) => {
+            const active = selectedView === view;
+            return (
+              <TouchableOpacity
+                key={view}
+                style={[styles.viewButton, active && styles.viewButtonActive]}
+                onPress={() => setSelectedView(view)}
+              >
+                <Text
+                  style={[styles.viewButtonText, active && styles.viewButtonTextActive]}
+                >
+                  {t(`stats.views.${view}`)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {loading ? (
           <View style={styles.loadingBox}>
             <ActivityIndicator size="large" color={COLORS.accent} />
-            <Text style={styles.loadingText}>Cargando estadísticas...</Text>
+            <Text style={styles.loadingText}>{t('stats.loading')}</Text>
           </View>
         ) : (
           <>
             <View style={styles.heroCard}>
-              <Text style={styles.heroLabel}>Total gastado este mes</Text>
-
-              <Text style={styles.heroAmount}>
-                {formatMoney(totalMonth, currency)}
-              </Text>
+              <Text style={styles.heroLabel}>{heroLabel}</Text>
+              <Text style={styles.heroAmount}>{formatMoney(heroValue, currency)}</Text>
 
               <View
                 style={[
                   styles.trendBadge,
-                  monthlyDifference > 0
-                    ? styles.trendBadgeNegative
-                    : styles.trendBadgePositive,
+                  {
+                    backgroundColor: positiveComparison
+                      ? `${COLORS.accent}14`
+                      : `${COLORS.red}14`,
+                    borderColor: positiveComparison
+                      ? `${COLORS.accent}40`
+                      : `${COLORS.red}40`,
+                  },
                 ]}
               >
                 <AppIcon
-                  name={
-                    monthlyDifference > 0
-                      ? 'trending-up-outline'
-                      : 'trending-down-outline'
-                  }
+                  name={positiveComparison ? 'trending-up-outline' : 'trending-down-outline'}
                   size={16}
-                  color={monthlyDifference > 0 ? COLORS.red : COLORS.accent}
+                  color={positiveComparison ? COLORS.accent : COLORS.red}
                 />
-
                 <Text
                   style={[
                     styles.trendText,
-                    {
-                      color:
-                        monthlyDifference > 0
-                          ? COLORS.red
-                          : COLORS.accent,
-                    },
+                    { color: positiveComparison ? COLORS.accent : COLORS.red },
                   ]}
                 >
-                  {previousTotal > 0
-                    ? `${monthlyDifference > 0 ? '+' : ''}${monthlyPercentage.toFixed(1)}% vs mes anterior`
-                    : 'Sin comparación previa'}
+                  {comparison === null
+                    ? t('stats.noPreviousComparison')
+                    : t('stats.comparisonValue').replace(
+                        '{value}',
+                        `${comparison >= 0 ? '+' : ''}${comparison.toFixed(1)}%`
+                      )}
                 </Text>
               </View>
             </View>
 
-            <View style={styles.statsGrid}>
-              <StatCard
-                styles={styles}
-                icon="receipt-outline"
-                iconColor={COLORS.accent}
-                label="Gastos"
-                value={expenseCount}
-                sub="registros"
-              />
+            <View style={styles.grid}>
+              {metrics.map((item) => (
+                <MetricCard key={item.label} {...item} styles={styles} />
+              ))}
+            </View>
 
-              <StatCard
+            <Text style={styles.sectionTitle}>{t('stats.monthlyEvolution')}</Text>
+
+            <View style={styles.chartCard}>
+              <View style={styles.legendRow}>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: COLORS.accent }]} />
+                  <Text style={styles.legendText}>{t('stats.metrics.income')}</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: COLORS.red }]} />
+                  <Text style={styles.legendText}>{t('stats.metrics.expenses')}</Text>
+                </View>
+              </View>
+
+              <View style={styles.chartRow}>
+                {evolution.map((item) => (
+                  <View key={item.key} style={styles.chartColumn}>
+                    <View style={styles.barsArea}>
+                      <View
+                        style={[
+                          styles.chartBar,
+                          {
+                            height: `${Math.max(
+                              (item.income / maxEvolution) * 100,
+                              item.income > 0 ? 5 : 0
+                            )}%`,
+                            backgroundColor: COLORS.accent,
+                          },
+                        ]}
+                      />
+                      <View
+                        style={[
+                          styles.chartBar,
+                          {
+                            height: `${Math.max(
+                              (item.expenses / maxEvolution) * 100,
+                              item.expenses > 0 ? 5 : 0
+                            )}%`,
+                            backgroundColor: COLORS.red,
+                          },
+                        ]}
+                      />
+                    </View>
+                    <Text style={styles.chartLabel}>{item.label}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.grid}>
+              <MetricCard
                 styles={styles}
                 icon="calculator-outline"
-                iconColor={COLORS.blue}
-                label="Promedio"
+                color={COLORS.blue}
+                label={t('stats.insights.averageExpense')}
                 value={formatMoney(averageExpense, currency)}
-                sub="por gasto"
+                sub={t('stats.insights.perExpense')}
               />
-
-              <StatCard
+              <MetricCard
                 styles={styles}
-                icon={
-                  topCategory
-                    ? getCategoryMeta(topCategory.category).icon
-                    : 'grid-outline'
-                }
-                iconColor={
-                  topCategory
-                    ? getCategoryMeta(topCategory.category).color
-                    : COLORS.textMuted
-                }
-                label="Categoría top"
-                value={topCategory?.category || '—'}
+                icon="cash-outline"
+                color={COLORS.accent}
+                label={t('stats.insights.averageIncome')}
+                value={formatMoney(averageIncome, currency)}
+                sub={t('stats.insights.perIncome')}
+              />
+              <MetricCard
+                styles={styles}
+                icon="arrow-up-circle-outline"
+                color={COLORS.red}
+                label={t('stats.insights.highestExpense')}
+                value={highestExpense ? formatMoney(highestExpense.amount, currency) : '—'}
                 sub={
-                  topCategory
-                    ? formatMoney(topCategory.total, currency)
-                    : 'sin datos'
+                  highestExpense
+                    ? highestExpense.description || t('stats.noDescription')
+                    : t('stats.noData')
                 }
               />
-
-              <StatCard
+              <MetricCard
                 styles={styles}
-                icon="calendar-outline"
-                iconColor={COLORS.orange}
-                label="Mes anterior"
-                value={formatMoney(previousTotal, currency)}
-                sub={getMonthName(previousMonth)}
+                icon="arrow-down-circle-outline"
+                color={COLORS.accent}
+                label={t('stats.insights.highestIncome')}
+                value={highestIncome ? formatMoney(highestIncome.amount, currency) : '—'}
+                sub={
+                  highestIncome
+                    ? highestIncome.description || t('stats.noDescription')
+                    : t('stats.noData')
+                }
               />
             </View>
 
-            <Text style={styles.sectionTitle}>Gasto por categoría</Text>
+            <Text style={styles.sectionTitle}>
+              {selectedView === 'income'
+                ? t('stats.incomeByCategory')
+                : t('stats.expenseByCategory')}
+            </Text>
 
-            {topCategories.length === 0 ? (
-              <View style={styles.emptyCard}>
-                <AppIcon
-                  name="pie-chart-outline"
-                  size={34}
-                  color={COLORS.textMuted}
-                />
-                <Text style={styles.emptyTitle}>Sin datos todavía</Text>
-                <Text style={styles.emptyText}>
-                  Cuando registres gastos, vas a ver acá el desglose por categoría.
-                </Text>
-              </View>
+            {categories.length === 0 ? (
+              <EmptyState
+                styles={styles}
+                COLORS={COLORS}
+                icon="pie-chart-outline"
+                title={t('stats.emptyCategoriesTitle')}
+                text={t('stats.emptyCategoriesText')}
+                action={
+                  selectedView === 'income'
+                    ? t('stats.addIncome')
+                    : t('stats.addExpense')
+                }
+                onPress={() =>
+                  navigation.navigate(selectedView === 'income' ? 'AddIncome' : 'AddExpense')
+                }
+              />
             ) : (
               <View style={styles.card}>
-                {topCategories.map((item, index) => {
-                  const meta = getCategoryMeta(
-                    item.category,
-                    COLORS
-                  );
-
+                {categories.map((item, index) => {
+                  const meta = getCategoryMeta(item.category, COLORS);
                   return (
                     <View
                       key={item.category}
                       style={[
                         styles.categoryRow,
-                        index === topCategories.length - 1 &&
-                          styles.categoryRowLast,
+                        index === categories.length - 1 && styles.lastRow,
                       ]}
                     >
                       <View
@@ -411,18 +791,18 @@ export default function StatsScreen({ navigation }) {
                           { backgroundColor: `${meta.color}18` },
                         ]}
                       >
-                        <AppIcon
-                          name={meta.icon}
-                          size={18}
-                          color={meta.color}
-                        />
+                        <AppIcon name={meta.icon} size={18} color={meta.color} />
                       </View>
 
                       <View style={styles.categoryBody}>
                         <View style={styles.categoryTop}>
-                          <Text style={styles.categoryName}>{item.category}</Text>
+                          <Text style={styles.categoryName}>
+                            {t(
+                              `categories.${getCategoryTranslationKey(item.category)}`
+                            )}
+                          </Text>
                           <Text style={styles.categoryAmount}>
-                            {formatMoney(item.total, currency)}
+                            {formatMoney(item.amount, currency)}
                           </Text>
                         </View>
 
@@ -432,13 +812,17 @@ export default function StatsScreen({ navigation }) {
                               styles.progressFill,
                               {
                                 width: `${Math.min(item.percentage, 100)}%`,
+                                backgroundColor: meta.color,
                               },
                             ]}
                           />
                         </View>
 
                         <Text style={styles.categoryPercent}>
-                          {item.percentage.toFixed(1)}% del total
+                          {t('stats.percentageOfTotal').replace(
+                            '{value}',
+                            item.percentage.toFixed(1)
+                          )}
                         </Text>
                       </View>
                     </View>
@@ -447,55 +831,123 @@ export default function StatsScreen({ navigation }) {
               </View>
             )}
 
-            <Text style={styles.sectionTitle}>Últimos gastos</Text>
-
-            {recentExpenses.length === 0 ? (
-              <View style={styles.emptySmallCard}>
-                <Text style={styles.emptyText}>
-                  No hay gastos recientes este mes.
+            {!!topCategory && (
+              <View style={styles.topCategoryCard}>
+                <View
+                  style={[
+                    styles.topCategoryIcon,
+                    {
+                      backgroundColor: `${getCategoryMeta(
+                        topCategory.category,
+                        COLORS
+                      ).color}18`,
+                    },
+                  ]}
+                >
+                  <AppIcon
+                    name={getCategoryMeta(topCategory.category, COLORS).icon}
+                    size={22}
+                    color={getCategoryMeta(topCategory.category, COLORS).color}
+                  />
+                </View>
+                <View style={styles.topCategoryBody}>
+                  <Text style={styles.topCategoryLabel}>{t('stats.topCategory')}</Text>
+                  <Text style={styles.topCategoryValue}>
+                    {t(
+                      `categories.${getCategoryTranslationKey(topCategory.category)}`
+                    )}
+                  </Text>
+                </View>
+                <Text style={styles.topCategoryAmount}>
+                  {formatMoney(topCategory.amount, currency)}
                 </Text>
               </View>
+            )}
+
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitleNoMargin}>
+                {t('stats.recentTransactions')}
+              </Text>
+              <Text style={styles.sectionCount}>{recent.length}</Text>
+            </View>
+
+            <View style={styles.searchBox}>
+              <AppIcon name="search-outline" size={18} color={COLORS.textMuted} />
+              <TextInput
+                style={styles.searchInput}
+                value={searchText}
+                onChangeText={setSearchText}
+                placeholder={t('stats.searchPlaceholder')}
+                placeholderTextColor={COLORS.textMuted}
+                autoCapitalize="none"
+              />
+              {!!searchText && (
+                <TouchableOpacity onPress={() => setSearchText('')}>
+                  <AppIcon name="close-circle" size={18} color={COLORS.textMuted} />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {recent.length === 0 ? (
+              <EmptyState
+                styles={styles}
+                COLORS={COLORS}
+                icon="search-outline"
+                title={t('stats.emptyTransactionsTitle')}
+                text={
+                  searchText
+                    ? t('stats.noSearchResults')
+                    : t('stats.emptyTransactionsText')
+                }
+                action={searchText ? t('stats.clearSearch') : undefined}
+                onPress={() => setSearchText('')}
+              />
             ) : (
               <View style={styles.card}>
-                {recentExpenses.map((expense, index) => {
-                  const meta = getCategoryMeta(
-                    expense.category,
-                    COLORS
-                  );
+                {recent.map((item, index) => {
+                  const meta = getCategoryMeta(item.category || 'Otros', COLORS);
+                  const income = item.type === 'income';
 
                   return (
                     <View
-                      key={expense.id}
+                      key={item.id}
                       style={[
-                        styles.recentRow,
-                        index === recentExpenses.length - 1 &&
-                          styles.recentRowLast,
+                        styles.transactionRow,
+                        index === recent.length - 1 && styles.lastRow,
                       ]}
                     >
                       <View
                         style={[
-                          styles.recentIcon,
+                          styles.transactionIcon,
                           { backgroundColor: `${meta.color}18` },
                         ]}
                       >
-                        <AppIcon
-                          name={meta.icon}
-                          size={18}
-                          color={meta.color}
-                        />
+                        <AppIcon name={meta.icon} size={18} color={meta.color} />
                       </View>
 
-                      <View style={styles.recentBody}>
-                        <Text style={styles.recentTitle}>
-                          {expense.description || 'Gasto sin descripción'}
+                      <View style={styles.transactionBody}>
+                        <Text style={styles.transactionTitle} numberOfLines={1}>
+                          {item.description || t('stats.noDescription')}
                         </Text>
-                        <Text style={styles.recentSub}>
-                          {expense.category || 'Otros'}
+                        <Text style={styles.transactionSubtitle}>
+                          {t(
+                            `categories.${getCategoryTranslationKey(
+                              item.category || 'Otros'
+                            )}`
+                          )}
+                          {' · '}
+                          {shortDate(item.date, language)}
                         </Text>
                       </View>
 
-                      <Text style={styles.recentAmount}>
-                        -{formatMoney(expense.amount, currency)}
+                      <Text
+                        style={[
+                          styles.transactionAmount,
+                          { color: income ? COLORS.accent : COLORS.red },
+                        ]}
+                      >
+                        {income ? '+' : '-'}
+                        {formatMoney(item.amount, currency)}
                       </Text>
                     </View>
                   );
@@ -503,59 +955,49 @@ export default function StatsScreen({ navigation }) {
               </View>
             )}
 
-            <View style={{ height: 100 }} />
+            <Text style={styles.footerText}>Spendly © 2026</Text>
+            <View style={styles.bottomSpacer} />
           </>
         )}
       </ScrollView>
 
       <View style={styles.bottomNav}>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate('Home')}
-        >
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
           <AppIcon name="home-outline" size={24} color={COLORS.textMuted} />
-          <Text style={styles.navLabel}>Home</Text>
+          <Text style={styles.navLabel}>{t('navigation.home')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.navItem}
           onPress={() => navigation.navigate('Expenses')}
         >
-          <AppIcon
-            name="swap-horizontal-outline"
-            size={24}
-            color={COLORS.textMuted}
-          />
-          <Text style={styles.navLabel}>Movimientos</Text>
+          <AppIcon name="swap-horizontal-outline" size={24} color={COLORS.textMuted} />
+          <Text style={styles.navLabel}>{t('navigation.transactions')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-            style={styles.navScanWrapper}
-            activeOpacity={0.85}
-            onPress={() => navigation.navigate('Scan')}
-          >
-            <View style={styles.navScanBtn}>
-              <AppIcon
-                name="scan-outline"
-                size={26}
-                color="#0D1A12"
-              />
-            </View>
-          </TouchableOpacity>
+          style={styles.navScanWrapper}
+          onPress={() => navigation.navigate('Scan')}
+        >
+          <View style={styles.navScanButton}>
+            <AppIcon
+              name="scan-outline"
+              size={26}
+              color={COLORS.buttonText || COLORS.bg}
+            />
+          </View>
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.navItem}>
           <AppIcon name="bar-chart" size={24} color={COLORS.accent} />
           <Text style={[styles.navLabel, styles.navLabelActive]}>
-            Stats
+            {t('navigation.stats')}
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-            style={styles.navItem}
-            onPress={() => navigation.navigate('Goals')}
-        >
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Goals')}>
           <AppIcon name="flag-outline" size={24} color={COLORS.textMuted} />
-          <Text style={styles.navLabel}>Metas</Text>
+          <Text style={styles.navLabel}>{t('navigation.goals')}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -564,355 +1006,247 @@ export default function StatsScreen({ navigation }) {
 
 function createStyles(COLORS) {
   return StyleSheet.create({
-  flex: {
-    flex: 1,
-    backgroundColor: COLORS.bg,
-  },
+    flex: { flex: 1, backgroundColor: COLORS.bg },
+    scrollContent: { paddingHorizontal: 20, paddingTop: 56, paddingBottom: 30 },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: 20,
+    },
+    headerTitle: { fontSize: 24, fontWeight: '800', color: COLORS.textPrimary },
+    headerSubtitle: {
+      marginTop: 4,
+      fontSize: 13,
+      color: COLORS.textSecondary,
+      textTransform: 'capitalize',
+    },
+    headerButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: COLORS.surface,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    filterLabel: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: COLORS.textMuted,
+      textTransform: 'uppercase',
+      letterSpacing: 0.7,
+      marginBottom: 9,
+    },
+    chipsRow: { gap: 8, paddingRight: 10, marginBottom: 16 },
+    chip: {
+      height: 38,
+      borderRadius: 999,
+      backgroundColor: COLORS.surface,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      paddingHorizontal: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    chipActive: { backgroundColor: COLORS.accentDim, borderColor: `${COLORS.accent}55` },
+    chipText: { fontSize: 12, fontWeight: '600', color: COLORS.textSecondary },
+    chipTextActive: { color: COLORS.accent },
+    viewSelector: {
+      flexDirection: 'row',
+      backgroundColor: COLORS.surface,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 4,
+      marginBottom: 18,
+    },
+    viewButton: { flex: 1, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+    viewButtonActive: { backgroundColor: COLORS.surfaceHigh, borderWidth: 1, borderColor: `${COLORS.accent}45` },
+    viewButtonText: { fontSize: 12, fontWeight: '700', color: COLORS.textMuted },
+    viewButtonTextActive: { color: COLORS.accent },
+    loadingBox: { alignItems: 'center', paddingVertical: 90 },
+    loadingText: { marginTop: 12, color: COLORS.textSecondary },
+    heroCard: {
+      backgroundColor: COLORS.surface,
+      borderRadius: 24,
+      borderWidth: 1,
+      borderColor: `${COLORS.accent}35`,
+      padding: 24,
+      marginBottom: 16,
+    },
+    heroLabel: { fontSize: 13, color: COLORS.textSecondary, marginBottom: 7 },
+    heroAmount: { fontSize: 36, fontWeight: '900', color: COLORS.textPrimary, marginBottom: 16 },
+    trendBadge: {
+      alignSelf: 'flex-start',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 7,
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+      borderWidth: 1,
+    },
+    trendText: { fontSize: 12, fontWeight: '700' },
+    grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
+    metricCard: {
+      width: '48%',
+      minHeight: 145,
+      backgroundColor: COLORS.surface,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 16,
+    },
+    metricIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+    metricLabel: { fontSize: 12, color: COLORS.textSecondary, marginBottom: 5 },
+    metricValue: { fontSize: 17, fontWeight: '800', color: COLORS.textPrimary },
+    metricSub: { marginTop: 4, fontSize: 11, lineHeight: 16, color: COLORS.textMuted },
+    sectionTitle: { fontSize: 16, fontWeight: '800', color: COLORS.textPrimary, marginBottom: 12 },
+    sectionTitleNoMargin: { fontSize: 16, fontWeight: '800', color: COLORS.textPrimary },
+    chartCard: {
+      backgroundColor: COLORS.surface,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 18,
+      marginBottom: 24,
+    },
+    legendRow: { flexDirection: 'row', gap: 18, marginBottom: 18 },
+    legendItem: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+    legendDot: { width: 8, height: 8, borderRadius: 4 },
+    legendText: { fontSize: 11, color: COLORS.textSecondary },
+    chartRow: { height: 150, flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
+    chartColumn: { flex: 1, height: '100%', alignItems: 'center' },
+    barsArea: { flex: 1, width: '100%', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 3 },
+    chartBar: { width: '34%', borderTopLeftRadius: 5, borderTopRightRadius: 5 },
+    chartLabel: { marginTop: 8, fontSize: 10, color: COLORS.textMuted, textTransform: 'capitalize' },
+    card: {
+      backgroundColor: COLORS.surface,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      marginBottom: 18,
+      overflow: 'hidden',
+    },
+    categoryRow: { flexDirection: 'row', padding: 16, gap: 12, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+    lastRow: { borderBottomWidth: 0 },
+    categoryIcon: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+    categoryBody: { flex: 1 },
+    categoryTop: { flexDirection: 'row', justifyContent: 'space-between', gap: 10, marginBottom: 8 },
+    categoryName: { flex: 1, fontSize: 14, fontWeight: '700', color: COLORS.textPrimary },
+    categoryAmount: { fontSize: 13, fontWeight: '700', color: COLORS.textSecondary },
+    progressTrack: { height: 7, borderRadius: 999, backgroundColor: COLORS.surfaceHigh, overflow: 'hidden', marginBottom: 6 },
+    progressFill: { height: '100%', borderRadius: 999 },
+    categoryPercent: { fontSize: 11, color: COLORS.textMuted },
+    topCategoryCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: COLORS.surface,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: `${COLORS.accent}35`,
+      padding: 15,
+      marginBottom: 24,
+    },
+    topCategoryIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+    topCategoryBody: { flex: 1 },
+    topCategoryLabel: { fontSize: 11, color: COLORS.textMuted, marginBottom: 3 },
+    topCategoryValue: { fontSize: 14, fontWeight: '800', color: COLORS.textPrimary },
+    topCategoryAmount: { fontSize: 13, fontWeight: '800', color: COLORS.accent },
+    sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+    sectionCount: { fontSize: 12, color: COLORS.textMuted },
+    searchBox: {
+      height: 50,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: COLORS.surface,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      paddingHorizontal: 14,
+      marginBottom: 14,
+    },
+    searchInput: { flex: 1, fontSize: 14, color: COLORS.textPrimary },
+    transactionRow: { flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+    transactionIcon: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+    transactionBody: { flex: 1, paddingRight: 10 },
+    transactionTitle: { fontSize: 13, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 3 },
+    transactionSubtitle: { fontSize: 11, color: COLORS.textSecondary },
+    transactionAmount: { fontSize: 13, fontWeight: '800' },
+    emptyCard: {
+      backgroundColor: COLORS.surface,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 26,
+      alignItems: 'center',
+      marginBottom: 20,
+    },
+    emptyIcon: { width: 68, height: 68, borderRadius: 34, backgroundColor: COLORS.surfaceHigh, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
+    emptyTitle: { fontSize: 16, fontWeight: '800', color: COLORS.textPrimary, marginBottom: 6, textAlign: 'center' },
+    emptyText: { fontSize: 12, color: COLORS.textSecondary, lineHeight: 18, textAlign: 'center' },
+    emptyButton: { marginTop: 16, backgroundColor: COLORS.accent, borderRadius: 14, paddingHorizontal: 17, paddingVertical: 11 },
+    emptyButtonText: { fontSize: 13, fontWeight: '800', color: COLORS.buttonText || COLORS.bg },
+    footerText: { marginTop: 26, fontSize: 12, fontWeight: '600', color: COLORS.textMuted, textAlign: 'center' },
+    bottomSpacer: { height: 90 },
+    bottomNav: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: COLORS.surface,
+      borderTopWidth: 1,
+      borderTopColor: COLORS.border,
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      paddingBottom: 24,
+      paddingTop: 12,
+      paddingHorizontal: 20,
+    },
+    navItem: { flex: 1, alignItems: 'center', gap: 4 },
+    navLabel: { fontSize: 10, color: COLORS.textMuted },
+    navLabelActive: { color: COLORS.accent },
+    navScanWrapper: { flex: 1, alignItems: 'center', marginBottom: 8 },
+    navScanButton: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      backgroundColor: COLORS.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: -28,
+      shadowColor: COLORS.accent,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.4,
+      shadowRadius: 12,
+      elevation: 8,
+    },
 
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 56,
-  },
-
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 24,
-  },
-
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-    marginBottom: 3,
-  },
-
-  headerSub: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    textTransform: 'capitalize',
-  },
-
-  iconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    avatarRing: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: 'rgba(74,222,128,0.3)',
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  loadingBox: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 90,
-  },
+  avatarImage: { width: 38, height: 38, borderRadius: 19 },
+  avatarText: { fontSize: 13, fontWeight: '700', color: COLORS.accent },
 
-  loadingText: {
-    marginTop: 12,
-    fontSize: 13,
-    color: COLORS.textSecondary,
-  },
-
-  heroCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(74,222,128,0.15)',
-    padding: 24,
-    marginBottom: 18,
-  },
-
-  heroLabel: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    marginBottom: 6,
-  },
-
-  heroAmount: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-    letterSpacing: -1,
-    marginBottom: 16,
-  },
-
-  trendBadge: {
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderWidth: 1,
-  },
-
-  trendBadgeNegative: {
-    backgroundColor: 'rgba(248,113,113,0.10)',
-    borderColor: 'rgba(248,113,113,0.25)',
-  },
-
-  trendBadgePositive: {
-    backgroundColor: 'rgba(74,222,128,0.10)',
-    borderColor: 'rgba(74,222,128,0.25)',
-  },
-
-  trendText: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
-
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 24,
-  },
-
-  statCard: {
-    width: '48%',
-    backgroundColor: COLORS.surface,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: 16,
-  },
-
-  statIcon: {
+  avatarFallback: {
     width: 38,
     height: 38,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-
-  statLabel: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginBottom: 5,
-  },
-
-  statValue: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-  },
-
-  statSub: {
-    fontSize: 11,
-    color: COLORS.textMuted,
-    marginTop: 3,
-  },
-
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-    marginBottom: 12,
-  },
-
-  card: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginBottom: 24,
-    overflow: 'hidden',
-  },
-
-  categoryRow: {
-    flexDirection: 'row',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    gap: 12,
-  },
-
-  categoryRowLast: {
-    borderBottomWidth: 0,
-  },
-
-  categoryIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
+    borderRadius: 19,
+    backgroundColor: COLORS.accentDim,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  categoryBody: {
-    flex: 1,
-  },
 
-  categoryTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-
-  categoryName: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-  },
-
-  categoryAmount: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
-
-  progressTrack: {
-    height: 7,
-    borderRadius: 999,
-    backgroundColor: COLORS.surfaceHigh,
-    overflow: 'hidden',
-    marginBottom: 6,
-  },
-
-  progressFill: {
-    height: '100%',
-    borderRadius: 999,
-    backgroundColor: COLORS.accent,
-  },
-
-  categoryPercent: {
-    fontSize: 11,
-    color: COLORS.textMuted,
-  },
-
-  recentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-
-  recentRowLast: {
-    borderBottomWidth: 0,
-  },
-
-  recentIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 13,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-
-  recentBody: {
-    flex: 1,
-  },
-
-  recentTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-    marginBottom: 3,
-  },
-
-  recentSub: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-  },
-
-  recentAmount: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-  },
-
-  emptyCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: 26,
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-
-  emptySmallCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: 20,
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-    marginTop: 12,
-    marginBottom: 6,
-  },
-
-  emptyText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    lineHeight: 18,
-    textAlign: 'center',
-  },
-
-  bottomNav: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: COLORS.surface,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingBottom: 24,
-    paddingTop: 12,
-    paddingHorizontal: 20,
-  },
-
-  navItem: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 4,
-  },
-
-  navLabel: {
-    fontSize: 10,
-    color: COLORS.textMuted,
-  },
-
-  navLabelActive: {
-    color: COLORS.accent,
-  },
-
-  navScanWrapper: {
-    flex: 1,
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-
-  navScanBtn: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: COLORS.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
-    marginTop: -28,
-  },
   });
 }
