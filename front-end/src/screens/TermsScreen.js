@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,129 +9,414 @@ import {
   StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
-const COLORS = {
-  bg: '#0D0F14',
-  surface: '#161A23',
-  border: '#272D3D',
-  accent: '#4ADE80',
-  textPrimary: '#F0F2F7',
-  textSecondary: '#9CA3AF',
-};
+function AppIcon({ name, size = 20, color }) {
+  return <Ionicons name={name} size={size} color={color} />;
+}
+
+function MetaItem({ icon, label, value, styles, COLORS }) {
+  return (
+    <View style={styles.metaItem}>
+      <View style={styles.metaIcon}>
+        <AppIcon name={icon} size={17} color={COLORS.accent} />
+      </View>
+      <View style={styles.metaBody}>
+        <Text style={styles.metaLabel}>{label}</Text>
+        <Text style={styles.metaValue}>{value}</Text>
+      </View>
+    </View>
+  );
+}
+
+function LegalCard({ icon, title, text, isLast, styles, COLORS }) {
+  return (
+    <View style={[styles.legalCard, isLast && styles.legalCardLast]}>
+      <View style={styles.legalHeader}>
+        <View style={styles.legalIcon}>
+          <AppIcon name={icon} size={20} color={COLORS.accent} />
+        </View>
+        <Text style={styles.legalTitle}>{title}</Text>
+      </View>
+      <Text style={styles.legalText}>{text}</Text>
+    </View>
+  );
+}
 
 export default function TermsScreen({ navigation }) {
+  const { colors: COLORS, isDark } = useTheme();
+  const { t } = useLanguage();
+
+  const styles = useMemo(
+    () => createStyles(COLORS),
+    [COLORS]
+  );
+
+  const sections = useMemo(
+    () => [
+      {
+        icon: 'checkmark-done-outline',
+        title: t('terms.sections.acceptance.title'),
+        text: t('terms.sections.acceptance.text'),
+      },
+      {
+        icon: 'phone-portrait-outline',
+        title: t('terms.sections.permittedUse.title'),
+        text: t('terms.sections.permittedUse.text'),
+      },
+      {
+        icon: 'person-circle-outline',
+        title: t('terms.sections.account.title'),
+        text: t('terms.sections.account.text'),
+      },
+      {
+        icon: 'wallet-outline',
+        title: t('terms.sections.financialData.title'),
+        text: t('terms.sections.financialData.text'),
+      },
+      {
+        icon: 'scan-outline',
+        title: t('terms.sections.ai.title'),
+        text: t('terms.sections.ai.text'),
+      },
+      {
+        icon: 'cloud-outline',
+        title: t('terms.sections.availability.title'),
+        text: t('terms.sections.availability.text'),
+      },
+      {
+        icon: 'shield-checkmark-outline',
+        title: t('terms.sections.security.title'),
+        text: t('terms.sections.security.text'),
+      },
+      {
+        icon: 'code-slash-outline',
+        title: t('terms.sections.intellectualProperty.title'),
+        text: t('terms.sections.intellectualProperty.text'),
+      },
+      {
+        icon: 'refresh-outline',
+        title: t('terms.sections.updates.title'),
+        text: t('terms.sections.updates.text'),
+      },
+      {
+        icon: 'alert-circle-outline',
+        title: t('terms.sections.liability.title'),
+        text: t('terms.sections.liability.text'),
+      },
+      {
+        icon: 'close-circle-outline',
+        title: t('terms.sections.suspension.title'),
+        text: t('terms.sections.suspension.text'),
+      },
+      {
+        icon: 'mail-outline',
+        title: t('terms.sections.contact.title'),
+        text: t('terms.sections.contact.text'),
+      }
+    ],
+    [t]
+  );
+
   return (
     <View style={styles.flex}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+      <StatusBar
+        barStyle={isDark ? 'light-content' : 'dark-content'}
+        backgroundColor={COLORS.bg}
+      />
 
-      <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.topBar}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
         >
-          <Ionicons name="chevron-back" size={22} color={COLORS.accent} />
-          <Text style={styles.backText}>Volver</Text>
+          <AppIcon
+            name="chevron-back"
+            size={22}
+            color={COLORS.textPrimary}
+          />
         </TouchableOpacity>
 
-        <Text style={styles.title}>Términos y condiciones</Text>
-        <Text style={styles.updated}>Última actualización: Junio 2026</Text>
+        <Text style={styles.topBarTitle}>
+          {t('terms.title')}
+        </Text>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>1. Uso de Spendly</Text>
-          <Text style={styles.paragraph}>
-            Spendly es una aplicación de gestión financiera personal diseñada
-            para registrar ingresos, gastos y visualizar información básica
-            sobre el ahorro del usuario.
+        <View style={styles.topBarSpacer} />
+      </View>
+
+      <ScrollView
+        style={styles.flex}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.heroCard}>
+          <View style={styles.heroIcon}>
+            <AppIcon
+              name="document-text-outline"
+              size={30}
+              color={COLORS.accent}
+            />
+          </View>
+
+          <Text style={styles.heroTitle}>
+            {t('terms.title')}
           </Text>
 
-          <Text style={styles.sectionTitle}>2. Registro de información</Text>
-          <Text style={styles.paragraph}>
-            El usuario es responsable de ingresar información correcta y
-            verificar los datos antes de guardarlos, especialmente cuando se
-            utilicen funciones de escaneo de tickets mediante OCR o inteligencia
-            artificial.
-          </Text>
-
-          <Text style={styles.sectionTitle}>3. Seguridad de la cuenta</Text>
-          <Text style={styles.paragraph}>
-            El usuario debe mantener la confidencialidad de sus credenciales de
-            acceso. Spendly no solicitará contraseñas fuera de la pantalla de
-            inicio de sesión.
-          </Text>
-
-          <Text style={styles.sectionTitle}>4. Uso de OCR e IA</Text>
-          <Text style={styles.paragraph}>
-            Las funciones de OCR e inteligencia artificial pueden asistir en la
-            carga automática de gastos, pero sus resultados pueden no ser
-            exactos. El usuario deberá confirmar o corregir la información antes
-            de guardarla.
-          </Text>
-
-          <Text style={styles.sectionTitle}>5. Limitación de responsabilidad</Text>
-          <Text style={styles.paragraph}>
-            Spendly tiene fines educativos y de organización personal. La
-            aplicación no reemplaza asesoramiento financiero, contable o legal
-            profesional.
-          </Text>
-
-          <Text style={styles.sectionTitle}>6. Cambios futuros</Text>
-          <Text style={styles.paragraph}>
-            Estos términos podrán actualizarse a medida que se incorporen nuevas
-            funcionalidades al proyecto.
+          <Text style={styles.heroSubtitle}>
+            {t('terms.subtitle')}
           </Text>
         </View>
+
+        <View style={styles.metaCard}>
+          <MetaItem
+            icon="document-text-outline"
+            label={t('terms.meta.versionLabel')}
+            value={t('terms.meta.versionValue')}
+            styles={styles}
+            COLORS={COLORS}
+          />
+          <MetaItem
+            icon="calendar-outline"
+            label={t('terms.meta.updatedLabel')}
+            value={t('terms.meta.updatedValue')}
+            styles={styles}
+            COLORS={COLORS}
+          />
+          <MetaItem
+            icon="people-outline"
+            label={t('terms.meta.responsibleLabel')}
+            value="Team GST"
+            styles={styles}
+            COLORS={COLORS}
+          />
+        </View>
+
+        <Text style={styles.sectionTitle}>
+          {t('terms.contentTitle')}
+        </Text>
+
+        <View style={styles.legalList}>
+          {sections.map((section, index) => (
+            <LegalCard
+              key={section.title}
+              icon={section.icon}
+              title={section.title}
+              text={section.text}
+              isLast={index === sections.length - 1}
+              styles={styles}
+              COLORS={COLORS}
+            />
+          ))}
+        </View>
+
+        <View style={styles.noticeCard}>
+          <AppIcon
+            name="information-circle-outline"
+            size={20}
+            color={COLORS.blue}
+          />
+          <Text style={styles.noticeText}>
+            {t('terms.notice')}
+          </Text>
+        </View>
+
+        <Text style={styles.footerText}>
+          Spendly © 2026
+        </Text>
+
+        <View style={styles.bottomSpacer} />
       </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: COLORS.bg },
-  container: {
-    paddingHorizontal: 24,
-    paddingTop: 56,
-    paddingBottom: 40,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 28,
-    alignSelf: 'flex-start',
-  },
-  backText: {
-    color: COLORS.accent,
-    fontSize: 15,
-    fontWeight: '600',
-    marginLeft: 4,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-    marginBottom: 8,
-  },
-  updated: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    marginBottom: 24,
-  },
-  card: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: 22,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-    marginTop: 18,
-    marginBottom: 8,
-  },
-  paragraph: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    lineHeight: 22,
-  },
-}); 
+function createStyles(COLORS) {
+  return StyleSheet.create({
+    flex: {
+      flex: 1,
+      backgroundColor: COLORS.bg,
+    },
+    topBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingTop: 56,
+      paddingBottom: 16,
+      paddingHorizontal: 20,
+      backgroundColor: COLORS.bg,
+    },
+    backButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: COLORS.surface,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    topBarTitle: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: COLORS.textPrimary,
+    },
+    topBarSpacer: {
+      width: 40,
+    },
+    content: {
+      paddingHorizontal: 20,
+      paddingTop: 8,
+      paddingBottom: 30,
+    },
+    heroCard: {
+      backgroundColor: COLORS.surface,
+      borderRadius: 24,
+      borderWidth: 1,
+      borderColor: `${COLORS.accent}29`,
+      padding: 22,
+      marginBottom: 18,
+      alignItems: 'center',
+    },
+    heroIcon: {
+      width: 62,
+      height: 62,
+      borderRadius: 31,
+      backgroundColor: COLORS.accentDim,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 14,
+    },
+    heroTitle: {
+      fontSize: 22,
+      fontWeight: '800',
+      color: COLORS.textPrimary,
+      textAlign: 'center',
+      marginBottom: 7,
+    },
+    heroSubtitle: {
+      fontSize: 13,
+      color: COLORS.textSecondary,
+      textAlign: 'center',
+      lineHeight: 20,
+    },
+    metaCard: {
+      backgroundColor: COLORS.surface,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      marginBottom: 22,
+      overflow: 'hidden',
+    },
+    metaItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.border,
+    },
+    metaIcon: {
+      width: 38,
+      height: 38,
+      borderRadius: 12,
+      backgroundColor: COLORS.accentDim,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    metaBody: {
+      flex: 1,
+    },
+    metaLabel: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: COLORS.textMuted,
+      textTransform: 'uppercase',
+      letterSpacing: 0.7,
+      marginBottom: 3,
+    },
+    metaValue: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: COLORS.textPrimary,
+    },
+    sectionTitle: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: COLORS.textMuted,
+      textTransform: 'uppercase',
+      letterSpacing: 0.8,
+      marginBottom: 10,
+      marginLeft: 2,
+    },
+    legalList: {
+      gap: 10,
+    },
+    legalCard: {
+      backgroundColor: COLORS.surface,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 17,
+    },
+    legalCardLast: {
+      marginBottom: 0,
+    },
+    legalHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 11,
+      marginBottom: 10,
+    },
+    legalIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 13,
+      backgroundColor: COLORS.accentDim,
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+    },
+    legalTitle: {
+      flex: 1,
+      fontSize: 15,
+      fontWeight: '800',
+      color: COLORS.textPrimary,
+      lineHeight: 21,
+    },
+    legalText: {
+      fontSize: 13,
+      color: COLORS.textSecondary,
+      lineHeight: 21,
+    },
+    noticeCard: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 10,
+      backgroundColor: COLORS.surface,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      padding: 16,
+      marginTop: 18,
+    },
+    noticeText: {
+      flex: 1,
+      fontSize: 12,
+      color: COLORS.textSecondary,
+      lineHeight: 18,
+    },
+    footerText: {
+      marginTop: 28,
+      textAlign: 'center',
+      fontSize: 12,
+      color: COLORS.textMuted,
+      fontWeight: '600',
+    },
+    bottomSpacer: {
+      height: 30,
+    },
+  });
+}
