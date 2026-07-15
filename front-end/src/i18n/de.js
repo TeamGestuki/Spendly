@@ -687,4 +687,52 @@ notifications: {
   goalCompleted: { title: 'Ziel erreicht', subtitle: 'Celebrate when you reach the target amount.' },
   copy: { dailyTitle: 'Any transaction still pending?', dailyBody: 'Recording today’s activity takes less than a minute.', weeklyTitle: 'Your weekly financial summary is ready', weeklyBody: 'Review income, expenses and your weekly balance.', monthlyTitle: 'A new month, a new summary', monthlyBody: 'See how the previous month ended in Statistics.', testTitle: 'Spendly is ready', testBody: 'Notifications are working correctly.' },
 },
+
+goals: {
+  title: 'Ziele', subtitle: 'Verwandle deine Ziele in echten Fortschritt.', loading: 'Ziele werden geladen...', search: 'Ziele suchen...',
+  filters: { all: 'Alle', active: 'Aktiv', paused: 'Pausiert', completed: 'Abgeschlossen', cancelled: 'Abgebrochen' },
+  status: { active: 'Aktiv', paused: 'Pausiert', completed: 'Abgeschlossen', cancelled: 'Abgebrochen' },
+  priority: { low: 'Niedrig', medium: 'Mittel', high: 'Hoch' },
+  category: { emergency: 'Notfall', travel: 'Reise', home: 'Zuhause', education: 'Bildung', vehicle: 'Fahrzeug', technology: 'Technik', health: 'Gesundheit', other: 'Sonstiges' },
+  summary: { active: 'Aktiv', completed: 'Abgeschlossen', saved: 'Gesamt gespart' }, card: { remaining: 'Offen' },
+  empty: { title: 'Noch keine Ziele', text: 'Erstelle dein erstes Ziel und erfasse Einzahlungen.' },
+  actions: { create: 'Ziel erstellen', saveChanges: 'Änderungen speichern', contribute: 'Einzahlen', withdraw: 'Abheben', confirm: 'Bestätigen', edit: 'Bearbeiten', pause: 'Pausieren', resume: 'Fortsetzen', cancelGoal: 'Ziel abbrechen', delete: 'Löschen' },
+  form: { createTitle: 'Neues Ziel', editTitle: 'Ziel bearbeiten', namePlaceholder: 'Z. B. Japanreise', descriptionPlaceholder: 'Was möchtest du erreichen?', targetAmount: 'Zielbetrag', category: 'Kategorie', priority: 'Priorität' },
+  detail: { of: 'von', history: 'Bewegungsverlauf' }, movement: { aporte: 'Einzahlung', retiro: 'Auszahlung', ajuste: 'Anpassung' },
+  movementForm: { aporte: 'Einzahlung erfassen', retiro: 'Auszahlung erfassen', ajuste: 'Anpassung erfassen', amount: 'Betrag', note: 'Optionale Notiz' },
+  validation: { name: 'Gib einen Namen ein.', amount: 'Gib einen gültigen Zielbetrag ein.', movementAmount: 'Gib einen gültigen Betrag ein.' },
+  confirm: { deleteTitle: 'Ziel löschen', deleteText: 'Das Ziel und der Verlauf werden dauerhaft gelöscht.', deleteMovementTitle: 'Bewegung löschen', deleteMovementText: 'Der Fortschritt wird neu berechnet.' },
+  notifications: { deadlineTitle: 'Ein Ziel nähert sich der Frist', deadlineBody: 'Das Ziel „{goal}“ ist in wenigen Tagen fällig.', progressTitle: 'Großer Fortschritt!', progressBody: 'Das Ziel „{goal}“ hat {percentage}% erreicht.', completedTitle: 'Ziel erreicht!', completedBody: 'Du hast das Ziel „{goal}“ erreicht.' },
+  errors: { load: 'Ziele konnten nicht geladen werden.', save: 'Das Ziel konnte nicht gespeichert werden.', movement: 'Die Bewegung konnte nicht gespeichert werden.' }
+},
+
+support: { 
+  category:{ 
+    transactions:'Transaktionen', 
+    profile:'Profil', 
+    authentication:'Anmeldung', 
+    scan:'Scannen', 
+    statistics:'Statistiken', 
+    goals:'Ziele', 
+    notifications:'Benachrichtigungen', 
+    appearance:'Darstellung', 
+    language:'Sprache', 
+    currency:'Währung', 
+    performance:'Leistung', 
+    other:'Sonstiges' }, 
+    
+    status:{ 
+      all:'Alle', 
+      open:'Offen', 
+      in_review:'In Prüfung', 
+      resolved:'Gelöst', 
+      closed:'Geschlossen' }, 
+      
+    validation:{ 
+      subject:'Der Betreff muss mindestens 5 Zeichen enthalten.', 
+      description:'Die Beschreibung muss mindestens 10 Zeichen enthalten.' }, 
+      success:{ 
+        title:'Bericht gesendet', 
+        text:'Der Bericht wurde gespeichert. Den Status findest du unter Meine Berichte.' }, 
+        errors:{ submit:'Der Bericht konnte nicht gesendet werden.' }, report:{ title:'Problem melden', heroTitle:'Erzähl uns, was passiert ist', heroText:'Dein Bericht hilft uns, Spendly zu verbessern.', category:'Kategorie', subject:'Betreff', subjectPlaceholder:'Problem kurz zusammenfassen', description:'Beschreibung', descriptionPlaceholder:'Was ist passiert und was hast du erwartet?', steps:'Schritte zum Nachstellen', stepsPlaceholder:'1. Öffnen...\n2. Tippen...\n3. Es passiert...', technicalTitle:'Technische Informationen hinzufügen', technicalText:'Fügt App-Version, System und Gerätemodell hinzu.', privacy:'Passwörter und Finanzdaten werden nicht gesendet.', submit:'Bericht senden' }, list:{ title:'Meine Berichte', loading:'Berichte werden geladen...', emptyTitle:'Noch keine Berichte', emptyText:'Erstelle einen Bericht, wenn du Hilfe brauchst.', create:'Bericht erstellen' }, detail:{ title:'Berichtdetails', description:'Beschreibung', steps:'Schritte zum Nachstellen', dates:'Daten', created:'Erstellt', updated:'Aktualisiert', resolved:'Gelöst', technical:'Technische Informationen', appVersion:'App-Version', platform:'Plattform', os:'Betriebssystem', device:'Gerät', responseTitle:'Antwort des Teams', pendingTitle:'Antwort ausstehend', pendingText:'Das Team hat noch nicht geantwortet.' } },
 };

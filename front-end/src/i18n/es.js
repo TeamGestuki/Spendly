@@ -690,4 +690,27 @@ notifications: {
   },
 },
 
+goals: {
+  title: 'Metas', subtitle: 'Convertí tus objetivos en progreso real.', loading: 'Cargando metas...', search: 'Buscar metas...',
+  filters: { all: 'Todas', active: 'Activas', paused: 'Pausadas', completed: 'Completadas', cancelled: 'Canceladas' },
+  status: { active: 'Activa', paused: 'Pausada', completed: 'Completada', cancelled: 'Cancelada' },
+  priority: { low: 'Baja', medium: 'Media', high: 'Alta' },
+  category: { emergency: 'Emergencia', travel: 'Viaje', home: 'Hogar', education: 'Educación', vehicle: 'Vehículo', technology: 'Tecnología', health: 'Salud', other: 'Otra' },
+  summary: { active: 'Activas', completed: 'Completadas', saved: 'Total ahorrado' },
+  card: { remaining: 'Falta' },
+  empty: { title: 'Todavía no tenés metas', text: 'Creá tu primer objetivo y empezá a registrar aportes.' },
+  actions: { create: 'Crear meta', saveChanges: 'Guardar cambios', contribute: 'Aportar', withdraw: 'Retirar', confirm: 'Confirmar', edit: 'Editar', pause: 'Pausar', resume: 'Reanudar', cancelGoal: 'Cancelar meta', delete: 'Eliminar' },
+  form: { createTitle: 'Nueva meta', editTitle: 'Editar meta', namePlaceholder: 'Ej. Viaje a Japón', descriptionPlaceholder: '¿Qué querés lograr?', targetAmount: 'Monto objetivo', category: 'Categoría', priority: 'Prioridad' },
+  detail: { of: 'de', history: 'Historial de movimientos' },
+  movement: { aporte: 'Aporte', retiro: 'Retiro', ajuste: 'Ajuste' },
+  movementForm: { aporte: 'Registrar aporte', retiro: 'Registrar retiro', ajuste: 'Registrar ajuste', amount: 'Monto', note: 'Nota opcional' },
+  validation: { name: 'Ingresá un nombre para la meta.', amount: 'Ingresá un monto objetivo válido.', movementAmount: 'Ingresá un monto válido.' },
+  confirm: { deleteTitle: 'Eliminar meta', deleteText: 'La meta y todo su historial se eliminarán definitivamente.', deleteMovementTitle: 'Eliminar movimiento', deleteMovementText: 'El progreso de la meta se recalculará.' },
+  notifications: { deadlineTitle: 'Una meta está cerca de vencer', deadlineBody: 'La meta “{goal}” vence dentro de pocos días.', progressTitle: '¡Gran progreso!', progressBody: 'La meta “{goal}” ya alcanzó el {percentage}%.', completedTitle: '¡Meta completada!', completedBody: 'Alcanzaste el objetivo de “{goal}”.' },
+  errors: { load: 'No se pudieron cargar las metas.', save: 'No se pudo guardar la meta.', movement: 'No se pudo registrar el movimiento.' }
+},
+
+support: { category: { transactions:'Transacciones', profile:'Perfil', authentication:'Autenticación', scan:'Escaneo', statistics:'Estadísticas', goals:'Metas', notifications:'Notificaciones', appearance:'Apariencia', language:'Idioma', currency:'Moneda', performance:'Rendimiento', other:'Otro' }, status:{ all:'Todos', open:'Abierto', in_review:'En revisión', resolved:'Resuelto', closed:'Cerrado' }, validation:{ subject:'El asunto debe tener al menos 5 caracteres.', description:'La descripción debe tener al menos 10 caracteres.' }, success:{ title:'Reporte enviado', text:'Guardamos tu reporte correctamente. Podés seguir su estado desde Mis reportes.' }, errors:{ submit:'No se pudo enviar el reporte.' }, report:{ title:'Reportar un problema', heroTitle:'Contanos qué pasó', heroText:'Tu reporte nos ayuda a detectar errores y mejorar Spendly.', category:'Categoría', subject:'Asunto', subjectPlaceholder:'Resumí el problema', description:'Descripción', descriptionPlaceholder:'Explicá qué ocurrió y qué esperabas que pasara.', steps:'Pasos para reproducir', stepsPlaceholder:'1. Abrí...\n2. Toqué...\n3. Ocurrió...', technicalTitle:'Incluir información técnica', technicalText:'Adjunta versión de la app, sistema operativo y modelo del dispositivo.', privacy:'No se envían contraseñas, datos bancarios ni movimientos financieros.', submit:'Enviar reporte' }, list:{ title:'Mis reportes', loading:'Cargando reportes...', emptyTitle:'Todavía no enviaste reportes', emptyText:'Cuando necesites ayuda, podés crear un reporte desde acá.', create:'Crear reporte' }, detail:{ title:'Detalle del reporte', description:'Descripción', steps:'Pasos para reproducir', dates:'Fechas', created:'Creado', updated:'Actualizado', resolved:'Resuelto', technical:'Información técnica', appVersion:'Versión de la app', platform:'Plataforma', os:'Sistema operativo', device:'Dispositivo', responseTitle:'Respuesta del equipo', pendingTitle:'Esperando respuesta', pendingText:'El equipo todavía no respondió este reporte.' } },
+
+
 };

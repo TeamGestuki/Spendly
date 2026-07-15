@@ -34,6 +34,9 @@ import ThemeSettingsScreen from './src/screens/ThemeSettingsScreen';
 import AboutSpendlyScreen from './src/screens/AboutSpendlyScreen';
 import HelpCenterScreen from './src/screens/HelpCenterScreen';
 import NotificationsScreen from './src/screens/NotificationsScreen';
+import ReportProblemScreen from './src/screens/ReportProblemScreen';
+import MyReportsScreen from './src/screens/MyReportsScreen';
+import ReportDetailScreen from './src/screens/ReportDetailScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -291,9 +294,19 @@ export default function App() {
             options={{headerShown: false,}}
           />
 
-          <Stack.Screen
-            name="ReportProblem"
-            component={HomeScreen}
+          <Stack.Screen 
+            name="ReportProblem" 
+            component={ReportProblemScreen} 
+          />
+
+          <Stack.Screen 
+            name="MyReports" 
+            component={MyReportsScreen} 
+          />
+
+          <Stack.Screen 
+            name="ReportDetail" 
+            component={ReportDetailScreen} 
           />
 
           <Stack.Screen

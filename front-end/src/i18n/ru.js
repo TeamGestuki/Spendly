@@ -663,4 +663,25 @@ notifications: {
   copy: { dailyTitle: 'Any transaction still pending?', dailyBody: 'Recording today’s activity takes less than a minute.', weeklyTitle: 'Your weekly financial summary is ready', weeklyBody: 'Review income, expenses and your weekly balance.', monthlyTitle: 'A new month, a new summary', monthlyBody: 'See how the previous month ended in Statistics.', testTitle: 'Spendly is ready', testBody: 'Notifications are working correctly.' },
 },
 
+goals: {
+  title: 'Цели', subtitle: 'Превращайте цели в реальный прогресс.', loading: 'Загрузка целей...', search: 'Поиск целей...',
+  filters: { all: 'Все', active: 'Активные', paused: 'Приостановленные', completed: 'Завершённые', cancelled: 'Отменённые' },
+  status: { active: 'Активная', paused: 'Приостановлена', completed: 'Завершена', cancelled: 'Отменена' },
+  priority: { low: 'Низкий', medium: 'Средний', high: 'Высокий' },
+  category: { emergency: 'Резерв', travel: 'Путешествие', home: 'Дом', education: 'Образование', vehicle: 'Автомобиль', technology: 'Технологии', health: 'Здоровье', other: 'Другое' },
+  summary: { active: 'Активные', completed: 'Завершённые', saved: 'Всего накоплено' }, card: { remaining: 'Осталось' },
+  empty: { title: 'Целей пока нет', text: 'Создайте первую цель и начните добавлять взносы.' },
+  actions: { create: 'Создать цель', saveChanges: 'Сохранить', contribute: 'Внести', withdraw: 'Снять', confirm: 'Подтвердить', edit: 'Изменить', pause: 'Пауза', resume: 'Продолжить', cancelGoal: 'Отменить цель', delete: 'Удалить' },
+  form: { createTitle: 'Новая цель', editTitle: 'Изменить цель', namePlaceholder: 'Напр. поездка в Японию', descriptionPlaceholder: 'Чего вы хотите достичь?', targetAmount: 'Целевая сумма', category: 'Категория', priority: 'Приоритет' },
+  detail: { of: 'из', history: 'История операций' }, movement: { aporte: 'Взнос', retiro: 'Снятие', ajuste: 'Корректировка' },
+  movementForm: { aporte: 'Добавить взнос', retiro: 'Добавить снятие', ajuste: 'Добавить корректировку', amount: 'Сумма', note: 'Необязательная заметка' },
+  validation: { name: 'Введите название цели.', amount: 'Введите корректную целевую сумму.', movementAmount: 'Введите корректную сумму.' },
+  confirm: { deleteTitle: 'Удалить цель', deleteText: 'Цель и история будут удалены навсегда.', deleteMovementTitle: 'Удалить операцию', deleteMovementText: 'Прогресс будет пересчитан.' },
+  notifications: { deadlineTitle: 'Срок цели приближается', deadlineBody: 'До срока цели «{goal}» осталось несколько дней.', progressTitle: 'Отличный прогресс!', progressBody: 'Цель «{goal}» достигла {percentage}%.', completedTitle: 'Цель достигнута!', completedBody: 'Вы достигли цели «{goal}».' },
+  errors: { load: 'Не удалось загрузить цели.', save: 'Не удалось сохранить цель.', movement: 'Не удалось записать операцию.' }
+},
+
+support: { category:{ transactions:'Операции', profile:'Профиль', authentication:'Авторизация', scan:'Сканирование', statistics:'Статистика', goals:'Цели', notifications:'Уведомления', appearance:'Оформление', language:'Язык', currency:'Валюта', performance:'Производительность', other:'Другое' }, status:{ all:'Все', open:'Открыт', in_review:'На рассмотрении', resolved:'Решён', closed:'Закрыт' }, validation:{ subject:'Тема должна содержать не менее 5 символов.', description:'Описание должно содержать не менее 10 символов.' }, success:{ title:'Отчёт отправлен', text:'Отчёт сохранён. Статус доступен в разделе «Мои отчёты».' }, errors:{ submit:'Не удалось отправить отчёт.' }, report:{ title:'Сообщить о проблеме', heroTitle:'Расскажите, что произошло', heroText:'Ваш отчёт помогает улучшать Spendly.', category:'Категория', subject:'Тема', subjectPlaceholder:'Кратко опишите проблему', description:'Описание', descriptionPlaceholder:'Что произошло и чего вы ожидали?', steps:'Шаги воспроизведения', stepsPlaceholder:'1. Открыть...\n2. Нажать...\n3. Происходит...', technicalTitle:'Добавить технические данные', technicalText:'Версия приложения, ОС и модель устройства.', privacy:'Пароли и финансовые данные не отправляются.', submit:'Отправить отчёт' }, list:{ title:'Мои отчёты', loading:'Загрузка отчётов...', emptyTitle:'Отчётов пока нет', emptyText:'Создайте отчёт, когда понадобится помощь.', create:'Создать отчёт' }, detail:{ title:'Детали отчёта', description:'Описание', steps:'Шаги воспроизведения', dates:'Даты', created:'Создан', updated:'Обновлён', resolved:'Решён', technical:'Технические данные', appVersion:'Версия приложения', platform:'Платформа', os:'Операционная система', device:'Устройство', responseTitle:'Ответ команды', pendingTitle:'Ожидание ответа', pendingText:'Команда пока не ответила.' } },
+
+
 };
