@@ -111,7 +111,7 @@ def create_goal(
     current_user: User = Depends(get_current_user),
 ):
     try:
-        if goal_data.goal.target_amount <= 0:
+        if goal_data.target_amount <= 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="El monto objetivo debe ser mayor a cero",
@@ -121,7 +121,7 @@ def create_goal(
         new_goal = Goal(
             name=goal_data.name,
             description=goal_data.description,
-            target_amount=goal_data.goal.target_amount,
+            target_amount=goal_data.target_amount,
             current_amount=0.0,
             currency=goal_data.currency.upper() if goal_data.currency else "ARS",
             target_date=goal_data.target_date,

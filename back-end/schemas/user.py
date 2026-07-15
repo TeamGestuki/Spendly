@@ -15,6 +15,7 @@ class UserResponse(UserBase):
     is_active: bool
     profile_image_url: str | None = None
     preferred_currency: str = "ARS"
+    role: str = "user"
 
     class Config:
         from_attributes = True
