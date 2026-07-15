@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, StatusBar, TouchableOpacity, RefreshControl,} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const COLORS = {
@@ -42,8 +42,8 @@ export default function GoalsScreen({ navigation }) {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Expenses')}>
-          <AppIcon name="card-outline" size={24} color={COLORS.textMuted} />
-          <Text style={styles.navLabel}>Gastos</Text>
+          <AppIcon name="swap-horizontal-outline" size={24} color={COLORS.textMuted} />
+          <Text style={styles.navLabel}>Movimientos</Text>
         </TouchableOpacity>
 
         <TouchableOpacity

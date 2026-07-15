@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -10,29 +10,22 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { changePassword } from '../services/authService';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
-const COLORS = {
-  bg: '#0D0F14',
-  surface: '#161A23',
-  surfaceHigh: '#1E2330',
-  border: '#272D3D',
-  accent: '#4ADE80',
-  accentDim: '#1A3D28',
-  textPrimary: '#F0F2F7',
-  textSecondary: '#9CA3AF',
-  textMuted: '#6B748A',
-  red: '#F87171',
-  blue: '#60A5FA',
-};
 
-function AppIcon({ name, size = 20, color = COLORS.textSecondary }) {
+function AppIcon({ name, size = 20, color }) {
   return <Ionicons name={name} size={size} color={color} />;
 }
 
 export default function ChangePasswordScreen({ navigation }) {
+  const { colors: COLORS, isDark } = useTheme();
+  const { t } = useLanguage();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
@@ -47,19 +40,19 @@ export default function ChangePasswordScreen({ navigation }) {
 
   const validate = () => {
     if (!currentPassword || !newPassword || !repeatPassword) {
-      return 'Completá todos los campos.';
+      return t('changePassword.validation.required');
     }
 
     if (newPassword.length < 8) {
-      return 'La nueva contraseña debe tener al menos 8 caracteres.';
+      return t('changePassword.validation.minLength');
     }
 
     if (currentPassword === newPassword) {
-      return 'La nueva contraseña debe ser diferente a la actual.';
+      return t('changePassword.validation.samePassword');
     }
 
     if (newPassword !== repeatPassword) {
-      return 'Las contraseñas nuevas no coinciden.';
+      return t('changePassword.validation.noMatch');
     }
 
     return '';
@@ -81,7 +74,7 @@ export default function ChangePasswordScreen({ navigation }) {
 
       setSuccessModalVisible(true);
     } catch (e) {
-      setError(e.message || 'No se pudo cambiar la contraseña.');
+      setError(e.message || t('changePassword.saveError'));
     } finally {
       setLoading(false);
     }
@@ -98,7 +91,10 @@ export default function ChangePasswordScreen({ navigation }) {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             keyboardVerticalOffset={0}
         >
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+      <StatusBar
+        barStyle={isDark ? 'light-content' : 'dark-content'}
+        backgroundColor={COLORS.bg}
+      />
 
       <View style={styles.topBar}>
         <TouchableOpacity
@@ -109,7 +105,7 @@ export default function ChangePasswordScreen({ navigation }) {
           <AppIcon name="chevron-back" size={22} color={COLORS.textPrimary} />
         </TouchableOpacity>
 
-        <Text style={styles.topBarTitle}>Cambiar contraseña</Text>
+        <Text style={styles.topBarTitle}>{t('changePassword.title')}</Text>
 
         <View style={{ width: 40 }} />
       </View>
@@ -125,15 +121,15 @@ export default function ChangePasswordScreen({ navigation }) {
             <AppIcon name="lock-closed-outline" size={28} color={COLORS.accent} />
           </View>
 
-          <Text style={styles.heroTitle}>Actualizá tu clave</Text>
+          <Text style={styles.heroTitle}>{t('changePassword.heroTitle')}</Text>
 
           <Text style={styles.heroText}>
-            Usá una contraseña segura y diferente a la anterior para proteger tu cuenta.
+            {t('changePassword.heroText')}
           </Text>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.label}>Contraseña actual</Text>
+          <Text style={styles.label}>{t('changePassword.currentPassword')}</Text>
           <View style={styles.inputWrapper}>
             <TextInput
               style={styles.input}
@@ -142,7 +138,7 @@ export default function ChangePasswordScreen({ navigation }) {
                 setCurrentPassword(value);
                 setError('');
               }}
-              placeholder="Ingresá tu contraseña actual"
+              placeholder={t('changePassword.currentPlaceholder')}
               placeholderTextColor={COLORS.textMuted}
               secureTextEntry={!showCurrent}
               autoCapitalize="none"
@@ -157,7 +153,7 @@ export default function ChangePasswordScreen({ navigation }) {
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.label}>Nueva contraseña</Text>
+          <Text style={styles.label}>{t('changePassword.newPassword')}</Text>
           <View style={styles.inputWrapper}>
             <TextInput
               style={styles.input}
@@ -166,7 +162,7 @@ export default function ChangePasswordScreen({ navigation }) {
                 setNewPassword(value);
                 setError('');
               }}
-              placeholder="Mínimo 8 caracteres"
+              placeholder={t('changePassword.newPlaceholder')}
               placeholderTextColor={COLORS.textMuted}
               secureTextEntry={!showNew}
               autoCapitalize="none"
@@ -181,7 +177,7 @@ export default function ChangePasswordScreen({ navigation }) {
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.label}>Repetir nueva contraseña</Text>
+          <Text style={styles.label}>{t('changePassword.repeatPassword')}</Text>
           <View style={styles.inputWrapper}>
             <TextInput
               style={styles.input}
@@ -190,7 +186,7 @@ export default function ChangePasswordScreen({ navigation }) {
                 setRepeatPassword(value);
                 setError('');
               }}
-              placeholder="Repetí la nueva contraseña"
+              placeholder={t('changePassword.repeatPlaceholder')}
               placeholderTextColor={COLORS.textMuted}
               secureTextEntry={!showRepeat}
               autoCapitalize="none"
@@ -222,10 +218,19 @@ export default function ChangePasswordScreen({ navigation }) {
           disabled={loading}
           activeOpacity={0.85}
         >
+          {loading && (
+            <ActivityIndicator
+              size="small"
+              color={COLORS.buttonText || COLORS.bg}
+            />
+          )}
+
           <Text style={styles.saveBtnText}>
-            {loading ? 'Guardando...' : 'Guardar nueva contraseña'}
+            {loading ? t('changePassword.saving') : t('changePassword.save')}
           </Text>
         </TouchableOpacity>
+
+        <Text style={styles.footerText}>Spendly © 2026</Text>
       </ScrollView>
 
       <Modal
@@ -240,10 +245,10 @@ export default function ChangePasswordScreen({ navigation }) {
               <AppIcon name="checkmark-circle-outline" size={34} color={COLORS.accent} />
             </View>
 
-            <Text style={styles.modalTitle}>Contraseña actualizada</Text>
+            <Text style={styles.modalTitle}>{t('changePassword.successTitle')}</Text>
 
             <Text style={styles.modalText}>
-              Tu contraseña se cambió correctamente.
+              {t('changePassword.successText')}
             </Text>
 
             <TouchableOpacity
@@ -251,7 +256,7 @@ export default function ChangePasswordScreen({ navigation }) {
               onPress={closeSuccessModal}
               activeOpacity={0.85}
             >
-              <Text style={styles.modalBtnText}>Entendido</Text>
+              <Text style={styles.modalBtnText}>{t('common.accept')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -260,7 +265,8 @@ export default function ChangePasswordScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(COLORS) {
+  return StyleSheet.create({
   flex: {
     flex: 1,
     backgroundColor: COLORS.bg,
@@ -301,7 +307,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(74,222,128,0.16)',
+    borderColor: `${COLORS.accent}29`,
     padding: 22,
     marginBottom: 22,
     alignItems: 'center',
@@ -368,9 +374,9 @@ const styles = StyleSheet.create({
   errorBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(248,113,113,0.10)',
+    backgroundColor: `${COLORS.red}1A`,
     borderWidth: 1,
-    borderColor: 'rgba(248,113,113,0.25)',
+    borderColor: `${COLORS.red}40`,
     borderRadius: 14,
     padding: 12,
     gap: 8,
@@ -388,6 +394,8 @@ const styles = StyleSheet.create({
     height: 54,
     borderRadius: 16,
     backgroundColor: COLORS.accent,
+    flexDirection: 'row',
+    gap: 9,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -399,7 +407,7 @@ const styles = StyleSheet.create({
   saveBtnText: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#0D1A12',
+    color: COLORS.buttonText || COLORS.bg,
   },
 
   modalOverlay: {
@@ -457,6 +465,15 @@ const styles = StyleSheet.create({
   modalBtnText: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#0D1A12',
+    color: COLORS.buttonText || COLORS.bg,
   },
-});
+
+  footerText: {
+    marginTop: 28,
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    textAlign: 'center',
+  },
+  });
+}
