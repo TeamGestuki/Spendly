@@ -49,8 +49,9 @@ def send_support_email(report: SupportReport, user_email: str):
         from email.mime.text import MIMEText
 
         msg = MIMEMultipart()
-        msg["From"] = user_email
+        msg["From"] = SMTP_USERNAME
         msg["To"] = SMTP_USERNAME
+        msg["Reply-To"] = user_email
         msg["Subject"] = f"Nuevo reporte de soporte: {report.subject}"
 
         email_body = f"""

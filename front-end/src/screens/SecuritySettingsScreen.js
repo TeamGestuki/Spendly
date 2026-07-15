@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -8,29 +8,17 @@ import {
   StatusBar,
   Switch,
   Modal,
+  Alert,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
-const COLORS = {
-  bg: '#0D0F14',
-  surface: '#161A23',
-  surfaceHigh: '#1E2330',
-  border: '#272D3D',
-  accent: '#4ADE80',
-  accentDim: '#1A3D28',
-  textPrimary: '#F0F2F7',
-  textSecondary: '#9CA3AF',
-  textMuted: '#6B748A',
-  red: '#F87171',
-  blue: '#60A5FA',
-  orange: '#FB923C',
-  purple: '#C084FC',
-};
 
-function AppIcon({ name, size = 20, color = COLORS.textSecondary }) {
+function AppIcon({ name, size = 20, color }) {
   return <Ionicons name={name} size={size} color={color} />;
 }
 
@@ -43,6 +31,8 @@ function SecurityItem({
   rightElement,
   disabled = false,
   isLast = false,
+  styles,
+  COLORS,
 }) {
   return (
     <TouchableOpacity
@@ -80,11 +70,13 @@ function SecurityItem({
 }
 
 export default function SecuritySettingsScreen({ navigation }) {
+  const { colors: COLORS, isDark } = useTheme();
+  const { t } = useLanguage();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
  const [biometricEnabled, setBiometricEnabled] = useState(false);
 const [pinEnabled, setPinEnabled] = useState(false);
 const [biometricAvailable, setBiometricAvailable] = useState(false);
 const [biometricEnrolled, setBiometricEnrolled] = useState(false);
-const [securityAlertsEnabled, setSecurityAlertsEnabled] = useState(true);
 const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
 const [pinModalVisible, setPinModalVisible] = useState(false);
@@ -132,7 +124,7 @@ const [pinError, setPinError] = useState('');
       await LocalAuthentication.hasHardwareAsync();
 
     if (!compatible) {
-      alert('Este dispositivo no soporta Face ID o huella.');
+      Alert.alert(t('common.error'), t('security.biometricUnavailable'));
       return;
     }
 
@@ -140,16 +132,16 @@ const [pinError, setPinError] = useState('');
       await LocalAuthentication.isEnrolledAsync();
 
     if (!enrolled) {
-      alert('No tenés Face ID o huella configurados.');
+      Alert.alert(t('common.error'), t('security.biometricNotConfigured'));
       return;
     }
 
     const result =
       await LocalAuthentication.authenticateAsync({
         promptMessage: value
-          ? 'Activar Face ID para Spendly'
-          : 'Desactivar Face ID para Spendly',
-        cancelLabel: 'Cancelar',
+          ? t('security.enableBiometricPrompt')
+          : t('security.disableBiometricPrompt'),
+        cancelLabel: t('common.cancel'),
         disableDeviceFallback: false,
       });
 
@@ -204,7 +196,7 @@ const handlePinPress = async (digit) => {
 
     if (nextValue.length === 4) {
       if (nextValue !== pinValue) {
-        setPinError('Los PIN no coinciden.');
+        setPinError(t('security.pinMismatch'));
         setPinConfirmValue('');
         return;
       }
@@ -250,7 +242,7 @@ const handlePinPress = async (digit) => {
       await AsyncStorage.getItem('spendly_pin');
 
     if (nextValue !== savedPin) {
-      setPinError('PIN incorrecto.');
+      setPinError(t('security.incorrectPin'));
       setPinValue('');
       return;
     }
@@ -307,7 +299,7 @@ const closePinModal = () => {
 
   return (
     <View style={styles.flex}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={COLORS.bg} />
 
       <View style={styles.topBar}>
         <TouchableOpacity
@@ -318,7 +310,7 @@ const closePinModal = () => {
           <AppIcon name="chevron-back" size={22} color={COLORS.textPrimary} />
         </TouchableOpacity>
 
-        <Text style={styles.topBarTitle}>Seguridad y acceso</Text>
+        <Text style={styles.topBarTitle}>{t('security.title')}</Text>
 
         <View style={{ width: 40 }} />
       </View>
@@ -333,27 +325,45 @@ const closePinModal = () => {
             <AppIcon name="shield-checkmark-outline" size={28} color={COLORS.accent} />
           </View>
 
-          <Text style={styles.heroTitle}>Protegé tu cuenta</Text>
+          <Text style={styles.heroTitle}>{t('security.heroTitle')}</Text>
           <Text style={styles.heroText}>
-            Administrá tu contraseña, métodos de acceso y seguridad local del dispositivo.
+            {t('security.heroText')}
           </Text>
         </View>
 
-        <Text style={styles.sectionTitle}>Acceso</Text>
+        <Text style={styles.sectionTitle}>{t('security.access')}</Text>
         <View style={styles.card}>
           <SecurityItem
+            styles={styles}
+            COLORS={COLORS}
             icon="lock-closed-outline"
             iconColor={COLORS.blue}
-            label="Cambiar contraseña"
-            value="Actualizá tu clave de acceso"
-            onPress={() => navigation.navigate('ChangePassword')}
+            label={t('security.changePassword')}
+            value={t('security.changePasswordSubtitle')}
+            onPress={() => {
+              if (pinEnabled) {
+                navigation.navigate(
+                  'PinUnlock',
+                  {
+                    redirectTo:
+                      'ChangePassword',
+                  }
+                );
+              } else {
+                navigation.navigate(
+                  'ChangePassword'
+                );
+              }
+            }}
           />
 
           <SecurityItem
+            styles={styles}
+            COLORS={COLORS}
             icon="finger-print-outline"
             iconColor={COLORS.accent}
-            label="Face ID / huella"
-            value={biometricEnabled ? 'Activado' : 'Desactivado'}
+            label={t('security.biometric')}
+            value={biometricEnabled ? t('security.enabled') : t('security.disabled')}
             disabled={biometricBlocked}
             rightElement={
               <Switch
@@ -374,10 +384,12 @@ const closePinModal = () => {
           />
 
           <SecurityItem
+            styles={styles}
+            COLORS={COLORS}
             icon="keypad-outline"
             iconColor={COLORS.purple}
-            label="PIN de acceso"
-            value={pinEnabled ? 'Activado' : 'Próximamente funcional'}
+            label={t('security.accessPin')}
+            value={pinEnabled ? t('security.enabled') : t('security.disabled')}
             disabled={pinBlocked}
             rightElement={
               <Switch
@@ -398,53 +410,32 @@ const closePinModal = () => {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Sesión</Text>
+        <Text style={styles.sectionTitle}>{t('security.sessions')}</Text>
         <View style={styles.card}>
 
           <SecurityItem
+            styles={styles}
+            COLORS={COLORS}
             icon="desktop-outline"
             iconColor={COLORS.orange}
-            label="Dispositivos conectados"
-            value="Ver sesiones activas"
+            label={t('security.connectedDevices')}
+            value={t('security.connectedDevicesSubtitle')}
             onPress={() => navigation.navigate('Sessions')}
           />
 
           <SecurityItem
+            styles={styles}
+            COLORS={COLORS}
             icon="log-out-outline"
             iconColor={COLORS.red}
-            label="Cerrar sesión en este dispositivo"
-            value="Salir de Spendly en este celular"
+            label={t('security.logoutDevice')}
+            value={t('security.logoutDeviceSubtitle')}
             onPress={handleLogoutDevice}
             isLast
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Alertas</Text>
-        <View style={styles.card}>
-          <SecurityItem
-            icon="notifications-outline"
-            iconColor={COLORS.orange}
-            label="Alertas de seguridad"
-            value={securityAlertsEnabled ? 'Activadas' : 'Desactivadas'}
-            rightElement={
-              <Switch
-                value={securityAlertsEnabled}
-                onValueChange={setSecurityAlertsEnabled}
-                trackColor={{ false: COLORS.border, true: COLORS.accentDim }}
-                thumbColor={securityAlertsEnabled ? COLORS.accent : COLORS.textMuted}
-              />
-            }
-          />
-
-          <SecurityItem
-            icon="mail-outline"
-            iconColor={COLORS.blue}
-            label="Avisos por email"
-            value="Próximamente"
-            disabled
-            isLast
-          />
-        </View>
+        <Text style={styles.footerText}>Spendly © 2026</Text>
       </ScrollView>
       
       <Modal
@@ -480,17 +471,17 @@ const closePinModal = () => {
             <Text style={styles.modalTitle}>
               {pinMode === 'create'
                 ? pinStep === 'enter'
-                  ? 'Crear PIN'
-                  : 'Confirmar PIN'
-                : 'Desactivar PIN'}
+                  ? t('security.createPin')
+                  : t('security.confirmPin')
+                : t('security.disablePin')}
             </Text>
 
             <Text style={styles.modalText}>
               {pinMode === 'create'
                 ? pinStep === 'enter'
-                  ? 'Ingresá un PIN de 4 dígitos para proteger Spendly.'
-                  : 'Volvé a ingresar el PIN para confirmarlo.'
-                : 'Ingresá tu PIN actual para desactivarlo.'}
+                  ? t('security.createPinText')
+                  : t('security.confirmPinText')
+                : t('security.disablePinText')}
             </Text>
 
             <Text style={styles.pinDots}>
@@ -543,7 +534,7 @@ const closePinModal = () => {
               style={styles.cancelBtn}
               onPress={closePinModal}
             >
-              <Text style={styles.cancelText}>Cancelar</Text>
+              <Text style={styles.cancelText}>{t('common.cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -561,10 +552,10 @@ const closePinModal = () => {
               <AppIcon name="log-out-outline" size={26} color={COLORS.red} />
             </View>
 
-            <Text style={styles.modalTitle}>Cerrar sesión</Text>
+            <Text style={styles.modalTitle}>{t('security.logoutTitle')}</Text>
 
             <Text style={styles.modalText}>
-              ¿Querés cerrar sesión en este dispositivo?
+              {t('security.logoutConfirm')}
             </Text>
 
             <View style={styles.modalActions}>
@@ -573,7 +564,7 @@ const closePinModal = () => {
                 onPress={() => setLogoutModalVisible(false)}
                 activeOpacity={0.8}
               >
-                <Text style={styles.cancelText}>Cancelar</Text>
+                <Text style={styles.cancelText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -581,7 +572,7 @@ const closePinModal = () => {
                 onPress={confirmLogout}
                 activeOpacity={0.8}
               >
-                <Text style={styles.confirmText}>Cerrar sesión</Text>
+                <Text style={styles.confirmText}>{t('security.logoutTitle')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -591,7 +582,8 @@ const closePinModal = () => {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(COLORS) {
+  return StyleSheet.create({
   flex: {
     flex: 1,
     backgroundColor: COLORS.bg,
@@ -632,7 +624,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(74,222,128,0.16)',
+    borderColor: `${COLORS.accent}29`,
     padding: 22,
     marginBottom: 24,
     alignItems: 'center',
@@ -742,7 +734,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(248,113,113,0.12)',
+    backgroundColor: `${COLORS.red}1F`,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -784,9 +776,9 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     borderRadius: 14,
-    backgroundColor: 'rgba(248,113,113,0.14)',
+    backgroundColor: `${COLORS.red}24`,
     borderWidth: 1,
-    borderColor: 'rgba(248,113,113,0.35)',
+    borderColor: `${COLORS.red}59`,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -840,4 +832,6 @@ pinKeyText: {
   fontWeight: '800',
   color: COLORS.textPrimary,
 },
-});
+  footerText: { marginTop: 8, textAlign: 'center', fontSize: 12, fontWeight: '600', color: COLORS.textMuted },
+  });
+}
