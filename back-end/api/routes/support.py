@@ -4,7 +4,15 @@ from typing import List, Optional
 
 from api.dependencies import get_current_session, get_current_user
 from core.database import get_db
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Path,
+    Query,
+    status,
+)
 from fastapi.responses import JSONResponse
 from models.session import UserSession
 from models.support_report import SupportReport
@@ -41,8 +49,23 @@ SMTP_USERNAME = os.getenv("SMTP_USER")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
 
-def send_support_email(report: SupportReport, user_email: str):
-    """Send notification email to support team"""
+def send_support_email(
+    report_id: int,
+    user_name: str,
+    user_email: str,
+    category: str,
+    subject: str,
+    description: str,
+    steps_to_reproduce: str,
+    include_technical_info: bool,
+    app_version: str,
+    platform: str,
+    os_version: str,
+    device_model: str,
+    report_status: str,
+    created_at: str,
+):
+    """Send notification email to support team (runs in background)"""
     try:
         import smtplib
         from email.mime.multipart import MIMEMultipart
@@ -52,33 +75,33 @@ def send_support_email(report: SupportReport, user_email: str):
         msg["From"] = SMTP_USERNAME
         msg["To"] = SMTP_USERNAME
         msg["Reply-To"] = user_email
-        msg["Subject"] = f"Nuevo reporte de soporte: {report.subject}"
+        msg["Subject"] = f"Nuevo reporte de soporte: {subject}"
 
         email_body = f"""
         Nuevo reporte de soporte creado:
 
-        ID: {report.id}
-        Usuario: {report.user.full_name} ({report.user.email})
-        Categoría: {report.category}
-        Asunto: {report.subject}
-        Descripción: {report.description}
+        ID: {report_id}
+        Usuario: {user_name} ({user_email})
+        Categoría: {category}
+        Asunto: {subject}
+        Descripción: {description}
 
         Información Técnica:
-        - Plataforma: {report.platform or "N/A"}
-        - OS: {report.os_version or "N/A"}
-        - App: {report.app_version or "N/A"}
-        - Dispositivo: {report.device_model or "N/A"}
-        - Incluir info técnica: {report.include_technical_info}
+        - Plataforma: {platform or "N/A"}
+        - OS: {os_version or "N/A"}
+        - App: {app_version or "N/A"}
+        - Dispositivo: {device_model or "N/A"}
+        - Incluir info técnica: {include_technical_info}
 
-        Pasos para reproducir: {report.steps_to_reproduce or "N/A"}
+        Pasos para reproducir: {steps_to_reproduce or "N/A"}
 
-        Estado: {report.status}
-        Creado el: {report.created_at}
+        Estado: {report_status}
+        Creado el: {created_at}
         """
 
         msg.attach(MIMEText(email_body, "plain"))
 
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
             server.starttls()
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
             server.send_message(msg)
@@ -94,6 +117,7 @@ def send_support_email(report: SupportReport, user_email: str):
 )
 async def create_support_report(
     report_data: SupportReportCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -119,8 +143,27 @@ async def create_support_report(
     db.commit()
     db.refresh(new_report)
 
-    # Send email notification to support team
-    send_support_email(new_report, current_user.email)
+    # Send email notification in background (non-blocking)
+    if SMTP_HOST and SMTP_USERNAME and SMTP_PASSWORD:
+        background_tasks.add_task(
+            send_support_email,
+            report_id=new_report.id,
+            user_name=current_user.full_name,
+            user_email=current_user.email,
+            category=str(new_report.category),
+            subject=new_report.subject,
+            description=new_report.description,
+            steps_to_reproduce=new_report.steps_to_reproduce,
+            include_technical_info=new_report.include_technical_info,
+            app_version=new_report.app_version,
+            platform=new_report.platform,
+            os_version=new_report.os_version,
+            device_model=new_report.device_model,
+            report_status=str(new_report.status),
+            created_at=str(new_report.created_at),
+        )
+    else:
+        logger.warning("SMTP no configurado. Reporte guardado sin enviar email.")
 
     logger.info(f"¡Reporte de soporte creado: {new_report.id} - {new_report.subject}")
 
@@ -236,4 +279,3 @@ async def update_support_report(
     logger.info(f"Report {report_id} updated by user {current_user.id}")
 
     return report
-
