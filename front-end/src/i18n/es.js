@@ -712,5 +712,66 @@ goals: {
 
 support: { category: { transactions:'Transacciones', profile:'Perfil', authentication:'Autenticación', scan:'Escaneo', statistics:'Estadísticas', goals:'Metas', notifications:'Notificaciones', appearance:'Apariencia', language:'Idioma', currency:'Moneda', performance:'Rendimiento', other:'Otro' }, status:{ all:'Todos', open:'Abierto', in_review:'En revisión', resolved:'Resuelto', closed:'Cerrado' }, validation:{ subject:'El asunto debe tener al menos 5 caracteres.', description:'La descripción debe tener al menos 10 caracteres.' }, success:{ title:'Reporte enviado', text:'Guardamos tu reporte correctamente. Podés seguir su estado desde Mis reportes.' }, errors:{ submit:'No se pudo enviar el reporte.' }, report:{ title:'Reportar un problema', heroTitle:'Contanos qué pasó', heroText:'Tu reporte nos ayuda a detectar errores y mejorar Spendly.', category:'Categoría', subject:'Asunto', subjectPlaceholder:'Resumí el problema', description:'Descripción', descriptionPlaceholder:'Explicá qué ocurrió y qué esperabas que pasara.', steps:'Pasos para reproducir', stepsPlaceholder:'1. Abrí...\n2. Toqué...\n3. Ocurrió...', technicalTitle:'Incluir información técnica', technicalText:'Adjunta versión de la app, sistema operativo y modelo del dispositivo.', privacy:'No se envían contraseñas, datos bancarios ni movimientos financieros.', submit:'Enviar reporte' }, list:{ title:'Mis reportes', loading:'Cargando reportes...', emptyTitle:'Todavía no enviaste reportes', emptyText:'Cuando necesites ayuda, podés crear un reporte desde acá.', create:'Crear reporte' }, detail:{ title:'Detalle del reporte', description:'Descripción', steps:'Pasos para reproducir', dates:'Fechas', created:'Creado', updated:'Actualizado', resolved:'Resuelto', technical:'Información técnica', appVersion:'Versión de la app', platform:'Plataforma', os:'Sistema operativo', device:'Dispositivo', responseTitle:'Respuesta del equipo', pendingTitle:'Esperando respuesta', pendingText:'El equipo todavía no respondió este reporte.' } },
 
+home: {
+  greeting: 'Hola, {name}',
+  welcomeBack: 'Bienvenido de nuevo',
+  defaultUser: 'Usuario',
+  loading: 'Cargando resumen...',
+  balanceMonth: 'Balance total del mes',
+  income: 'Ingresos',
+  expenses: 'Gastos',
+  available: 'Disponible',
+  monthSummary: 'Resumen del mes',
+  totalSpent: 'Total gastado',
+  totalIncome: 'Total ingresado',
+  topCategory: 'Categoría principal',
+  noData: 'Sin datos',
+  featuredGoal: 'Meta destacada',
+  goalProgress: '{percent}% completado',
+  recentExpenses: 'Gastos recientes',
+  categories: 'Categorías',
+  viewAll: 'Ver todos',
+  expenseNoDescription: 'Gasto sin descripción',
+  otherCategory: 'Otros',
+
+  quick: {
+    expense: 'Gasto',
+    income: 'Ingreso',
+    scan: 'Escanear',
+    stats: 'Stats',
+  },
+
+  emptyGoal: {
+    title: 'Todavía no tenés metas activas',
+    text:
+      'Creá una meta para seguir tu progreso desde la pantalla principal.',
+    action: 'Crear meta',
+  },
+
+  emptyExpenses: {
+    title: 'Todavía no hay gastos',
+    text:
+      'Cuando cargues tus primeros gastos, van a aparecer acá.',
+    action: 'Agregar gasto',
+  },
+
+  emptyCategories: {
+    title: 'Sin categorías todavía',
+    text:
+      'No registraste gastos en ninguna categoría durante este mes.',
+  },
+
+  date: {
+    today: 'Hoy',
+    yesterday: 'Ayer',
+  },
+
+  errors: {
+    title: 'No pudimos actualizar la Home',
+    load:
+      'No se pudieron cargar los datos principales.',
+    retry: 'Reintentar',
+  },
+},
 
 };

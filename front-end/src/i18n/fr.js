@@ -719,4 +719,66 @@ goals: {
 support: { category:{ transactions:'Transactions', profile:'Profil', authentication:'Authentification', scan:'Scan', statistics:'Statistiques', goals:'Objectifs', notifications:'Notifications', appearance:'Apparence', language:'Langue', currency:'Devise', performance:'Performances', other:'Autre' }, status:{ all:'Tous', open:'Ouvert', in_review:'En cours', resolved:'Résolu', closed:'Fermé' }, validation:{ subject:'Le sujet doit contenir au moins 5 caractères.', description:'La description doit contenir au moins 10 caractères.' }, success:{ title:'Rapport envoyé', text:'Votre rapport a été enregistré. Suivez son état dans Mes rapports.' }, errors:{ submit:'Impossible d’envoyer le rapport.' }, report:{ title:'Signaler un problème', heroTitle:'Dites-nous ce qui s’est passé', heroText:'Votre rapport nous aide à améliorer Spendly.', category:'Catégorie', subject:'Sujet', subjectPlaceholder:'Résumez le problème', description:'Description', descriptionPlaceholder:'Expliquez ce qui s’est passé et le résultat attendu.', steps:'Étapes de reproduction', stepsPlaceholder:'1. Ouvrir...\n2. Appuyer...\n3. Le problème apparaît...', technicalTitle:'Inclure les informations techniques', technicalText:'Ajoute la version, le système et le modèle de l’appareil.', privacy:'Aucun mot de passe ou donnée financière n’est envoyé.', submit:'Envoyer le rapport' }, list:{ title:'Mes rapports', loading:'Chargement des rapports...', emptyTitle:'Aucun rapport envoyé', emptyText:'Créez un rapport lorsque vous avez besoin d’aide.', create:'Créer un rapport' }, detail:{ title:'Détail du rapport', description:'Description', steps:'Étapes de reproduction', dates:'Dates', created:'Créé', updated:'Mis à jour', resolved:'Résolu', technical:'Informations techniques', appVersion:'Version de l’application', platform:'Plateforme', os:'Système', device:'Appareil', responseTitle:'Réponse de l’équipe', pendingTitle:'En attente de réponse', pendingText:'L’équipe n’a pas encore répondu.' } },
 
 
+home: {
+  greeting: 'Bonjour, {name}',
+  welcomeBack: 'Bon retour',
+  defaultUser: 'Utilisateur',
+  loading: 'Chargement du résumé...',
+  balanceMonth: 'Solde total du mois',
+  income: 'Revenus',
+  expenses: 'Dépenses',
+  available: 'Disponible',
+  monthSummary: 'Résumé du mois',
+  totalSpent: 'Total dépensé',
+  totalIncome: 'Total reçu',
+  topCategory: 'Catégorie principale',
+  noData: 'Aucune donnée',
+  featuredGoal: 'Objectif mis en avant',
+  goalProgress: '{percent}% terminé',
+  recentExpenses: 'Dépenses récentes',
+  categories: 'Catégories',
+  viewAll: 'Tout voir',
+  expenseNoDescription: 'Dépense sans description',
+  otherCategory: 'Autre',
+
+  quick: {
+    expense: 'Dépense',
+    income: 'Revenu',
+    scan: 'Scanner',
+    stats: 'Stats',
+  },
+
+  emptyGoal: {
+    title: 'Aucun objectif actif',
+    text:
+      'Créez un objectif pour suivre sa progression depuis l’accueil.',
+    action: 'Créer un objectif',
+  },
+
+  emptyExpenses: {
+    title: 'Aucune dépense',
+    text:
+      'Vos premières dépenses apparaîtront ici.',
+    action: 'Ajouter une dépense',
+  },
+
+  emptyCategories: {
+    title: 'Aucune catégorie',
+    text:
+      'Aucune dépense n’a été enregistrée par catégorie ce mois-ci.',
+  },
+
+  date: {
+    today: 'Aujourd’hui',
+    yesterday: 'Hier',
+  },
+
+  errors: {
+    title: 'Impossible de mettre à jour l’accueil',
+    load:
+      'Les données principales n’ont pas pu être chargées.',
+    retry: 'Réessayer',
+  },
+},
+
 };

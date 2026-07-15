@@ -683,5 +683,66 @@ goals: {
 
 support: { category:{ transactions:'Операции', profile:'Профиль', authentication:'Авторизация', scan:'Сканирование', statistics:'Статистика', goals:'Цели', notifications:'Уведомления', appearance:'Оформление', language:'Язык', currency:'Валюта', performance:'Производительность', other:'Другое' }, status:{ all:'Все', open:'Открыт', in_review:'На рассмотрении', resolved:'Решён', closed:'Закрыт' }, validation:{ subject:'Тема должна содержать не менее 5 символов.', description:'Описание должно содержать не менее 10 символов.' }, success:{ title:'Отчёт отправлен', text:'Отчёт сохранён. Статус доступен в разделе «Мои отчёты».' }, errors:{ submit:'Не удалось отправить отчёт.' }, report:{ title:'Сообщить о проблеме', heroTitle:'Расскажите, что произошло', heroText:'Ваш отчёт помогает улучшать Spendly.', category:'Категория', subject:'Тема', subjectPlaceholder:'Кратко опишите проблему', description:'Описание', descriptionPlaceholder:'Что произошло и чего вы ожидали?', steps:'Шаги воспроизведения', stepsPlaceholder:'1. Открыть...\n2. Нажать...\n3. Происходит...', technicalTitle:'Добавить технические данные', technicalText:'Версия приложения, ОС и модель устройства.', privacy:'Пароли и финансовые данные не отправляются.', submit:'Отправить отчёт' }, list:{ title:'Мои отчёты', loading:'Загрузка отчётов...', emptyTitle:'Отчётов пока нет', emptyText:'Создайте отчёт, когда понадобится помощь.', create:'Создать отчёт' }, detail:{ title:'Детали отчёта', description:'Описание', steps:'Шаги воспроизведения', dates:'Даты', created:'Создан', updated:'Обновлён', resolved:'Решён', technical:'Технические данные', appVersion:'Версия приложения', platform:'Платформа', os:'Операционная система', device:'Устройство', responseTitle:'Ответ команды', pendingTitle:'Ожидание ответа', pendingText:'Команда пока не ответила.' } },
 
+home: {
+  greeting: 'Здравствуйте, {name}',
+  welcomeBack: 'С возвращением',
+  defaultUser: 'Пользователь',
+  loading: 'Загрузка сводки...',
+  balanceMonth: 'Общий баланс за месяц',
+  income: 'Доходы',
+  expenses: 'Расходы',
+  available: 'Доступно',
+  monthSummary: 'Сводка за месяц',
+  totalSpent: 'Всего потрачено',
+  totalIncome: 'Всего получено',
+  topCategory: 'Главная категория',
+  noData: 'Нет данных',
+  featuredGoal: 'Главная цель',
+  goalProgress: 'Выполнено на {percent}%',
+  recentExpenses: 'Последние расходы',
+  categories: 'Категории',
+  viewAll: 'Показать все',
+  expenseNoDescription: 'Расход без описания',
+  otherCategory: 'Другое',
+
+  quick: {
+    expense: 'Расход',
+    income: 'Доход',
+    scan: 'Сканировать',
+    stats: 'Статистика',
+  },
+
+  emptyGoal: {
+    title: 'Активных целей пока нет',
+    text:
+      'Создайте цель, чтобы видеть прогресс на главном экране.',
+    action: 'Создать цель',
+  },
+
+  emptyExpenses: {
+    title: 'Расходов пока нет',
+    text:
+      'Первые расходы появятся здесь.',
+    action: 'Добавить расход',
+  },
+
+  emptyCategories: {
+    title: 'Категорий пока нет',
+    text:
+      'В этом месяце расходы по категориям ещё не зарегистрированы.',
+  },
+
+  date: {
+    today: 'Сегодня',
+    yesterday: 'Вчера',
+  },
+
+  errors: {
+    title: 'Не удалось обновить главный экран',
+    load:
+      'Не удалось загрузить основные данные.',
+    retry: 'Повторить',
+  },
+},
 
 };

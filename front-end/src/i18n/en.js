@@ -700,4 +700,66 @@ goals: {
 support: { category:{ transactions:'Transactions', profile:'Profile', authentication:'Authentication', scan:'Scanning', statistics:'Statistics', goals:'Goals', notifications:'Notifications', appearance:'Appearance', language:'Language', currency:'Currency', performance:'Performance', other:'Other' }, status:{ all:'All', open:'Open', in_review:'In review', resolved:'Resolved', closed:'Closed' }, validation:{ subject:'The subject must contain at least 5 characters.', description:'The description must contain at least 10 characters.' }, success:{ title:'Report sent', text:'Your report was saved. You can follow its status from My reports.' }, errors:{ submit:'The report could not be sent.' }, report:{ title:'Report a problem', heroTitle:'Tell us what happened', heroText:'Your report helps us find issues and improve Spendly.', category:'Category', subject:'Subject', subjectPlaceholder:'Summarize the problem', description:'Description', descriptionPlaceholder:'Explain what happened and what you expected.', steps:'Steps to reproduce', stepsPlaceholder:'1. Open...\n2. Tap...\n3. It happens...', technicalTitle:'Include technical information', technicalText:'Adds the app version, operating system and device model.', privacy:'Passwords, banking data and financial movements are never sent.', submit:'Send report' }, list:{ title:'My reports', loading:'Loading reports...', emptyTitle:'You have not sent any reports yet', emptyText:'Create a report here whenever you need help.', create:'Create report' }, detail:{ title:'Report details', description:'Description', steps:'Steps to reproduce', dates:'Dates', created:'Created', updated:'Updated', resolved:'Resolved', technical:'Technical information', appVersion:'App version', platform:'Platform', os:'Operating system', device:'Device', responseTitle:'Team response', pendingTitle:'Waiting for a response', pendingText:'The team has not responded to this report yet.' } },
 
 
+home: {
+  greeting: 'Hello, {name}',
+  welcomeBack: 'Welcome back',
+  defaultUser: 'User',
+  loading: 'Loading summary...',
+  balanceMonth: 'Total monthly balance',
+  income: 'Income',
+  expenses: 'Expenses',
+  available: 'Available',
+  monthSummary: 'Monthly summary',
+  totalSpent: 'Total spent',
+  totalIncome: 'Total income',
+  topCategory: 'Top category',
+  noData: 'No data',
+  featuredGoal: 'Featured goal',
+  goalProgress: '{percent}% completed',
+  recentExpenses: 'Recent expenses',
+  categories: 'Categories',
+  viewAll: 'View all',
+  expenseNoDescription: 'Expense without description',
+  otherCategory: 'Other',
+
+  quick: {
+    expense: 'Expense',
+    income: 'Income',
+    scan: 'Scan',
+    stats: 'Stats',
+  },
+
+  emptyGoal: {
+    title: 'You do not have active goals yet',
+    text:
+      'Create a goal to track progress from the Home screen.',
+    action: 'Create goal',
+  },
+
+  emptyExpenses: {
+    title: 'No expenses yet',
+    text:
+      'Your first expenses will appear here.',
+    action: 'Add expense',
+  },
+
+  emptyCategories: {
+    title: 'No categories yet',
+    text:
+      'No expenses were recorded in any category this month.',
+  },
+
+  date: {
+    today: 'Today',
+    yesterday: 'Yesterday',
+  },
+
+  errors: {
+    title: 'We could not update Home',
+    load:
+      'The main data could not be loaded.',
+    retry: 'Retry',
+  },
+},
+
 };

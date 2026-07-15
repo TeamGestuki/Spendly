@@ -735,4 +735,68 @@ support: {
         title:'Bericht gesendet', 
         text:'Der Bericht wurde gespeichert. Den Status findest du unter Meine Berichte.' }, 
         errors:{ submit:'Der Bericht konnte nicht gesendet werden.' }, report:{ title:'Problem melden', heroTitle:'Erzähl uns, was passiert ist', heroText:'Dein Bericht hilft uns, Spendly zu verbessern.', category:'Kategorie', subject:'Betreff', subjectPlaceholder:'Problem kurz zusammenfassen', description:'Beschreibung', descriptionPlaceholder:'Was ist passiert und was hast du erwartet?', steps:'Schritte zum Nachstellen', stepsPlaceholder:'1. Öffnen...\n2. Tippen...\n3. Es passiert...', technicalTitle:'Technische Informationen hinzufügen', technicalText:'Fügt App-Version, System und Gerätemodell hinzu.', privacy:'Passwörter und Finanzdaten werden nicht gesendet.', submit:'Bericht senden' }, list:{ title:'Meine Berichte', loading:'Berichte werden geladen...', emptyTitle:'Noch keine Berichte', emptyText:'Erstelle einen Bericht, wenn du Hilfe brauchst.', create:'Bericht erstellen' }, detail:{ title:'Berichtdetails', description:'Beschreibung', steps:'Schritte zum Nachstellen', dates:'Daten', created:'Erstellt', updated:'Aktualisiert', resolved:'Gelöst', technical:'Technische Informationen', appVersion:'App-Version', platform:'Plattform', os:'Betriebssystem', device:'Gerät', responseTitle:'Antwort des Teams', pendingTitle:'Antwort ausstehend', pendingText:'Das Team hat noch nicht geantwortet.' } },
+
+
+    home: {
+  greeting: 'Hallo, {name}',
+  welcomeBack: 'Willkommen zurück',
+  defaultUser: 'Benutzer',
+  loading: 'Übersicht wird geladen...',
+  balanceMonth: 'Gesamtsaldo des Monats',
+  income: 'Einnahmen',
+  expenses: 'Ausgaben',
+  available: 'Verfügbar',
+  monthSummary: 'Monatsübersicht',
+  totalSpent: 'Gesamtausgaben',
+  totalIncome: 'Gesamteinnahmen',
+  topCategory: 'Hauptkategorie',
+  noData: 'Keine Daten',
+  featuredGoal: 'Hervorgehobenes Ziel',
+  goalProgress: '{percent}% abgeschlossen',
+  recentExpenses: 'Letzte Ausgaben',
+  categories: 'Kategorien',
+  viewAll: 'Alle anzeigen',
+  expenseNoDescription: 'Ausgabe ohne Beschreibung',
+  otherCategory: 'Sonstiges',
+
+  quick: {
+    expense: 'Ausgabe',
+    income: 'Einnahme',
+    scan: 'Scannen',
+    stats: 'Statistik',
+  },
+
+  emptyGoal: {
+    title: 'Noch keine aktiven Ziele',
+    text:
+      'Erstelle ein Ziel, um den Fortschritt auf der Startseite zu sehen.',
+    action: 'Ziel erstellen',
+  },
+
+  emptyExpenses: {
+    title: 'Noch keine Ausgaben',
+    text:
+      'Deine ersten Ausgaben erscheinen hier.',
+    action: 'Ausgabe hinzufügen',
+  },
+
+  emptyCategories: {
+    title: 'Noch keine Kategorien',
+    text:
+      'Diesen Monat wurden keine Ausgaben nach Kategorie erfasst.',
+  },
+
+  date: {
+    today: 'Heute',
+    yesterday: 'Gestern',
+  },
+
+  errors: {
+    title: 'Die Startseite konnte nicht aktualisiert werden',
+    load:
+      'Die wichtigsten Daten konnten nicht geladen werden.',
+    retry: 'Erneut versuchen',
+  },
+},
+
 };

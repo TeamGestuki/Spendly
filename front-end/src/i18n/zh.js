@@ -690,4 +690,65 @@ goals: {
 support: { category:{ transactions:'交易', profile:'个人资料', authentication:'身份验证', scan:'扫描', statistics:'统计', goals:'目标', notifications:'通知', appearance:'外观', language:'语言', currency:'货币', performance:'性能', other:'其他' }, status:{ all:'全部', open:'已提交', in_review:'审核中', resolved:'已解决', closed:'已关闭' }, validation:{ subject:'主题至少需要 5 个字符。', description:'描述至少需要 10 个字符。' }, success:{ title:'报告已发送', text:'报告已保存，可在“我的报告”中查看状态。' }, errors:{ submit:'无法发送报告。' }, report:{ title:'报告问题', heroTitle:'告诉我们发生了什么', heroText:'您的报告有助于改进 Spendly。', category:'类别', subject:'主题', subjectPlaceholder:'简要说明问题', description:'描述', descriptionPlaceholder:'说明发生了什么以及预期结果。', steps:'复现步骤', stepsPlaceholder:'1. 打开...\n2. 点击...\n3. 出现...', technicalTitle:'包含技术信息', technicalText:'附加应用版本、系统和设备型号。', privacy:'不会发送密码或财务信息。', submit:'发送报告' }, list:{ title:'我的报告', loading:'正在加载报告...', emptyTitle:'您尚未发送报告', emptyText:'需要帮助时可在这里创建报告。', create:'创建报告' }, detail:{ title:'报告详情', description:'描述', steps:'复现步骤', dates:'日期', created:'创建', updated:'更新', resolved:'解决', technical:'技术信息', appVersion:'应用版本', platform:'平台', os:'操作系统', device:'设备', responseTitle:'团队回复', pendingTitle:'等待回复', pendingText:'团队尚未回复此报告。' } },
 
 
+home: {
+  greeting: '你好，{name}',
+  welcomeBack: '欢迎回来',
+  defaultUser: '用户',
+  loading: '正在加载摘要...',
+  balanceMonth: '本月总余额',
+  income: '收入',
+  expenses: '支出',
+  available: '可用余额',
+  monthSummary: '本月摘要',
+  totalSpent: '总支出',
+  totalIncome: '总收入',
+  topCategory: '主要类别',
+  noData: '暂无数据',
+  featuredGoal: '重点目标',
+  goalProgress: '已完成 {percent}%',
+  recentExpenses: '最近支出',
+  categories: '类别',
+  viewAll: '查看全部',
+  expenseNoDescription: '无描述支出',
+  otherCategory: '其他',
+
+  quick: {
+    expense: '支出',
+    income: '收入',
+    scan: '扫描',
+    stats: '统计',
+  },
+
+  emptyGoal: {
+    title: '暂无进行中的目标',
+    text:
+      '创建目标后即可在主页查看进度。',
+    action: '创建目标',
+  },
+
+  emptyExpenses: {
+    title: '暂无支出',
+    text:
+      '您的第一笔支出会显示在这里。',
+    action: '添加支出',
+  },
+
+  emptyCategories: {
+    title: '暂无类别',
+    text:
+      '本月尚未记录任何类别的支出。',
+  },
+
+  date: {
+    today: '今天',
+    yesterday: '昨天',
+  },
+
+  errors: {
+    title: '无法更新主页',
+    load:
+      '无法加载主要数据。',
+    retry: '重试',
+  },
+},
 };
