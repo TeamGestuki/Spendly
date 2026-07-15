@@ -1,15 +1,15 @@
-from datetime import datetime, timezone
 from typing import List, Optional
-
-from api.dependencies import get_current_user
-from core.database import get_db
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
+from core.database import get_db
+from api.dependencies import get_current_user
+from models.user import User
 from models.goal import Goal
 from models.goal_movement import GoalMovement
-from models.user import User
-from schemas.goal import GoalCreate, GoalResponse, GoalUpdate
+from schemas.goal import GoalCreate, GoalUpdate, GoalResponse
 from schemas.goal_movement import GoalMovementCreate, GoalMovementResponse
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 
