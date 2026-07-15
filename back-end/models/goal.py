@@ -37,6 +37,8 @@ class Goal(Base):
 
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
+    # Relaciones inversas (Un usuario tiene una lista de transacciones)
+    # No son relación que se ven en la base de datos
     owner = relationship("User", back_populates="goals")
     movements = relationship(
         "GoalMovement", back_populates="goal", cascade="all, delete-orphan"

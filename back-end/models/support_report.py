@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from core.database import Base
 
+
 class SupportReport(Base):
     __tablename__ = "support_reports"
 
@@ -20,8 +21,12 @@ class SupportReport(Base):
     status = Column(String(30), default="open", nullable=False)
     admin_response = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
     resolved_at = Column(DateTime(timezone=True), nullable=True)
 
-    # Relationships
+    # Relaciones inversas (Un usuario tiene una lista de transacciones)
+    # No son relación que se ven en la base de datos
     user = relationship("User", backref="support_reports")
+
