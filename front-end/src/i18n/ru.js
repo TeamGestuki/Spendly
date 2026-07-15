@@ -60,7 +60,7 @@ export default {
 
     defaultUser: 'Пользователь',
     verifyIdentity: 'Подтвердите личность',
-    versionValue: 'Версия 1.0.8',
+    version: 'Версия',
     profilePhoto: 'Фото профиля',
     viewProfilePhoto: 'Посмотреть фото профиля',
     updatePhoto: 'Обновить фото',

@@ -53,7 +53,7 @@ export default {
 
     defaultUser: 'Usuário',
     verifyIdentity: 'Verificar identidade',
-    versionValue: 'Versão 1.0.8',
+    version: 'Versão',
     profilePhoto: 'Foto de perfil',
     viewProfilePhoto: 'Ver foto de perfil',
     updatePhoto: 'Atualizar foto',

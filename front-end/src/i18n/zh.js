@@ -71,7 +71,7 @@ export default {
 
     defaultUser: '用户',
     verifyIdentity: '验证身份',
-    versionValue: '版本 1.0.8',
+    version: '版本',
     profilePhoto: '个人资料照片',
     viewProfilePhoto: '查看个人资料照片',
     updatePhoto: '更新照片',

@@ -86,7 +86,7 @@ export default {
 
     defaultUser: 'Utilisateur',
     verifyIdentity: 'Vérifier l’identité',
-    versionValue: 'Version 1.0.8',
+    version: 'Version',
     profilePhoto: 'Photo de profil',
     viewProfilePhoto: 'Voir la photo de profil',
     updatePhoto: 'Modifier la photo',

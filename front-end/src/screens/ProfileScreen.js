@@ -28,6 +28,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
+import Constants from 'expo-constants';
 
 import {
   getCurrentUser,
@@ -99,6 +100,9 @@ export default function ProfileScreen({ navigation }) {
     () => createStyles(COLORS),
     [COLORS]
   );
+
+  const appVersion =
+    Constants.expoConfig?.version || '1.1.0';
 
   function SettingItem({
     icon,
@@ -475,7 +479,7 @@ export default function ProfileScreen({ navigation }) {
             icon="information-circle-outline"
             iconColor={COLORS.purple}
             label={t('profile.about')}
-            value={t('profile.versionValue')}
+            value={`${t('profile.version')} ${appVersion}`}
             onPress={() => navigation.navigate('AboutSpendly')}
             isLast
           />
