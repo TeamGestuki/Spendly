@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey
 from sqlalchemy.orm import relationship
 from core.database import Base
 
+
 class Transaction(Base):
     __tablename__ = "transactions"
 
@@ -13,4 +14,7 @@ class Transaction(Base):
     date = Column(Date, nullable=False)
     currency = Column(String(10), default="ARS")
     owner_id = Column(Integer, ForeignKey("users.id"))
+
+    # Relaciones inversas (Un usuario tiene una lista de transacciones)
+    # No son relación que se ven en la base de datos
     owner = relationship("User", back_populates="transactions")

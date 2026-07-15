@@ -14,6 +14,8 @@ class UserResponse(UserBase):
     id: int
     is_active: bool
     profile_image_url: str | None = None
+    preferred_currency: str = "ARS"
+    role: str = "user"
 
     class Config:
         from_attributes = True
@@ -31,4 +33,8 @@ class MessageResponse(BaseModel):
     message: str
 
 class UpdateProfile(BaseModel):
-    full_name: str = Field(min_length=1)
+    full_name: str | None = None
+    preferred_currency: str | None = None
+
+class ConfirmPassword(BaseModel):
+    current_password: str

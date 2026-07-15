@@ -47,11 +47,21 @@ export const registerUser = async (
   return data;
 };
 
-export const loginUser = async (email, password) => {
+export const loginUser = async (
+  email,
+  password,
+  rememberSession = false,
+  deviceName = 'Dispositivo móvil'
+) => {
   const formData = new URLSearchParams();
 
   formData.append("username", email);
   formData.append("password", password);
+  formData.append(
+    "remember_me",
+    rememberSession ? "true" : "false"
+  );
+  formData.append("device_name", deviceName);
 
   const response = await fetch(`${API_URL}/login`, {
     method: "POST",
@@ -62,9 +72,6 @@ export const loginUser = async (email, password) => {
   });
 
   const data = await parseResponse(response);
-
-  console.log("LOGIN STATUS:", response.status);
-  console.log("LOGIN DATA:", data);
 
   if (!response.ok) {
     throw new Error(
@@ -231,6 +238,103 @@ export const changePassword = async (
   if (!response.ok) {
     throw new Error(
       data.detail || 'No se pudo cambiar la contraseña'
+    );
+  }
+
+  return data;
+};
+
+export const getActiveSessions = async () => {
+  const token = await AsyncStorage.getItem('access_token');
+
+  if (!token) {
+    throw new Error('No hay sesión activa');
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/profile/sessions`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await parseResponse(response);
+
+  if (!response.ok) {
+    throw new Error(
+      data.detail || 'No se pudieron obtener las sesiones'
+    );
+  }
+
+  return data;
+};
+
+export const revokeSession = async (
+  sessionId,
+  currentPassword
+) => {
+  const token = await AsyncStorage.getItem('access_token');
+
+  if (!token) {
+    throw new Error('No hay sesión activa');
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/profile/sessions/${sessionId}`,
+    {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        current_password: currentPassword,
+      }),
+    }
+  );
+
+  const data = await parseResponse(response);
+
+  if (!response.ok) {
+    throw new Error(
+      data.detail || 'No se pudo cerrar la sesión'
+    );
+  }
+
+  return data;
+};
+
+export const revokeOtherSessions = async (
+  currentPassword
+) => {
+  const token = await AsyncStorage.getItem('access_token');
+
+  if (!token) {
+    throw new Error('No hay sesión activa');
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/profile/sessions`,
+    {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        current_password: currentPassword,
+      }),
+    }
+  );
+
+  const data = await parseResponse(response);
+
+  if (!response.ok) {
+    throw new Error(
+      data.detail || 'No se pudieron cerrar las sesiones'
     );
   }
 
