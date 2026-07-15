@@ -670,4 +670,87 @@ notifications: {
   },
 },
 
+goals: {
+  title: 'Metas', subtitle: 'Transforme seus objetivos em progresso real.', loading: 'Carregando metas...', search: 'Buscar metas...',
+  filters: { all: 'Todas', active: 'Ativas', paused: 'Pausadas', completed: 'Concluídas', cancelled: 'Canceladas' },
+  status: { active: 'Ativa', paused: 'Pausada', completed: 'Concluída', cancelled: 'Cancelada' },
+  priority: { low: 'Baixa', medium: 'Média', high: 'Alta' },
+  category: { emergency: 'Emergência', travel: 'Viagem', home: 'Casa', education: 'Educação', vehicle: 'Veículo', technology: 'Tecnologia', health: 'Saúde', other: 'Outra' },
+  summary: { active: 'Ativas', completed: 'Concluídas', saved: 'Total economizado' }, card: { remaining: 'Falta' },
+  empty: { title: 'Você ainda não tem metas', text: 'Crie seu primeiro objetivo e comece a registrar contribuições.' },
+  actions: { create: 'Criar meta', saveChanges: 'Salvar alterações', contribute: 'Contribuir', withdraw: 'Retirar', confirm: 'Confirmar', edit: 'Editar', pause: 'Pausar', resume: 'Retomar', cancelGoal: 'Cancelar meta', delete: 'Excluir' },
+  form: { createTitle: 'Nova meta', editTitle: 'Editar meta', namePlaceholder: 'Ex. Viagem ao Japão', descriptionPlaceholder: 'O que você quer alcançar?', targetAmount: 'Valor-alvo', category: 'Categoria', priority: 'Prioridade' },
+  detail: { of: 'de', history: 'Histórico de movimentações' }, movement: { aporte: 'Contribuição', retiro: 'Retirada', ajuste: 'Ajuste' },
+  movementForm: { aporte: 'Registrar contribuição', retiro: 'Registrar retirada', ajuste: 'Registrar ajuste', amount: 'Valor', note: 'Nota opcional' },
+  validation: { name: 'Digite um nome para a meta.', amount: 'Digite um valor-alvo válido.', movementAmount: 'Digite um valor válido.' },
+  confirm: { deleteTitle: 'Excluir meta', deleteText: 'A meta e todo o histórico serão excluídos definitivamente.', deleteMovementTitle: 'Excluir movimentação', deleteMovementText: 'O progresso da meta será recalculado.' },
+  notifications: { deadlineTitle: 'Uma meta está perto do prazo', deadlineBody: 'A meta “{goal}” vence em poucos dias.', progressTitle: 'Ótimo progresso!', progressBody: 'A meta “{goal}” chegou a {percentage}%.', completedTitle: 'Meta concluída!', completedBody: 'Você alcançou o objetivo de “{goal}”.' },
+  errors: { load: 'Não foi possível carregar as metas.', save: 'Não foi possível salvar a meta.', movement: 'Não foi possível registrar a movimentação.' }
+},
+
+support: { category:{ transactions:'Transações', profile:'Perfil', authentication:'Autenticação', scan:'Escaneamento', statistics:'Estatísticas', goals:'Metas', notifications:'Notificações', appearance:'Aparência', language:'Idioma', currency:'Moeda', performance:'Desempenho', other:'Outro' }, status:{ all:'Todos', open:'Aberto', in_review:'Em análise', resolved:'Resolvido', closed:'Fechado' }, validation:{ subject:'O assunto deve ter pelo menos 5 caracteres.', description:'A descrição deve ter pelo menos 10 caracteres.' }, success:{ title:'Relatório enviado', text:'Seu relatório foi salvo. Acompanhe o estado em Meus relatórios.' }, errors:{ submit:'Não foi possível enviar o relatório.' }, report:{ title:'Relatar um problema', heroTitle:'Conte o que aconteceu', heroText:'Seu relatório ajuda a melhorar o Spendly.', category:'Categoria', subject:'Assunto', subjectPlaceholder:'Resuma o problema', description:'Descrição', descriptionPlaceholder:'Explique o que aconteceu e o que esperava.', steps:'Passos para reproduzir', stepsPlaceholder:'1. Abra...\n2. Toque...\n3. Ocorre...', technicalTitle:'Incluir informações técnicas', technicalText:'Inclui versão do app, sistema e modelo do dispositivo.', privacy:'Senhas e dados financeiros não são enviados.', submit:'Enviar relatório' }, list:{ title:'Meus relatórios', loading:'Carregando relatórios...', emptyTitle:'Você ainda não enviou relatórios', emptyText:'Crie um relatório quando precisar de ajuda.', create:'Criar relatório' }, detail:{ title:'Detalhes do relatório', description:'Descrição', steps:'Passos para reproduzir', dates:'Datas', created:'Criado', updated:'Atualizado', resolved:'Resolvido', technical:'Informações técnicas', appVersion:'Versão do app', platform:'Plataforma', os:'Sistema operacional', device:'Dispositivo', responseTitle:'Resposta da equipe', pendingTitle:'Aguardando resposta', pendingText:'A equipe ainda não respondeu este relatório.' } },
+
+
+home: {
+  greeting: 'Olá, {name}',
+  welcomeBack: 'Bem-vindo de volta',
+  defaultUser: 'Usuário',
+  loading: 'Carregando resumo...',
+  balanceMonth: 'Saldo total do mês',
+  income: 'Receitas',
+  expenses: 'Despesas',
+  available: 'Disponível',
+  monthSummary: 'Resumo do mês',
+  totalSpent: 'Total gasto',
+  totalIncome: 'Total recebido',
+  topCategory: 'Principal categoria',
+  noData: 'Sem dados',
+  featuredGoal: 'Meta em destaque',
+  goalProgress: '{percent}% concluído',
+  recentExpenses: 'Despesas recentes',
+  categories: 'Categorias',
+  viewAll: 'Ver todos',
+  expenseNoDescription: 'Despesa sem descrição',
+  otherCategory: 'Outros',
+
+  quick: {
+    expense: 'Despesa',
+    income: 'Receita',
+    scan: 'Escanear',
+    stats: 'Stats',
+  },
+
+  emptyGoal: {
+    title: 'Você ainda não tem metas ativas',
+    text:
+      'Crie uma meta para acompanhar o progresso na tela inicial.',
+    action: 'Criar meta',
+  },
+
+  emptyExpenses: {
+    title: 'Ainda não há despesas',
+    text:
+      'Suas primeiras despesas aparecerão aqui.',
+    action: 'Adicionar despesa',
+  },
+
+  emptyCategories: {
+    title: 'Ainda não há categorias',
+    text:
+      'Nenhuma despesa foi registrada por categoria neste mês.',
+  },
+
+  date: {
+    today: 'Hoje',
+    yesterday: 'Ontem',
+  },
+
+  errors: {
+    title: 'Não foi possível atualizar a Home',
+    load:
+      'Não foi possível carregar os dados principais.',
+    retry: 'Tentar novamente',
+  },
+},
+
 };
