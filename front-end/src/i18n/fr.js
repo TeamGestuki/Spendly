@@ -635,4 +635,67 @@ sessions: {
   singleError: 'Impossible de fermer la session.', allError: 'Impossible de fermer les sessions.',
 },
 
+pinUnlock: {
+  loading: 'Chargement de la sécurité...',
+  title: 'Déverrouiller Spendly',
+  subtitle: 'Saisissez votre code PIN pour continuer.',
+  lockedTitle: 'PIN bloqué',
+  lockedSubtitle: 'Réessayez dans {time}.',
+  tooManyAttempts: 'Trop de tentatives incorrectes.',
+  incorrectWithAttempts:
+    'PIN incorrect. Tentatives restantes : {attempts}.',
+  attemptsUsed: 'Tentatives utilisées : {used} sur {max}',
+  pinNotConfigured:
+    'Aucun PIN n’est configuré. Retour à l’écran précédent.',
+  loadError:
+    'Impossible de charger l’état de sécurité.',
+  validationError:
+    'Impossible de vérifier le PIN.',
+
+  time: {
+    hoursMinutes: '{hours} h {minutes} min',
+  },
+},
+
+changePassword: {
+  title: 'Modifier le mot de passe',
+  heroTitle: 'Mettez à jour votre mot de passe',
+  heroText: 'Utilisez un mot de passe sécurisé et différent du précédent pour protéger votre compte.',
+  currentPassword: 'Mot de passe actuel',
+  currentPlaceholder: 'Saisissez votre mot de passe actuel',
+  newPassword: 'Nouveau mot de passe',
+  newPlaceholder: 'Au moins 8 caractères',
+  repeatPassword: 'Répéter le nouveau mot de passe',
+  repeatPlaceholder: 'Répétez le nouveau mot de passe',
+  save: 'Enregistrer le nouveau mot de passe',
+  saving: 'Enregistrement...',
+  saveError: 'Impossible de modifier le mot de passe.',
+  successTitle: 'Mot de passe mis à jour',
+  successText: 'Votre mot de passe a été modifié.',
+  validation: {
+    required: 'Remplissez tous les champs.',
+    minLength: 'Le nouveau mot de passe doit contenir au moins 8 caractères.',
+    samePassword: 'Le nouveau mot de passe doit être différent de l’actuel.',
+    noMatch: 'Les nouveaux mots de passe ne correspondent pas.',
+  },
+},
+
+notifications: {
+  title: 'Notifications', loading: 'Chargement des notifications...', loadError: 'The settings could not be loaded.', saveError: 'The settings could not be saved.',
+  heroTitle: 'Des alertes utiles, sans nuisance', heroText: 'Choose occasional reminders that genuinely help you manage your finances.',
+  generalSection: 'Général', activitySection: 'Activité', summarySection: 'Résumés', goalsSection: 'Objectifs',
+  permissionTitle: 'System permission', openRéglages: 'Réglages', permissionDeniedTitle: 'Permission disabled', permissionDeniedText: 'Enable notifications in your device settings to use this feature.',
+  permissionRequiredTitle: 'Permission required', permissionRequiredText: 'Enable Spendly notifications first.', testScheduledTitle: 'Notification scheduled', testScheduledText: 'You will receive it in a few seconds.', testButton: 'Send test notification',
+  goalsInfo: 'Goal alerts will open the matching goal directly. They are only sent for approaching deadlines, important progress or completion.',
+  permission: { granted: 'Autorisées', denied: 'Bloquées', undetermined: 'Non configurées' },
+  master: { title: 'Allow notifications', subtitle: 'Main control for all local Spendly alerts.' },
+  daily: { title: 'Transaction reminder', subtitle: 'One daily reminder for pending expenses or income.', timeTitle: 'Reminder time', timeHint: 'Evening times reduce interruptions during the day.' },
+  weekly: { title: 'Résumé hebdomadaire', subtitle: 'One Monday evening alert to review the previous week.' },
+  monthly: { title: 'Résumé mensuel', subtitle: 'One alert on the first day of the month to review income and expenses.' },
+  goalDeadline: { title: 'Objectifs nearing their deadline', subtitle: 'Notify three days before the target date.' },
+  goalProgress: { title: 'Important progress', subtitle: 'Notify once when a goal reaches approximately 80%.' },
+  goalCompleted: { title: 'Objectif atteint', subtitle: 'Celebrate when you reach the target amount.' },
+  copy: { dailyTitle: 'Any transaction still pending?', dailyBody: 'Recording today’s activity takes less than a minute.', weeklyTitle: 'Your weekly financial summary is ready', weeklyBody: 'Review income, expenses and your weekly balance.', monthlyTitle: 'A new month, a new summary', monthlyBody: 'See how the previous month ended in Statistics.', testTitle: 'Spendly is ready', testBody: 'Notifications are working correctly.' },
+},
+
 };

@@ -1,364 +1,912 @@
-import React, { useEffect, useState } from 'react';
+/**
+ * PinUnlockScreen.js
+ * Pantalla de desbloqueo mediante PIN para accesos sensibles.
+ */
+
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const COLORS = {
-  bg: '#0D0F14',
-  surfaceHigh: '#1E2330',
-  border: '#272D3D',
-  accent: '#4ADE80',
-  accentDim: '#1A3D28',
-  textPrimary: '#F0F2F7',
-  textSecondary: '#9CA3AF',
-  red: '#F87171',
-};
+import {
+  useTheme,
+} from '../context/ThemeContext';
+
+import {
+  useLanguage,
+} from '../context/LanguageContext';
 
 const MAX_PIN_ATTEMPTS = 5;
-const PIN_LOCK_TIME_MS = 60 * 60 * 1000;
+const PIN_LOCK_TIME_MS =
+  60 * 60 * 1000;
 
-function AppIcon({ name, size = 20, color = COLORS.textSecondary }) {
-  return <Ionicons name={name} size={size} color={color} />;
+function AppIcon({
+  name,
+  size = 20,
+  color,
+}) {
+  return (
+    <Ionicons
+      name={name}
+      size={size}
+      color={color}
+    />
+  );
 }
 
-function formatTimeLeft(ms) {
-  const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
+function formatTimeLeft(
+  milliseconds,
+  t
+) {
+  const totalSeconds =
+    Math.max(
+      0,
+      Math.ceil(
+        milliseconds / 1000
+      )
+    );
 
-  if (minutes >= 60) {
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return `${hours}h ${remainingMinutes}m`;
+  const hours =
+    Math.floor(
+      totalSeconds / 3600
+    );
+
+  const minutes =
+    Math.floor(
+      (totalSeconds % 3600) /
+        60
+    );
+
+  const seconds =
+    totalSeconds % 60;
+
+  if (hours > 0) {
+    return t(
+      'pinUnlock.time.hoursMinutes'
+    )
+      .replace(
+        '{hours}',
+        String(hours)
+      )
+      .replace(
+        '{minutes}',
+        String(minutes)
+      );
   }
 
-  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+  return `${minutes}:${String(
+    seconds
+  ).padStart(2, '0')}`;
 }
 
-export default function PinUnlockScreen({ navigation, route }) {
-  const [pinValue, setPinValue] = useState('');
-  const [error, setError] = useState('');
-  const [lockedUntil, setLockedUntil] = useState(null);
-  const [failedAttempts, setFailedAttempts] = useState(0);
-  const [timeLeft, setTimeLeft] = useState('');
+export default function PinUnlockScreen({
+  navigation,
+  route,
+}) {
+  const {
+    colors: COLORS,
+    isDark,
+  } = useTheme();
 
-  const isLocked = lockedUntil && Date.now() < lockedUntil;
+  const {
+    t,
+  } = useLanguage();
+
+  const styles = useMemo(
+    () => createStyles(COLORS),
+    [COLORS]
+  );
+
+  const [
+    pinValue,
+    setPinValue,
+  ] = useState('');
+
+  const [
+    error,
+    setError,
+  ] = useState('');
+
+  const [
+    lockedUntil,
+    setLockedUntil,
+  ] = useState(null);
+
+  const [
+    failedAttempts,
+    setFailedAttempts,
+  ] = useState(0);
+
+  const [
+    timeLeft,
+    setTimeLeft,
+  ] = useState('');
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+  const [
+    validating,
+    setValidating,
+  ] = useState(false);
+
+  const isLocked =
+    !!lockedUntil &&
+    Date.now() < lockedUntil;
 
   useEffect(() => {
-    const loadLockState = async () => {
-        const savedAttempts =
-            await AsyncStorage.getItem('pin_failed_attempts');
-                setFailedAttempts(savedAttempts ? Number(savedAttempts) : 0);
+    const loadLockState =
+      async () => {
+        try {
+          const [
+            savedAttempts,
+            savedLockedUntil,
+          ] = await Promise.all([
+            AsyncStorage.getItem(
+              'pin_failed_attempts'
+            ),
+            AsyncStorage.getItem(
+              'pin_locked_until'
+            ),
+          ]);
 
-      const savedLockedUntil =
-        await AsyncStorage.getItem('pin_locked_until');
+          setFailedAttempts(
+            savedAttempts
+              ? Number(savedAttempts)
+              : 0
+          );
 
-      if (!savedLockedUntil) return;
+          if (!savedLockedUntil) {
+            return;
+          }
 
-      const lockTime = Number(savedLockedUntil);
+          const lockTime =
+            Number(
+              savedLockedUntil
+            );
 
-      if (Date.now() < lockTime) {
-        setLockedUntil(lockTime);
-        setError('Demasiados intentos fallidos.');
-      } else {
-        await AsyncStorage.removeItem('pin_locked_until');
-        await AsyncStorage.removeItem('pin_failed_attempts');
-      }
-    };
+          if (
+            Date.now() <
+            lockTime
+          ) {
+            setLockedUntil(
+              lockTime
+            );
+
+            setError(
+              t(
+                'pinUnlock.tooManyAttempts'
+              )
+            );
+          } else {
+            await AsyncStorage.multiRemove([
+              'pin_locked_until',
+              'pin_failed_attempts',
+            ]);
+          }
+        } catch (loadError) {
+          console.log(
+            'Error cargando bloqueo PIN:',
+            loadError
+          );
+
+          setError(
+            t('pinUnlock.loadError')
+          );
+        } finally {
+          setLoading(false);
+        }
+      };
 
     loadLockState();
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (!lockedUntil) {
       setTimeLeft('');
-      return;
+      return undefined;
     }
 
-    const updateCountdown = async () => {
-      const remaining = lockedUntil - Date.now();
+    const updateCountdown =
+      async () => {
+        const remaining =
+          lockedUntil -
+          Date.now();
 
-      if (remaining <= 0) {
-        await AsyncStorage.removeItem('pin_locked_until');
-        await AsyncStorage.removeItem('pin_failed_attempts');
+        if (remaining <= 0) {
+          await AsyncStorage.multiRemove([
+            'pin_locked_until',
+            'pin_failed_attempts',
+          ]);
 
-        setLockedUntil(null);
-        setTimeLeft('');
-        setError('');
-        return;
-      }
+          setLockedUntil(null);
+          setFailedAttempts(0);
+          setTimeLeft('');
+          setError('');
+          return;
+        }
 
-      setTimeLeft(formatTimeLeft(remaining));
-    };
+        setTimeLeft(
+          formatTimeLeft(
+            remaining,
+            t
+          )
+        );
+      };
 
     updateCountdown();
 
-    const interval = setInterval(updateCountdown, 1000);
-
-    return () => clearInterval(interval);
-  }, [lockedUntil]);
-
-  const handleWrongPin = async () => {
-    const currentAttemptsRaw =
-      await AsyncStorage.getItem('pin_failed_attempts');
-
-    const currentAttempts = currentAttemptsRaw
-      ? Number(currentAttemptsRaw)
-      : 0;
-
-    const nextAttempts = currentAttempts + 1;
-
-    setFailedAttempts(nextAttempts);
-
-    if (nextAttempts >= MAX_PIN_ATTEMPTS) {
-      const lockUntil = Date.now() + PIN_LOCK_TIME_MS;
-
-      await AsyncStorage.setItem(
-        'pin_locked_until',
-        String(lockUntil)
+    const interval =
+      setInterval(
+        updateCountdown,
+        1000
       );
+
+    return () =>
+      clearInterval(interval);
+  }, [
+    lockedUntil,
+    t,
+  ]);
+
+  const handleWrongPin =
+    async () => {
+      const storedAttempts =
+        await AsyncStorage.getItem(
+          'pin_failed_attempts'
+        );
+
+      const currentAttempts =
+        storedAttempts
+          ? Number(
+              storedAttempts
+            )
+          : 0;
+
+      const nextAttempts =
+        currentAttempts + 1;
+
+      setFailedAttempts(
+        nextAttempts
+      );
+
+      if (
+        nextAttempts >=
+        MAX_PIN_ATTEMPTS
+      ) {
+        const lockUntil =
+          Date.now() +
+          PIN_LOCK_TIME_MS;
+
+        await AsyncStorage.multiSet([
+          [
+            'pin_locked_until',
+            String(lockUntil),
+          ],
+          [
+            'pin_failed_attempts',
+            String(nextAttempts),
+          ],
+        ]);
+
+        setLockedUntil(
+          lockUntil
+        );
+
+        setError(
+          t(
+            'pinUnlock.tooManyAttempts'
+          )
+        );
+
+        setPinValue('');
+        return;
+      }
 
       await AsyncStorage.setItem(
         'pin_failed_attempts',
         String(nextAttempts)
       );
 
-      setLockedUntil(lockUntil);
-      setError('Demasiados intentos fallidos.');
-      setPinValue('');
-      return;
-    }
+      const attemptsLeft =
+        MAX_PIN_ATTEMPTS -
+        nextAttempts;
 
-    await AsyncStorage.setItem(
+      setError(
+        t(
+          'pinUnlock.incorrectWithAttempts'
+        ).replace(
+          '{attempts}',
+          String(attemptsLeft)
+        )
+      );
+
+      setTimeout(() => {
+        setPinValue('');
+      }, 220);
+    };
+
+  const unlock = async () => {
+    const redirectTo =
+      route?.params?.redirectTo ||
+      'Home';
+
+    const redirectParams =
+      route?.params?.redirectParams;
+
+    await AsyncStorage.multiRemove([
       'pin_failed_attempts',
-      String(nextAttempts)
-    );
+      'pin_locked_until',
+    ]);
 
-    setError(
-      `PIN incorrecto. Intentos restantes: ${
-        MAX_PIN_ATTEMPTS - nextAttempts
-      }`
+    navigation.replace(
+      redirectTo,
+      redirectParams
     );
-
-    setTimeout(() => {
-      setPinValue('');
-    }, 250);
   };
 
-  const handlePinPress = async (digit) => {
-    if (isLocked) {
-      setError('Demasiados intentos fallidos.');
-      return;
-    }
+  const handlePinPress =
+    async (digit) => {
+      if (
+        isLocked ||
+        validating
+      ) {
+        if (isLocked) {
+          setError(
+            t(
+              'pinUnlock.tooManyAttempts'
+            )
+          );
+        }
 
-    setError('');
+        return;
+      }
 
-    if (pinValue.length >= 4) return;
+      setError('');
 
-    const nextValue = pinValue + digit;
-    setPinValue(nextValue);
+      if (
+        pinValue.length >= 4
+      ) {
+        return;
+      }
 
-    if (nextValue.length !== 4) return;
+      const nextValue =
+        pinValue + digit;
 
-    const savedPin = await AsyncStorage.getItem('spendly_pin');
+      setPinValue(nextValue);
 
-    if (nextValue === savedPin) {
-      await AsyncStorage.removeItem('pin_failed_attempts');
-      await AsyncStorage.removeItem('pin_locked_until');
+      if (
+        nextValue.length !== 4
+      ) {
+        return;
+      }
 
-      const redirectTo = route?.params?.redirectTo || 'Home';
+      try {
+        setValidating(true);
 
-      navigation.replace(redirectTo);
-      
-      return;
-    }
+        const savedPin =
+          await AsyncStorage.getItem(
+            'spendly_pin'
+          );
 
-    await handleWrongPin();
-  };
+        if (!savedPin) {
+          setError(
+            t(
+              'pinUnlock.pinNotConfigured'
+            )
+          );
+
+          setTimeout(() => {
+            navigation.goBack();
+          }, 900);
+
+          return;
+        }
+
+        if (
+          nextValue === savedPin
+        ) {
+          await unlock();
+          return;
+        }
+
+        await handleWrongPin();
+      } catch (validationError) {
+        console.log(
+          'Error validando PIN:',
+          validationError
+        );
+
+        setError(
+          t(
+            'pinUnlock.validationError'
+          )
+        );
+
+        setPinValue('');
+      } finally {
+        setValidating(false);
+      }
+    };
 
   const handleDelete = () => {
-    if (isLocked) return;
+    if (
+      isLocked ||
+      validating
+    ) {
+      return;
+    }
 
     setError('');
-    setPinValue((prev) => prev.slice(0, -1));
+
+    setPinValue(
+      (previous) =>
+        previous.slice(0, -1)
+    );
   };
+
+  const handleBack = () => {
+    if (validating) {
+      return;
+    }
+
+    navigation.goBack();
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.flex}>
+        <StatusBar
+          barStyle={
+            isDark
+              ? 'light-content'
+              : 'dark-content'
+          }
+          backgroundColor={
+            COLORS.bg
+          }
+        />
+
+        <View
+          style={
+            styles.loadingWrapper
+          }
+        >
+          <ActivityIndicator
+            size="large"
+            color={COLORS.accent}
+          />
+
+          <Text
+            style={
+              styles.loadingText
+            }
+          >
+            {t(
+              'pinUnlock.loading'
+            )}
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.flex}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+      <StatusBar
+        barStyle={
+          isDark
+            ? 'light-content'
+            : 'dark-content'
+        }
+        backgroundColor={COLORS.bg}
+      />
+
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={handleBack}
+        activeOpacity={0.8}
+        disabled={validating}
+      >
+        <AppIcon
+          name="chevron-back"
+          size={22}
+          color={
+            COLORS.textPrimary
+          }
+        />
+      </TouchableOpacity>
 
       <View style={styles.content}>
-        <View style={styles.lockIcon}>
+        <View
+          style={[
+            styles.lockIcon,
+            isLocked &&
+              styles.lockIconBlocked,
+          ]}
+        >
           <AppIcon
-            name={isLocked ? 'time-outline' : 'lock-closed-outline'}
+            name={
+              isLocked
+                ? 'time-outline'
+                : 'lock-closed-outline'
+            }
             size={34}
-            color={COLORS.accent}
+            color={
+              isLocked
+                ? COLORS.orange
+                : COLORS.accent
+            }
           />
         </View>
 
         <Text style={styles.title}>
-          {isLocked ? 'PIN bloqueado' : 'Desbloquear Spendly'}
+          {isLocked
+            ? t(
+                'pinUnlock.lockedTitle'
+              )
+            : t(
+                'pinUnlock.title'
+              )}
         </Text>
 
         <Text style={styles.subtitle}>
           {isLocked
-            ? `Probá nuevamente en ${timeLeft}.`
-            : 'Ingresá tu PIN de acceso para continuar.'}
+            ? t(
+                'pinUnlock.lockedSubtitle'
+              ).replace(
+                '{time}',
+                timeLeft
+              )
+            : t(
+                'pinUnlock.subtitle'
+              )}
         </Text>
 
-        <Text style={[styles.pinDots, isLocked && styles.pinDotsDisabled]}>
-          {'●'.repeat(pinValue.length)}
-          {'○'.repeat(4 - pinValue.length)}
+        <Text
+          style={[
+            styles.pinDots,
+            isLocked &&
+              styles.pinDotsDisabled,
+          ]}
+        >
+          {'●'.repeat(
+            pinValue.length
+          )}
+          {'○'.repeat(
+            4 -
+              pinValue.length
+          )}
         </Text>
 
-        {!!error && <Text style={styles.errorText}>{error}</Text>}
+        {!!error && (
+          <View style={styles.errorBox}>
+            <AppIcon
+              name="alert-circle-outline"
+              size={17}
+              color={COLORS.red}
+            />
+
+            <Text style={styles.errorText}>
+              {error}
+            </Text>
+          </View>
+        )}
 
         <View style={styles.pinGrid}>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+          {[
+            1, 2, 3,
+            4, 5, 6,
+            7, 8, 9,
+          ].map((number) => (
             <TouchableOpacity
-              key={num}
+              key={number}
               style={[
                 styles.pinKey,
-                isLocked && styles.pinKeyDisabled,
+                (isLocked ||
+                  validating) &&
+                  styles.pinKeyDisabled,
               ]}
-              onPress={() => handlePinPress(String(num))}
-              disabled={isLocked}
+              onPress={() =>
+                handlePinPress(
+                  String(number)
+                )
+              }
+              disabled={
+                isLocked ||
+                validating
+              }
               activeOpacity={0.75}
             >
-              <Text style={styles.pinKeyText}>{num}</Text>
+              <Text
+                style={
+                  styles.pinKeyText
+                }
+              >
+                {number}
+              </Text>
             </TouchableOpacity>
           ))}
 
-          <View style={styles.pinKeyPlaceholder} />
+          <View
+            style={
+              styles.pinKeyPlaceholder
+            }
+          />
 
           <TouchableOpacity
             style={[
               styles.pinKey,
-              isLocked && styles.pinKeyDisabled,
+              (isLocked ||
+                validating) &&
+                styles.pinKeyDisabled,
             ]}
-            onPress={() => handlePinPress('0')}
-            disabled={isLocked}
+            onPress={() =>
+              handlePinPress('0')
+            }
+            disabled={
+              isLocked ||
+              validating
+            }
             activeOpacity={0.75}
           >
-            <Text style={styles.pinKeyText}>0</Text>
+            <Text
+              style={
+                styles.pinKeyText
+              }
+            >
+              0
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[
               styles.pinKey,
-              isLocked && styles.pinKeyDisabled,
+              (isLocked ||
+                validating) &&
+                styles.pinKeyDisabled,
             ]}
             onPress={handleDelete}
-            disabled={isLocked}
+            disabled={
+              isLocked ||
+              validating
+            }
             activeOpacity={0.75}
           >
-            <AppIcon
-              name="backspace-outline"
-              size={22}
-              color={COLORS.textPrimary}
-            />
+            {validating ? (
+              <ActivityIndicator
+                size="small"
+                color={
+                  COLORS.accent
+                }
+              />
+            ) : (
+              <AppIcon
+                name="backspace-outline"
+                size={22}
+                color={
+                  COLORS.textPrimary
+                }
+              />
+            )}
           </TouchableOpacity>
         </View>
+
+        {!isLocked &&
+          failedAttempts > 0 && (
+          <Text
+            style={
+              styles.attemptsInfo
+            }
+          >
+            {t(
+              'pinUnlock.attemptsUsed'
+            )
+              .replace(
+                '{used}',
+                String(
+                  failedAttempts
+                )
+              )
+              .replace(
+                '{max}',
+                String(
+                  MAX_PIN_ATTEMPTS
+                )
+              )}
+          </Text>
+        )}
+
+        <Text style={styles.footerText}>
+          Spendly © 2026
+        </Text>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-    backgroundColor: COLORS.bg,
-  },
+function createStyles(COLORS) {
+  return StyleSheet.create({
+    flex: {
+      flex: 1,
+      backgroundColor: COLORS.bg,
+    },
 
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    backButton: {
+      position: 'absolute',
+      top: 56,
+      left: 20,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor:
+        COLORS.surface,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 2,
+    },
 
-  lockIcon: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    backgroundColor: COLORS.accentDim,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 22,
-  },
+    loadingWrapper: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
 
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-    marginBottom: 8,
-  },
+    loadingText: {
+      marginTop: 12,
+      fontSize: 13,
+      color: COLORS.textSecondary,
+    },
 
-  subtitle: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 21,
-    marginBottom: 30,
-  },
+    content: {
+      flex: 1,
+      paddingHorizontal: 24,
+      paddingTop: 80,
+      paddingBottom: 34,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
 
-  pinDots: {
-    fontSize: 30,
-    color: COLORS.accent,
-    letterSpacing: 9,
-    marginBottom: 14,
-  },
+    lockIcon: {
+      width: 76,
+      height: 76,
+      borderRadius: 38,
+      backgroundColor:
+        COLORS.accentDim,
+      borderWidth: 1,
+      borderColor:
+        `${COLORS.accent}35`,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 22,
+    },
 
-  pinDotsDisabled: {
-    color: COLORS.textSecondary,
-  },
+    lockIconBlocked: {
+      backgroundColor:
+        `${COLORS.orange}16`,
+      borderColor:
+        `${COLORS.orange}40`,
+    },
 
-  errorText: {
-    fontSize: 13,
-    color: COLORS.red,
-    marginBottom: 14,
-    textAlign: 'center',
-  },
+    title: {
+      fontSize: 24,
+      fontWeight: '800',
+      color: COLORS.textPrimary,
+      marginBottom: 8,
+      textAlign: 'center',
+    },
 
-  pinGrid: {
-    width: '100%',
-    maxWidth: 260,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 12,
-    marginTop: 10,
-  },
+    subtitle: {
+      maxWidth: 330,
+      fontSize: 14,
+      color: COLORS.textSecondary,
+      textAlign: 'center',
+      lineHeight: 21,
+      marginBottom: 28,
+    },
 
-  pinKey: {
-    width: 70,
-    height: 60,
-    borderRadius: 18,
-    backgroundColor: COLORS.surfaceHigh,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    pinDots: {
+      fontSize: 30,
+      color: COLORS.accent,
+      letterSpacing: 9,
+      marginBottom: 16,
+    },
 
-  pinKeyDisabled: {
-    opacity: 0.35,
-  },
+    pinDotsDisabled: {
+      color: COLORS.textMuted,
+    },
 
-  pinKeyPlaceholder: {
-    width: 70,
-    height: 60,
-  },
+    errorBox: {
+      maxWidth: 330,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor:
+        `${COLORS.red}16`,
+      borderWidth: 1,
+      borderColor:
+        `${COLORS.red}40`,
+      borderRadius: 14,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      marginBottom: 16,
+    },
 
-  pinKeyText: {
-    fontSize: 23,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-  },
-});
+    errorText: {
+      flex: 1,
+      fontSize: 12,
+      color: COLORS.red,
+      lineHeight: 17,
+      textAlign: 'center',
+    },
+
+    pinGrid: {
+      width: '100%',
+      maxWidth: 260,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      gap: 12,
+      marginTop: 4,
+    },
+
+    pinKey: {
+      width: 70,
+      height: 60,
+      borderRadius: 18,
+      backgroundColor:
+        COLORS.surfaceHigh,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+
+    pinKeyDisabled: {
+      opacity: 0.35,
+    },
+
+    pinKeyPlaceholder: {
+      width: 70,
+      height: 60,
+    },
+
+    pinKeyText: {
+      fontSize: 23,
+      fontWeight: '800',
+      color: COLORS.textPrimary,
+    },
+
+    attemptsInfo: {
+      marginTop: 18,
+      fontSize: 11,
+      color: COLORS.textMuted,
+      textAlign: 'center',
+    },
+
+    footerText: {
+      marginTop: 30,
+      fontSize: 12,
+      fontWeight: '600',
+      color: COLORS.textMuted,
+      textAlign: 'center',
+    },
+  });
+}

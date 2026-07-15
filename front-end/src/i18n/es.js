@@ -614,4 +614,80 @@ sessions: {
   singleError: 'No se pudo cerrar la sesión.', allError: 'No se pudieron cerrar las sesiones.',
 },
 
+pinUnlock: {
+  loading: 'Cargando seguridad...',
+  title: 'Desbloquear Spendly',
+  subtitle: 'Ingresá tu PIN de acceso para continuar.',
+  lockedTitle: 'PIN bloqueado',
+  lockedSubtitle: 'Probá nuevamente en {time}.',
+  tooManyAttempts: 'Demasiados intentos fallidos.',
+  incorrectWithAttempts:
+    'PIN incorrecto. Intentos restantes: {attempts}.',
+  attemptsUsed: 'Intentos utilizados: {used} de {max}',
+  pinNotConfigured:
+    'No hay un PIN configurado. Volviendo a la pantalla anterior.',
+  loadError:
+    'No se pudo cargar el estado de seguridad.',
+  validationError:
+    'No se pudo validar el PIN.',
+
+  time: {
+    hoursMinutes: '{hours} h {minutes} min',
+  },
+},
+
+changePassword: {
+  title: 'Cambiar contraseña',
+  heroTitle: 'Actualizá tu clave',
+  heroText: 'Usá una contraseña segura y diferente a la anterior para proteger tu cuenta.',
+  currentPassword: 'Contraseña actual',
+  currentPlaceholder: 'Ingresá tu contraseña actual',
+  newPassword: 'Nueva contraseña',
+  newPlaceholder: 'Mínimo 8 caracteres',
+  repeatPassword: 'Repetir nueva contraseña',
+  repeatPlaceholder: 'Repetí la nueva contraseña',
+  save: 'Guardar nueva contraseña',
+  saving: 'Guardando...',
+  saveError: 'No se pudo cambiar la contraseña.',
+  successTitle: 'Contraseña actualizada',
+  successText: 'Tu contraseña se cambió correctamente.',
+  validation: {
+    required: 'Completá todos los campos.',
+    minLength: 'La nueva contraseña debe tener al menos 8 caracteres.',
+    samePassword: 'La nueva contraseña debe ser diferente a la actual.',
+    noMatch: 'Las contraseñas nuevas no coinciden.',
+  },
+},
+
+notifications: {
+  title: 'Notificaciones',
+  loading: 'Cargando notificaciones...',
+  loadError: 'No se pudo cargar la configuración.',
+  saveError: 'No se pudo guardar la configuración.',
+  heroTitle: 'Avisos útiles, no molestos',
+  heroText: 'Elegí recordatorios puntuales que realmente te ayuden a organizar tus finanzas.',
+  generalSection: 'General', activitySection: 'Actividad', summarySection: 'Resúmenes', goalsSection: 'Metas',
+  permissionTitle: 'Permiso del sistema', openSettings: 'Ajustes',
+  permissionDeniedTitle: 'Permiso desactivado',
+  permissionDeniedText: 'Activá las notificaciones desde los ajustes del dispositivo para poder usarlas.',
+  permissionRequiredTitle: 'Permiso necesario', permissionRequiredText: 'Primero activá las notificaciones de Spendly.',
+  testScheduledTitle: 'Notificación programada', testScheduledText: 'La vas a recibir en unos segundos.',
+  testButton: 'Enviar notificación de prueba',
+  goalsInfo: 'Los avisos de metas abrirán directamente la meta correspondiente. Solo se enviarán por vencimiento cercano, progreso importante o finalización.',
+  permission: { granted: 'Permitidas', denied: 'Bloqueadas', undetermined: 'Sin configurar' },
+  master: { title: 'Permitir notificaciones', subtitle: 'Control general de todos los avisos locales de Spendly.' },
+  daily: { title: 'Recordatorio de movimientos', subtitle: 'Un único aviso diario para registrar gastos o ingresos pendientes.', timeTitle: 'Horario del recordatorio', timeHint: 'Elegimos horarios de tarde para evitar interrupciones durante el día.' },
+  weekly: { title: 'Resumen semanal', subtitle: 'Un aviso los lunes por la tarde para revisar la semana anterior.' },
+  monthly: { title: 'Resumen mensual', subtitle: 'Un aviso el primer día del mes para revisar ingresos y gastos.' },
+  goalDeadline: { title: 'Metas próximas a vencer', subtitle: 'Avisar tres días antes de la fecha objetivo.' },
+  goalProgress: { title: 'Progreso importante', subtitle: 'Avisar una sola vez cuando una meta alcance aproximadamente el 80%.' },
+  goalCompleted: { title: 'Meta completada', subtitle: 'Celebrar cuando alcances el monto objetivo.' },
+  copy: {
+    dailyTitle: '¿Te quedó algún movimiento pendiente?', dailyBody: 'Registrar lo de hoy te lleva menos de un minuto.',
+    weeklyTitle: 'Tu semana financiera está lista', weeklyBody: 'Revisá ingresos, gastos y balance de la semana.',
+    monthlyTitle: 'Nuevo mes, nuevo resumen', monthlyBody: 'Mirá cómo cerró el mes anterior en Estadísticas.',
+    testTitle: 'Spendly está listo', testBody: 'Las notificaciones funcionan correctamente.'
+  },
+},
+
 };

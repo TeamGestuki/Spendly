@@ -33,6 +33,7 @@ import ScanScreen from './src/screens/ScanScreen';
 import ThemeSettingsScreen from './src/screens/ThemeSettingsScreen';
 import AboutSpendlyScreen from './src/screens/AboutSpendlyScreen';
 import HelpCenterScreen from './src/screens/HelpCenterScreen';
+import NotificationsScreen from './src/screens/NotificationsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -275,8 +276,8 @@ export default function App() {
           />
 
           <Stack.Screen
-            name="NotificationSettings"
-            component={HomeScreen}
+            name="Notifications"
+            component={NotificationsScreen}
           />
 
           <Stack.Screen

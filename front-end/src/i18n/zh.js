@@ -606,4 +606,67 @@ sessions: {
   successTitle: '会话已更新', singleSuccess: '会话已成功关闭。', allSuccess: '其他会话已成功关闭。', singleError: '无法关闭该会话。', allError: '无法关闭这些会话。',
 },
 
+pinUnlock: {
+  loading: '正在加载安全设置...',
+  title: '解锁 Spendly',
+  subtitle: '输入访问 PIN 以继续。',
+  lockedTitle: 'PIN 已锁定',
+  lockedSubtitle: '请在 {time} 后重试。',
+  tooManyAttempts: '失败尝试次数过多。',
+  incorrectWithAttempts:
+    'PIN 错误。剩余尝试次数：{attempts}。',
+  attemptsUsed: '已使用尝试次数：{used}/{max}',
+  pinNotConfigured:
+    '尚未配置 PIN。正在返回上一页。',
+  loadError:
+    '无法加载安全状态。',
+  validationError:
+    '无法验证 PIN。',
+
+  time: {
+    hoursMinutes: '{hours} 小时 {minutes} 分钟',
+  },
+},
+
+changePassword: {
+  title: '修改密码',
+  heroTitle: '更新您的密码',
+  heroText: '请使用与旧密码不同的安全密码来保护账户。',
+  currentPassword: '当前密码',
+  currentPlaceholder: '输入当前密码',
+  newPassword: '新密码',
+  newPlaceholder: '至少 8 个字符',
+  repeatPassword: '重复新密码',
+  repeatPlaceholder: '再次输入新密码',
+  save: '保存新密码',
+  saving: '正在保存...',
+  saveError: '无法修改密码。',
+  successTitle: '密码已更新',
+  successText: '您的密码已成功修改。',
+  validation: {
+    required: '请填写所有字段。',
+    minLength: '新密码至少需要 8 个字符。',
+    samePassword: '新密码必须与当前密码不同。',
+    noMatch: '两次输入的新密码不一致。',
+  },
+},
+
+notifications: {
+  title: '通知', loading: '正在加载通知设置...', loadError: 'The settings could not be loaded.', saveError: 'The settings could not be saved.',
+  heroTitle: '有用但不打扰的提醒', heroText: 'Choose occasional reminders that genuinely help you manage your finances.',
+  generalSection: '常规', activitySection: '活动', summarySection: '摘要', goalsSection: '目标',
+  permissionTitle: 'System permission', open设置: '设置', permissionDeniedTitle: 'Permission disabled', permissionDeniedText: 'Enable notifications in your device settings to use this feature.',
+  permissionRequiredTitle: 'Permission required', permissionRequiredText: 'Enable Spendly notifications first.', testScheduledTitle: 'Notification scheduled', testScheduledText: 'You will receive it in a few seconds.', testButton: 'Send test notification',
+  goalsInfo: 'Goal alerts will open the matching goal directly. They are only sent for approaching deadlines, important progress or completion.',
+  permission: { granted: '已允许', denied: '已阻止', undetermined: '未配置' },
+  master: { title: 'Allow notifications', subtitle: 'Main control for all local Spendly alerts.' },
+  daily: { title: 'Transaction reminder', subtitle: 'One daily reminder for pending expenses or income.', timeTitle: 'Reminder time', timeHint: 'Evening times reduce interruptions during the day.' },
+  weekly: { title: '每周摘要', subtitle: 'One Monday evening alert to review the previous week.' },
+  monthly: { title: '每月摘要', subtitle: 'One alert on the first day of the month to review income and expenses.' },
+  goalDeadline: { title: '目标 nearing their deadline', subtitle: 'Notify three days before the target date.' },
+  goalProgress: { title: 'Important progress', subtitle: 'Notify once when a goal reaches approximately 80%.' },
+  goalCompleted: { title: '目标已完成', subtitle: 'Celebrate when you reach the target amount.' },
+  copy: { dailyTitle: 'Any transaction still pending?', dailyBody: 'Recording today’s activity takes less than a minute.', weeklyTitle: 'Your weekly financial summary is ready', weeklyBody: 'Review income, expenses and your weekly balance.', monthlyTitle: 'A new month, a new summary', monthlyBody: 'See how the previous month ended in Statistics.', testTitle: 'Spendly is ready', testBody: 'Notifications are working correctly.' },
+},
+
 };

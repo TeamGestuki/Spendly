@@ -436,7 +436,7 @@ export default function ProfileScreen({ navigation }) {
             iconColor={COLORS.orange}
             label={t('profile.notifications')}
             value={t('profile.notificationsSubtitle')}
-            onPress={() => navigation.navigate('NotificationSettings')}
+            onPress={() => navigation.navigate('Notifications')}
             isLast
           />
         </View>

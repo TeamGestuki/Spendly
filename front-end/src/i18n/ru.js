@@ -600,4 +600,67 @@ sessions: {
   singleError: 'Не удалось завершить сеанс.', allError: 'Не удалось завершить сеансы.',
 },
 
+pinUnlock: {
+  loading: 'Загрузка безопасности...',
+  title: 'Разблокировать Spendly',
+  subtitle: 'Введите PIN-код для продолжения.',
+  lockedTitle: 'PIN заблокирован',
+  lockedSubtitle: 'Повторите попытку через {time}.',
+  tooManyAttempts: 'Слишком много неверных попыток.',
+  incorrectWithAttempts:
+    'Неверный PIN. Осталось попыток: {attempts}.',
+  attemptsUsed: 'Использовано попыток: {used} из {max}',
+  pinNotConfigured:
+    'PIN-код не настроен. Возврат на предыдущий экран.',
+  loadError:
+    'Не удалось загрузить состояние безопасности.',
+  validationError:
+    'Не удалось проверить PIN-код.',
+
+  time: {
+    hoursMinutes: '{hours} ч {minutes} мин',
+  },
+},
+
+changePassword: {
+  title: 'Изменить пароль',
+  heroTitle: 'Обновите пароль',
+  heroText: 'Используйте надёжный пароль, отличный от предыдущего.',
+  currentPassword: 'Текущий пароль',
+  currentPlaceholder: 'Введите текущий пароль',
+  newPassword: 'Новый пароль',
+  newPlaceholder: 'Не менее 8 символов',
+  repeatPassword: 'Повторите новый пароль',
+  repeatPlaceholder: 'Введите новый пароль повторно',
+  save: 'Сохранить новый пароль',
+  saving: 'Сохранение...',
+  saveError: 'Не удалось изменить пароль.',
+  successTitle: 'Пароль обновлён',
+  successText: 'Пароль успешно изменён.',
+  validation: {
+    required: 'Заполните все поля.',
+    minLength: 'Новый пароль должен содержать не менее 8 символов.',
+    samePassword: 'Новый пароль должен отличаться от текущего.',
+    noMatch: 'Новые пароли не совпадают.',
+  },
+},
+
+notifications: {
+  title: 'Уведомления', loading: 'Загрузка уведомлений...', loadError: 'The settings could not be loaded.', saveError: 'The settings could not be saved.',
+  heroTitle: 'Полезные уведомления без лишнего шума', heroText: 'Choose occasional reminders that genuinely help you manage your finances.',
+  generalSection: 'Общие', activitySection: 'Активность', summarySection: 'Сводки', goalsSection: 'Цели',
+  permissionTitle: 'System permission', openНастройки: 'Настройки', permissionDeniedTitle: 'Permission disabled', permissionDeniedText: 'Enable notifications in your device settings to use this feature.',
+  permissionRequiredTitle: 'Permission required', permissionRequiredText: 'Enable Spendly notifications first.', testScheduledTitle: 'Notification scheduled', testScheduledText: 'You will receive it in a few seconds.', testButton: 'Send test notification',
+  goalsInfo: 'Goal alerts will open the matching goal directly. They are only sent for approaching deadlines, important progress or completion.',
+  permission: { granted: 'Разрешены', denied: 'Заблокированы', undetermined: 'Не настроены' },
+  master: { title: 'Allow notifications', subtitle: 'Main control for all local Spendly alerts.' },
+  daily: { title: 'Transaction reminder', subtitle: 'One daily reminder for pending expenses or income.', timeTitle: 'Reminder time', timeHint: 'Evening times reduce interruptions during the day.' },
+  weekly: { title: 'Еженедельная сводка', subtitle: 'One Monday evening alert to review the previous week.' },
+  monthly: { title: 'Ежемесячная сводка', subtitle: 'One alert on the first day of the month to review income and expenses.' },
+  goalDeadline: { title: 'Цели nearing their deadline', subtitle: 'Notify three days before the target date.' },
+  goalProgress: { title: 'Important progress', subtitle: 'Notify once when a goal reaches approximately 80%.' },
+  goalCompleted: { title: 'Цель достигнута', subtitle: 'Celebrate when you reach the target amount.' },
+  copy: { dailyTitle: 'Any transaction still pending?', dailyBody: 'Recording today’s activity takes less than a minute.', weeklyTitle: 'Your weekly financial summary is ready', weeklyBody: 'Review income, expenses and your weekly balance.', monthlyTitle: 'A new month, a new summary', monthlyBody: 'See how the previous month ended in Statistics.', testTitle: 'Spendly is ready', testBody: 'Notifications are working correctly.' },
+},
+
 };

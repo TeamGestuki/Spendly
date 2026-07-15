@@ -616,4 +616,66 @@ sessions: {
   singleError: 'The session could not be closed.', allError: 'The sessions could not be closed.',
 },
 
+pinUnlock: {
+  loading: 'Loading security...',
+  title: 'Unlock Spendly',
+  subtitle: 'Enter your access PIN to continue.',
+  lockedTitle: 'PIN locked',
+  lockedSubtitle: 'Try again in {time}.',
+  tooManyAttempts: 'Too many failed attempts.',
+  incorrectWithAttempts:
+    'Incorrect PIN. Attempts remaining: {attempts}.',
+  attemptsUsed: 'Attempts used: {used} of {max}',
+  pinNotConfigured:
+    'No PIN is configured. Returning to the previous screen.',
+  loadError:
+    'The security status could not be loaded.',
+  validationError:
+    'The PIN could not be validated.',
+
+  time: {
+    hoursMinutes: '{hours} h {minutes} min',
+  },
+},
+
+changePassword: {
+  title: 'Change password',
+  heroTitle: 'Update your password',
+  heroText: 'Use a secure password that is different from the previous one to protect your account.',
+  currentPassword: 'Current password',
+  currentPlaceholder: 'Enter your current password',
+  newPassword: 'New password',
+  newPlaceholder: 'At least 8 characters',
+  repeatPassword: 'Repeat new password',
+  repeatPlaceholder: 'Repeat the new password',
+  save: 'Save new password',
+  saving: 'Saving...',
+  saveError: 'The password could not be changed.',
+  successTitle: 'Password updated',
+  successText: 'Your password was changed successfully.',
+  validation: {
+    required: 'Complete all fields.',
+    minLength: 'The new password must contain at least 8 characters.',
+    samePassword: 'The new password must be different from the current one.',
+    noMatch: 'The new passwords do not match.',
+  },
+},
+
+notifications: {
+  title: 'Notifications', loading: 'Loading notifications...', loadError: 'The settings could not be loaded.', saveError: 'The settings could not be saved.',
+  heroTitle: 'Useful alerts, without the noise', heroText: 'Choose occasional reminders that genuinely help you manage your finances.',
+  generalSection: 'General', activitySection: 'Activity', summarySection: 'Summaries', goalsSection: 'Goals',
+  permissionTitle: 'System permission', openSettings: 'Settings', permissionDeniedTitle: 'Permission disabled', permissionDeniedText: 'Enable notifications in your device settings to use this feature.',
+  permissionRequiredTitle: 'Permission required', permissionRequiredText: 'Enable Spendly notifications first.', testScheduledTitle: 'Notification scheduled', testScheduledText: 'You will receive it in a few seconds.', testButton: 'Send test notification',
+  goalsInfo: 'Goal alerts will open the matching goal directly. They are only sent for approaching deadlines, important progress or completion.',
+  permission: { granted: 'Allowed', denied: 'Blocked', undetermined: 'Not configured' },
+  master: { title: 'Allow notifications', subtitle: 'Main control for all local Spendly alerts.' },
+  daily: { title: 'Transaction reminder', subtitle: 'One daily reminder for pending expenses or income.', timeTitle: 'Reminder time', timeHint: 'Evening times reduce interruptions during the day.' },
+  weekly: { title: 'Weekly summary', subtitle: 'One Monday evening alert to review the previous week.' },
+  monthly: { title: 'Monthly summary', subtitle: 'One alert on the first day of the month to review income and expenses.' },
+  goalDeadline: { title: 'Goals nearing their deadline', subtitle: 'Notify three days before the target date.' },
+  goalProgress: { title: 'Important progress', subtitle: 'Notify once when a goal reaches approximately 80%.' },
+  goalCompleted: { title: 'Goal completed', subtitle: 'Celebrate when you reach the target amount.' },
+  copy: { dailyTitle: 'Any transaction still pending?', dailyBody: 'Recording today’s activity takes less than a minute.', weeklyTitle: 'Your weekly financial summary is ready', weeklyBody: 'Review income, expenses and your weekly balance.', monthlyTitle: 'A new month, a new summary', monthlyBody: 'See how the previous month ended in Statistics.', testTitle: 'Spendly is ready', testBody: 'Notifications are working correctly.' },
+},
 };

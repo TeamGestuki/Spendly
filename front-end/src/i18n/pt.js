@@ -594,4 +594,80 @@ sessions: {
   singleError: 'Não foi possível encerrar a sessão.', allError: 'Não foi possível encerrar as sessões.',
 },
 
+pinUnlock: {
+  loading: 'Carregando segurança...',
+  title: 'Desbloquear o Spendly',
+  subtitle: 'Digite seu PIN de acesso para continuar.',
+  lockedTitle: 'PIN bloqueado',
+  lockedSubtitle: 'Tente novamente em {time}.',
+  tooManyAttempts: 'Muitas tentativas incorretas.',
+  incorrectWithAttempts:
+    'PIN incorreto. Tentativas restantes: {attempts}.',
+  attemptsUsed: 'Tentativas usadas: {used} de {max}',
+  pinNotConfigured:
+    'Nenhum PIN está configurado. Voltando à tela anterior.',
+  loadError:
+    'Não foi possível carregar o estado de segurança.',
+  validationError:
+    'Não foi possível validar o PIN.',
+
+  time: {
+    hoursMinutes: '{hours} h {minutes} min',
+  },
+},
+
+changePassword: {
+  title: 'Alterar senha',
+  heroTitle: 'Atualize sua senha',
+  heroText: 'Use uma senha segura e diferente da anterior para proteger sua conta.',
+  currentPassword: 'Senha atual',
+  currentPlaceholder: 'Digite sua senha atual',
+  newPassword: 'Nova senha',
+  newPlaceholder: 'Mínimo de 8 caracteres',
+  repeatPassword: 'Repetir nova senha',
+  repeatPlaceholder: 'Repita a nova senha',
+  save: 'Salvar nova senha',
+  saving: 'Salvando...',
+  saveError: 'Não foi possível alterar a senha.',
+  successTitle: 'Senha atualizada',
+  successText: 'Sua senha foi alterada com sucesso.',
+  validation: {
+    required: 'Preencha todos os campos.',
+    minLength: 'A nova senha deve ter pelo menos 8 caracteres.',
+    samePassword: 'A nova senha deve ser diferente da atual.',
+    noMatch: 'As novas senhas não coincidem.',
+  },
+},
+
+notifications: {
+  title: 'Notificações',
+  loading: 'Carregando notificações...',
+  loadError: 'No se pudo cargar la configuración.',
+  saveError: 'No se pudo guardar la configuración.',
+  heroTitle: 'Avisos úteis, sem incomodar',
+  heroText: 'Escolha lembretes pontuais que realmente ajudem a organizar suas finanças.',
+  generalSection: 'General', activitySection: 'Atividade', summarySection: 'Resumos', goalsSection: 'Metas',
+  permissionTitle: 'Permissão do sistema', openSettings: 'Configurações',
+  permissionDeniedTitle: 'Permiso desactivado',
+  permissionDeniedText: 'Activá las notificaciones desde los ajustes del dispositivo para poder usarlas.',
+  permissionRequiredTitle: 'Permiso necesario', permissionRequiredText: 'Primero activá las notificaciones de Spendly.',
+  testScheduledTitle: 'Notificación programada', testScheduledText: 'La vas a recibir en unos segundos.',
+  testButton: 'Enviar notificação de teste',
+  goalsInfo: 'Los avisos de metas abrirán directamente la meta correspondiente. Solo se enviarán por vencimiento cercano, progreso importante o finalización.',
+  permission: { granted: 'Permitidas', denied: 'Bloqueadas', undetermined: 'Não configuradas' },
+  master: { title: 'Permitir notificações', subtitle: 'Control general de todos los avisos locales de Spendly.' },
+  daily: { title: 'Lembrete de movimentações', subtitle: 'Un único aviso diario para registrar gastos o ingresos pendientes.', timeTitle: 'Horario del recordatorio', timeHint: 'Elegimos horarios de tarde para evitar interrupciones durante el día.' },
+  weekly: { title: 'Resumo semanal', subtitle: 'Un aviso los lunes por la tarde para revisar la semana anterior.' },
+  monthly: { title: 'Resumo mensal', subtitle: 'Un aviso el primer día del mes para revisar ingresos y gastos.' },
+  goalDeadline: { title: 'Metas próximas a vencer', subtitle: 'Avisar tres días antes de la fecha objetivo.' },
+  goalProgress: { title: 'Progreso importante', subtitle: 'Avisar una sola vez cuando una meta alcance aproximadamente el 80%.' },
+  goalCompleted: { title: 'Meta concluída', subtitle: 'Celebrar cuando alcances el monto objetivo.' },
+  copy: {
+    dailyTitle: '¿Te quedó algún movimiento pendiente?', dailyBody: 'Registrar lo de hoy te lleva menos de un minuto.',
+    weeklyTitle: 'Tu semana financiera está lista', weeklyBody: 'Revisá ingresos, gastos y balance de la semana.',
+    monthlyTitle: 'Nuevo mes, nuevo resumen', monthlyBody: 'Mirá cómo cerró el mes anterior en Estadísticas.',
+    testTitle: 'Spendly está listo', testBody: 'Las notificaciones funcionan correctamente.'
+  },
+},
+
 };
