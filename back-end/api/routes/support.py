@@ -42,8 +42,10 @@ def get_user_email(user_id: int, db: Session):
 
 SMTP_HOST = os.getenv("SMTP_HOST")
 try:
-    SMTP_PORT = int(os.getenv("SMTP_PORT"))
-except ValueError:
+    SMTP_PORT = int(
+        os.getenv("SMTP_PORT", "587")
+    )
+except (TypeError, ValueError):
     SMTP_PORT = 587
 SMTP_USERNAME = os.getenv("SMTP_USER")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
