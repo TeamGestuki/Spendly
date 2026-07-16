@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   ActivityIndicator,
+  StyleSheet,
+  StatusBar,
 } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -35,8 +37,7 @@ import AboutSpendlyScreen from './src/screens/AboutSpendlyScreen';
 import HelpCenterScreen from './src/screens/HelpCenterScreen';
 import NotificationsScreen from './src/screens/NotificationsScreen';
 import ReportProblemScreen from './src/screens/ReportProblemScreen';
-import MyReportsScreen from './src/screens/MyReportsScreen';
-import ReportDetailScreen from './src/screens/ReportDetailScreen';
+import LanguageSelectionScreen from './src/screens/LanguageSelectionScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -45,11 +46,23 @@ export default function App() {
     useState(null);
 
   useEffect(() => {
-    const checkSession = async () => {
-      const token =
-        await AsyncStorage.getItem(
-          'access_token'
-        );
+  const checkSession = async () => {
+    const language =
+      await AsyncStorage.getItem(
+        'preferred_language'
+      );
+
+    if (!language) {
+      setInitialRoute(
+        'LanguageSelection'
+      );
+      return;
+    }
+
+    const token =
+      await AsyncStorage.getItem(
+        'access_token'
+      );
 
       const biometricEnabled =
         await AsyncStorage.getItem(
@@ -136,6 +149,12 @@ export default function App() {
             },
           }}
         >
+
+          <Stack.Screen
+            name="LanguageSelection"
+            component={LanguageSelectionScreen}
+          />
+
           <Stack.Screen
             name="Login"
             component={LoginScreen}
@@ -169,9 +188,7 @@ export default function App() {
 
           <Stack.Screen
             name="SecuritySettings"
-            component={
-              SecuritySettingsScreen
-            }
+            component={SecuritySettingsScreen}
           />
 
           <Stack.Screen
@@ -284,11 +301,6 @@ export default function App() {
           />
 
           <Stack.Screen
-            name="ExportData"
-            component={HomeScreen}
-          />
-
-          <Stack.Screen
             name="HelpCenter"
             component={HelpCenterScreen}
             options={{headerShown: false,}}
@@ -297,16 +309,6 @@ export default function App() {
           <Stack.Screen 
             name="ReportProblem" 
             component={ReportProblemScreen} 
-          />
-
-          <Stack.Screen 
-            name="MyReports" 
-            component={MyReportsScreen} 
-          />
-
-          <Stack.Screen 
-            name="ReportDetail" 
-            component={ReportDetailScreen} 
           />
 
           <Stack.Screen

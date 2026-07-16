@@ -35,14 +35,14 @@ export default function ReportProblemScreen({ navigation }) {
         os_version: includeTechnicalInfo ? String(Platform.Version) : null,
         device_model: includeTechnicalInfo ? (Device.modelName || Device.deviceName || 'Unknown') : null,
       });
-      Alert.alert(t('support.success.title'),t('support.success.text'),[{text:t('common.accept'),onPress:()=>navigation.replace('MyReports')}]);
+      Alert.alert(t('support.success.title'),t('support.success.text'),[{text:t('common.accept'), onPress: () => navigation.goBack()}]);
     } catch(e) { Alert.alert(t('common.error'),e.message || t('support.errors.submit')); }
     finally { setLoading(false); }
   };
 
   return <View style={s.flex}>
     <StatusBar barStyle={isDark?'light-content':'dark-content'} backgroundColor={C.bg}/>
-    <View style={s.top}><TouchableOpacity style={s.round} onPress={()=>navigation.goBack()}><Icon name="chevron-back" size={22} color={C.textPrimary}/></TouchableOpacity><Text style={s.topTitle}>{t('support.report.title')}</Text><TouchableOpacity style={s.round} onPress={()=>navigation.navigate('MyReports')}><Icon name="time-outline" color={C.accent}/></TouchableOpacity></View>
+    <View style={s.top}><TouchableOpacity style={s.round} onPress={()=>navigation.goBack()}><Icon name="chevron-back" size={22} color={C.textPrimary}/></TouchableOpacity><Text style={s.topTitle}>{t('support.report.title')}</Text><View style={{ width: 40 }} /></View>
     <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
       <View style={s.hero}><View style={s.heroIcon}><Icon name="bug-outline" size={28} color={C.orange}/></View><Text style={s.heroTitle}>{t('support.report.heroTitle')}</Text><Text style={s.heroText}>{t('support.report.heroText')}</Text></View>
       <Text style={s.label}>{t('support.report.category')}</Text>

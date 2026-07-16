@@ -366,15 +366,6 @@ const now = new Date();
             </Text>
           </View>
 
-          <View style={styles.headerActions}>
-            <TouchableOpacity style={styles.iconBtn}>
-              <AppIcon
-                name="notifications-outline"
-                size={20}
-                color={COLORS.textSecondary}
-              />
-            </TouchableOpacity>
-
             <TouchableOpacity
               style={styles.avatarRing}
               onPress={() => navigation.navigate('Profile')}
@@ -393,8 +384,6 @@ const now = new Date();
                 </View>
               )}
             </TouchableOpacity>
-          </View>
-
 </View>
 
 {!!error && (
