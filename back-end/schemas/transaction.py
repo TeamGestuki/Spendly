@@ -23,6 +23,15 @@ class TransactionCreate(BaseModel):
     currency: Optional[str] = "ARS"
     payment_method: Optional[PaymentMethod] = None
 
+class TransactionUpdate(BaseModel):
+    type: Optional[Literal["income", "expense"]] = None
+    amount: Optional[float] = None
+    category: Optional[str] = None
+    description: Optional[str] = None
+    date: Optional[date] = None
+    currency: Optional[str] = None
+    payment_method: Optional[PaymentMethod] = None
+
 class TransactionResponse(TransactionCreate):
     id: int
     owner_id: int

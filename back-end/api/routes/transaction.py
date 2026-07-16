@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from core.database import get_db
 from models.transaction import Transaction
 from models.user import User
-from schemas.transaction import TransactionCreate, TransactionResponse
+from schemas.transaction import TransactionCreate, TransactionResponse, TransactionUpdate
 from api.dependencies import get_current_user
 
 router = APIRouter()
@@ -42,6 +42,38 @@ def get_transactions(
         query = query.filter(Transaction.type == type)
     transactions = query.all()
     return transactions
+
+@router.patch("/{transaction_id}", response_model=TransactionResponse)
+def update_transaction(
+    transaction_id: int,
+    transaction_update: TransactionUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    transaction = db.query(Transaction).filter(
+        Transaction.id == transaction_id,
+        Transaction.owner_id == current_user.id
+    ).first()
+    if not transaction:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Transacción no encontrada o no tienes permiso para editarla"
+        )
+
+    update_data = transaction_update.dict(exclude_unset=True)
+
+    if "amount" in update_data and update_data["amount"] <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="El monto debe ser mayor a 0"
+        )
+
+    for key, value in update_data.items():
+        setattr(transaction, key, value)
+
+    db.commit()
+    db.refresh(transaction)
+    return transaction
 
 @router.delete("/{transaction_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_transaction(
