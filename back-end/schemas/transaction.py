@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from datetime import date
+from datetime import DateType
 from typing import Optional, Literal
 
 PaymentMethod = Literal[
@@ -14,23 +14,26 @@ PaymentMethod = Literal[
     "other",
 ]
 
+
 class TransactionCreate(BaseModel):
     type: Literal["income", "expense"]
     amount: float
     category: Optional[str] = None
     description: Optional[str] = None
-    date: date
+    date: DateType
     currency: Optional[str] = "ARS"
     payment_method: Optional[PaymentMethod] = None
+
 
 class TransactionUpdate(BaseModel):
     type: Optional[Literal["income", "expense"]] = None
     amount: Optional[float] = None
     category: Optional[str] = None
     description: Optional[str] = None
-    date: Optional[date] = None
+    date: Optional[DateType] = None
     currency: Optional[str] = None
     payment_method: Optional[PaymentMethod] = None
+
 
 class TransactionResponse(TransactionCreate):
     id: int
