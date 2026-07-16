@@ -669,4 +669,127 @@ notifications: {
   copy: { dailyTitle: 'Any transaction still pending?', dailyBody: 'Recording today’s activity takes less than a minute.', weeklyTitle: 'Your weekly financial summary is ready', weeklyBody: 'Review income, expenses and your weekly balance.', monthlyTitle: 'A new month, a new summary', monthlyBody: 'See how the previous month ended in Statistics.', testTitle: 'Spendly is ready', testBody: 'Notifications are working correctly.' },
 },
 
+goals: {
+  title: '目标', subtitle: '把目标转化为真实进展。', loading: '正在加载目标...', search: '搜索目标...',
+  filters: { all: '全部', active: '进行中', paused: '已暂停', completed: '已完成', cancelled: '已取消' },
+  status: { active: '进行中', paused: '已暂停', completed: '已完成', cancelled: '已取消' },
+  priority: { low: '低', medium: '中', high: '高' },
+  category: { emergency: '应急', travel: '旅行', home: '住房', education: '教育', vehicle: '车辆', technology: '科技', health: '健康', other: '其他' },
+  summary: { active: '进行中', completed: '已完成', saved: '累计储蓄' }, card: { remaining: '剩余' },
+  empty: { title: '还没有目标', text: '创建第一个目标并开始记录投入。' },
+  actions: { create: '创建目标', saveChanges: '保存更改', contribute: '投入', withdraw: '取出', confirm: '确认', edit: '编辑', pause: '暂停', resume: '继续', cancelGoal: '取消目标', delete: '删除' },
+  form: { createTitle: '新目标', editTitle: '编辑目标', namePlaceholder: '例如：日本旅行', descriptionPlaceholder: '您想实现什么？', targetAmount: '目标金额', category: '类别', priority: '优先级' },
+  detail: { of: '目标', history: '变动记录' }, movement: { aporte: '投入', retiro: '取出', ajuste: '调整' },
+  movementForm: { aporte: '记录投入', retiro: '记录取出', ajuste: '记录调整', amount: '金额', note: '可选备注' },
+  validation: { name: '请输入目标名称。', amount: '请输入有效的目标金额。', movementAmount: '请输入有效金额。' },
+  confirm: { deleteTitle: '删除目标', deleteText: '目标及其全部记录将永久删除。', deleteMovementTitle: '删除变动', deleteMovementText: '目标进度将重新计算。' },
+  notifications: { deadlineTitle: '目标即将到期', deadlineBody: '目标“{goal}”将在几天后到期。', progressTitle: '进展很棒！', progressBody: '目标“{goal}”已达到 {percentage}%。', completedTitle: '目标已完成！', completedBody: '您已完成目标“{goal}”。' },
+  errors: { load: '无法加载目标。', save: '无法保存目标。', movement: '无法记录变动。' }
+},
+
+support: { category:{ transactions:'交易', profile:'个人资料', authentication:'身份验证', scan:'扫描', statistics:'统计', goals:'目标', notifications:'通知', appearance:'外观', language:'语言', currency:'货币', performance:'性能', other:'其他' }, status:{ all:'全部', open:'已提交', in_review:'审核中', resolved:'已解决', closed:'已关闭' }, validation:{ subject:'主题至少需要 5 个字符。', description:'描述至少需要 10 个字符。' }, success:{ title:'报告已发送', text:'报告已保存，可在“我的报告”中查看状态。' }, errors:{ submit:'无法发送报告。' }, report:{ title:'报告问题', heroTitle:'告诉我们发生了什么', heroText:'您的报告有助于改进 Spendly。', category:'类别', subject:'主题', subjectPlaceholder:'简要说明问题', description:'描述', descriptionPlaceholder:'说明发生了什么以及预期结果。', steps:'复现步骤', stepsPlaceholder:'1. 打开...\n2. 点击...\n3. 出现...', technicalTitle:'包含技术信息', technicalText:'附加应用版本、系统和设备型号。', privacy:'不会发送密码或财务信息。', submit:'发送报告' }, list:{ title:'我的报告', loading:'正在加载报告...', emptyTitle:'您尚未发送报告', emptyText:'需要帮助时可在这里创建报告。', create:'创建报告' }, detail:{ title:'报告详情', description:'描述', steps:'复现步骤', dates:'日期', created:'创建', updated:'更新', resolved:'解决', technical:'技术信息', appVersion:'应用版本', platform:'平台', os:'操作系统', device:'设备', responseTitle:'团队回复', pendingTitle:'等待回复', pendingText:'团队尚未回复此报告。' } },
+
+
+home: {
+  greeting: '你好，{name}',
+  welcomeBack: '欢迎回来',
+  defaultUser: '用户',
+  loading: '正在加载摘要...',
+  balanceMonth: '本月总余额',
+  income: '收入',
+  expenses: '支出',
+  available: '可用余额',
+  monthSummary: '本月摘要',
+  totalSpent: '总支出',
+  totalIncome: '总收入',
+  topCategory: '主要类别',
+  noData: '暂无数据',
+  featuredGoal: '重点目标',
+  goalProgress: '已完成 {percent}%',
+  recentExpenses: '最近支出',
+  categories: '类别',
+  viewAll: '查看全部',
+  expenseNoDescription: '无描述支出',
+  otherCategory: '其他',
+
+  quick: {
+    expense: '支出',
+    income: '收入',
+    scan: '扫描',
+    stats: '统计',
+  },
+
+  emptyGoal: {
+    title: '暂无进行中的目标',
+    text:
+      '创建目标后即可在主页查看进度。',
+    action: '创建目标',
+  },
+
+  emptyExpenses: {
+    title: '暂无支出',
+    text:
+      '您的第一笔支出会显示在这里。',
+    action: '添加支出',
+  },
+
+  emptyCategories: {
+    title: '暂无类别',
+    text:
+      '本月尚未记录任何类别的支出。',
+  },
+
+  date: {
+    today: '今天',
+    yesterday: '昨天',
+  },
+
+  errors: {
+    title: '无法更新主页',
+    load:
+      '无法加载主要数据。',
+    retry: '重试',
+  },
+},
+
+register: {
+  tagline: '智能支出管理', title: '创建账户', subtitle: '开始管理您的财务',
+  fullName: '姓名', fullNamePlaceholder: '您的姓名', email: '电子邮箱', emailPlaceholder: 'you@email.com',
+  password: '密码', passwordPlaceholder: '********', confirmPassword: '确认密码', passwordRequirement: '至少 8 个字符',
+  termsPrefix: '我接受', terms: '条款与条件', and: '以及', privacy: '隐私政策',
+  create: '创建账户', creating: '正在创建账户...', or: '或', haveAccount: '已有账户？', login: '登录',
+  validation: { name: '请输入至少 2 个字符。', email: '请输入有效的电子邮箱。', password: '密码必须至少包含 8 个字符。', confirm: '两次输入的密码不一致。', terms: '您必须接受条款与隐私政策。' },
+  errors: { emailExists: '该电子邮箱已注册。请使用其他邮箱或直接登录。', generic: '无法创建账户，请重试。' },
+},
+
+login: {
+  tagline: '智能支出管理',
+  title: '登录',
+  subtitle: '欢迎回来',
+  email: '电子邮箱',
+  emailPlaceholder: 'you@email.com',
+  password: '密码',
+  passwordPlaceholder: '••••••••',
+  forgotPassword: '忘记密码？',
+  rememberSession: '保持登录状态',
+  submit: '登录',
+  verifying: '正在验证...',
+  or: '或',
+  noAccount: '还没有账户？',
+  register: '注册',
+  footerPrefix: '继续即表示您接受',
+  terms: '条款与条件',
+  and: '以及',
+  privacy: '隐私政策',
+  validation: {
+    email: '请输入有效的电子邮箱。',
+    password: '请输入密码。',
+  },
+  errors: {
+    invalidCredentials: '电子邮箱或密码错误。',
+    connection: '无法连接服务器，请检查网络。',
+    generic: '无法登录，请重试。',
+  },
+},
+
 };

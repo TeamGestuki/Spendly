@@ -19,9 +19,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 import { getCurrentUser } from '../services/authService';
 import { getTransactions } from '../services/transactionService';
+import { getGoals } from '../services/goalService';
 import {
   getCurrencyByCode,
   setPreferredCurrency as savePreferredCurrency,
@@ -119,14 +121,14 @@ function isSameMonth(dateString, targetDate) {
   );
 }
 
-function getMonthName(date) {
-  return date.toLocaleDateString('es-AR', {
+function getMonthName(date, language) {
+  return date.toLocaleDateString(language, {
     month: 'long',
     year: 'numeric',
   });
 }
 
-function formatDate(isoString) {
+function formatDate(isoString, language, t) {
   const date = new Date(isoString);
   const now = new Date();
 
@@ -143,10 +145,10 @@ function formatDate(isoString) {
     date.getMonth() === yesterday.getMonth() &&
     date.getFullYear() === yesterday.getFullYear();
 
-  if (isToday) return 'Hoy';
-  if (isYesterday) return 'Ayer';
+  if (isToday) return t('home.date.today');
+  if (isYesterday) return t('home.date.yesterday');
 
-  return date.toLocaleDateString('es-AR', {
+  return date.toLocaleDateString(language, {
     day: '2-digit',
     month: 'short',
   });
@@ -197,6 +199,8 @@ export default function HomeScreen({ navigation }) {
   isDark,
 } = useTheme();
 
+const { language, t } = useLanguage();
+
 const styles = useMemo(
   () => createStyles(COLORS),
   [COLORS]
@@ -209,9 +213,11 @@ const styles = useMemo(
   });
 
   const [transactions, setTransactions] = useState([]);
+  const [goals, setGoals] = useState([]);
   const [currency, setCurrency] = useState(getCurrencyByCode('ARS'));
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState('');
 
   useFocusEffect(
     useCallback(() => {
@@ -219,27 +225,54 @@ const styles = useMemo(
     }, [])
   );
 
-  const loadHomeData = async () => {
-    try {
-      setLoading(true);
 
-      const userData = await getCurrentUser();
-      const userCurrency = getCurrencyByCode(
-        userData.preferred_currency || 'ARS'
-      );
+const loadHomeData = async () => {
+  try {
+    setLoading(true);
+    setError('');
 
-      setUser(userData);
-      setCurrency(userCurrency);
-      await savePreferredCurrency(userCurrency.code);
+    const [
+      userData,
+      transactionData,
+      goalsData,
+    ] = await Promise.all([
+      getCurrentUser(),
+      getTransactions(),
+      getGoals(),
+    ]);
 
-      const data = await getTransactions();
-      setTransactions(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.log('Error cargando Home:', error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const userCurrency = getCurrencyByCode(
+      userData.preferred_currency || 'ARS'
+    );
+
+    setUser(userData);
+    setCurrency(userCurrency);
+    setTransactions(
+      Array.isArray(transactionData)
+        ? transactionData
+        : []
+    );
+    setGoals(
+      Array.isArray(goalsData)
+        ? goalsData
+        : []
+    );
+
+    await savePreferredCurrency(userCurrency.code);
+  } catch (loadError) {
+    console.log(
+      'Error cargando Home:',
+      loadError.message
+    );
+    setError(
+      loadError.message ||
+      t('home.errors.load')
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 const onRefresh = async () => {
   try {
@@ -278,7 +311,7 @@ const now = new Date();
   const savings = Math.max(balance, 0);
 
   const categoryTotals = monthlyExpenses.reduce((acc, expense) => {
-    const category = expense.category || 'Otros';
+    const category = expense.category || t('home.otherCategory');
     acc[category] =
       (acc[category] || 0) + Number(expense.amount || 0);
     return acc;
@@ -326,21 +359,12 @@ const now = new Date();
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>
-              Hola, {user.full_name?.split(' ')[0] || 'Usuario'}
+              {t('home.greeting').replace('{name}', user.full_name?.split(' ')[0] || t('home.defaultUser'))}
             </Text>
             <Text style={styles.greetingSub}>
-              Bienvenido de nuevo
+              {t('home.welcomeBack')}
             </Text>
           </View>
-
-          <View style={styles.headerActions}>
-            <TouchableOpacity style={styles.iconBtn}>
-              <AppIcon
-                name="notifications-outline"
-                size={20}
-                color={COLORS.textSecondary}
-              />
-            </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.avatarRing}
@@ -360,19 +384,47 @@ const now = new Date();
                 </View>
               )}
             </TouchableOpacity>
-          </View>
-        </View>
+</View>
 
-        {loading ? (
+{!!error && (
+  <View style={styles.errorCard}>
+    <AppIcon
+      name="cloud-offline-outline"
+      size={22}
+      color={COLORS.orange}
+    />
+
+    <View style={{ flex: 1 }}>
+      <Text style={styles.errorTitle}>
+        {t('home.errors.title')}
+      </Text>
+      <Text style={styles.errorText}>
+        {error}
+      </Text>
+    </View>
+
+    <TouchableOpacity
+      style={styles.retryButton}
+      onPress={loadHomeData}
+    >
+      <Text style={styles.retryButtonText}>
+        {t('home.errors.retry')}
+      </Text>
+    </TouchableOpacity>
+  </View>
+)}
+
+{loading ? (
+
           <View style={styles.loadingBox}>
             <ActivityIndicator size="large" color={COLORS.accent} />
-            <Text style={styles.loadingText}>Cargando resumen...</Text>
+            <Text style={styles.loadingText}>{t('home.loading')}</Text>
           </View>
         ) : (
           <>
             <View style={styles.heroCard}>
               <Text style={styles.heroLabel}>
-                Balance Total del Mes
+                {t('home.balanceMonth')}
               </Text>
 
               <Text style={styles.heroAmount}>
@@ -387,7 +439,7 @@ const now = new Date();
                       size={14}
                       color={COLORS.accent}
                     />
-                    <Text style={styles.statLabel}> Ingresos</Text>
+                    <Text style={styles.statLabel}>{t('home.income')}</Text>
                   </View>
                   <Text style={[styles.statValue, { color: COLORS.accent }]}>
                     {formatMoney(totalIncome, currency)}
@@ -401,7 +453,7 @@ const now = new Date();
                       size={14}
                       color={COLORS.red}
                     />
-                    <Text style={styles.statLabel}> Gastos</Text>
+                    <Text style={styles.statLabel}>{t('home.expenses')}</Text>
                   </View>
                   <Text style={[styles.statValue, { color: COLORS.red }]}>
                     {formatMoney(totalExpenses, currency)}
@@ -415,7 +467,7 @@ const now = new Date();
                       size={14}
                       color={COLORS.blue}
                     />
-                    <Text style={styles.statLabel}> Ahorro</Text>
+                    <Text style={styles.statLabel}>{t('home.available')}</Text>
                   </View>
                   <Text style={[styles.statValue, { color: COLORS.blue }]}>
                     {formatMoney(savings, currency)}
@@ -438,7 +490,7 @@ const now = new Date();
                 >
                   <AppIcon name="add" size={24} color={COLORS.accent} />
                 </View>
-                <Text style={styles.actionLabel}>Gasto</Text>
+                <Text style={styles.actionLabel}>{t('home.quick.expense')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -458,7 +510,7 @@ const now = new Date();
                     color={COLORS.blue}
                   />
                 </View>
-                <Text style={styles.actionLabel}>Ingreso</Text>
+                <Text style={styles.actionLabel}>{t('home.quick.income')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -502,34 +554,34 @@ const now = new Date();
                     color={COLORS.purple}
                   />
                 </View>
-                <Text style={styles.actionLabel}>Stats</Text>
+                <Text style={styles.actionLabel}>{t('home.quick.stats')}</Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.card}>
               <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>Resumen del Mes</Text>
+                <Text style={styles.cardTitle}>{t('home.monthSummary')}</Text>
                 <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{getMonthName(now)}</Text>
+                  <Text style={styles.badgeText}>{getMonthName(now, language)}</Text>
                 </View>
               </View>
 
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Total gastado</Text>
+                <Text style={styles.summaryLabel}>{t('home.totalSpent')}</Text>
                 <Text style={[styles.summaryValue, { color: COLORS.red }]}>
                   {formatMoney(totalExpenses, currency)}
                 </Text>
               </View>
 
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Total ingresado</Text>
+                <Text style={styles.summaryLabel}>{t('home.totalIncome')}</Text>
                 <Text style={[styles.summaryValue, { color: COLORS.accent }]}>
                   {formatMoney(totalIncome, currency)}
                 </Text>
               </View>
 
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Categoría principal</Text>
+                <Text style={styles.summaryLabel}>{t('home.topCategory')}</Text>
                 <View style={styles.summaryValueRow}>
                   <AppIcon
                     name={topCategory?.icon || 'grid-outline'}
@@ -537,7 +589,7 @@ const now = new Date();
                     color={COLORS.textPrimary}
                   />
                   <Text style={[styles.summaryValue, { marginLeft: 4 }]}>
-                    {topCategory?.name || 'Sin datos'}
+                    {topCategory?.name || t('home.noData')}
                   </Text>
                 </View>
               </View>
@@ -559,13 +611,122 @@ const now = new Date();
               </View>
             </View>
 
+
+<View style={styles.sectionHeader}>
+  <Text style={styles.sectionTitle}>
+    {t('home.featuredGoal')}
+  </Text>
+
+  <TouchableOpacity
+    onPress={() => navigation.navigate('Goals')}
+  >
+    <Text style={styles.sectionLink}>
+      {t('home.viewAll')}
+    </Text>
+  </TouchableOpacity>
+</View>
+
+{goals.filter((goal) => goal.status === 'active').length > 0 ? (() => {
+  const featuredGoal = [...goals]
+    .filter((goal) => goal.status === 'active')
+    .sort(
+      (a, b) =>
+        Number(b.porcentaje_progreso || 0) -
+        Number(a.porcentaje_progreso || 0)
+    )[0];
+
+  return (
+    <TouchableOpacity
+      style={styles.goalCard}
+      onPress={() =>
+        navigation.navigate('Goals', {
+          goalId: featuredGoal.id,
+        })
+      }
+      activeOpacity={0.82}
+    >
+      <View style={styles.goalHeader}>
+        <View
+          style={[
+            styles.goalIcon,
+            {
+              backgroundColor:
+                `${featuredGoal.color || COLORS.accent}18`,
+            },
+          ]}
+        >
+          <Text style={styles.goalEmoji}>
+            {featuredGoal.icon || '🎯'}
+          </Text>
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.goalTitle}>
+            {featuredGoal.name}
+          </Text>
+          <Text style={styles.goalSubtitle}>
+            {t('home.goalProgress').replace(
+              '{percent}',
+              String(
+                Math.round(
+                  Number(
+                    featuredGoal.porcentaje_progreso || 0
+                  )
+                )
+              )
+            )}
+          </Text>
+        </View>
+
+        <AppIcon
+          name="chevron-forward"
+          size={18}
+          color={COLORS.textMuted}
+        />
+      </View>
+
+      <ProgressBar
+        percent={featuredGoal.porcentaje_progreso}
+        color={featuredGoal.color || COLORS.accent}
+        styles={styles}
+      />
+
+      <View style={styles.goalFooter}>
+        <Text style={styles.goalAmount}>
+          {formatMoney(
+            featuredGoal.current_amount,
+            getCurrencyByCode(featuredGoal.currency)
+          )}
+        </Text>
+
+        <Text style={styles.goalTarget}>
+          {formatMoney(
+            featuredGoal.target_amount,
+            getCurrencyByCode(featuredGoal.currency)
+          )}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+})() : (
+  <EmptyBlock
+    styles={styles}
+    COLORS={COLORS}
+    icon="flag-outline"
+    title={t('home.emptyGoal.title')}
+    text={t('home.emptyGoal.text')}
+    actionText={t('home.emptyGoal.action')}
+    onPress={() => navigation.navigate('Goals')}
+  />
+)}
+
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Gastos Recientes</Text>
+              <Text style={styles.sectionTitle}>{t('home.recentExpenses')}</Text>
 
               <TouchableOpacity
                 onPress={() => navigation.navigate('Expenses')}
               >
-                <Text style={styles.sectionLink}>Ver todos</Text>
+                <Text style={styles.sectionLink}>{t('home.viewAll')}</Text>
               </TouchableOpacity>
             </View>
 
@@ -574,9 +735,9 @@ const now = new Date();
                 styles={styles}
                 COLORS={COLORS}
                 icon="receipt-outline"
-                title="Todavía no hay gastos"
-                text="Cuando cargues tus primeros gastos, van a aparecer acá."
-                actionText="Agregar gasto"
+                title={t('home.emptyExpenses.title')}
+                text={t('home.emptyExpenses.text')}
+                actionText={t('home.emptyExpenses.action')}
                 onPress={() => navigation.navigate('AddExpense')}
               />
             ) : (
@@ -608,10 +769,10 @@ const now = new Date();
 
                     <View style={styles.expenseInfo}>
                       <Text style={styles.expenseName}>
-                        {expense.description || 'Gasto sin descripción'}
+                        {expense.description || t('home.expenseNoDescription')}
                       </Text>
                       <Text style={styles.expenseDate}>
-                        {formatDate(expense.date)}
+                        {formatDate(expense.date, language, t)}
                       </Text>
                     </View>
 
@@ -625,7 +786,7 @@ const now = new Date();
                         -{formatMoney(expense.amount, currency)}
                       </Text>
                       <Text style={styles.expenseCategory}>
-                        {expense.category || 'Otros'}
+                        {expense.category || t('home.otherCategory')}
                       </Text>
                     </View>
                   </TouchableOpacity>
@@ -634,7 +795,7 @@ const now = new Date();
             )}
 
             <View style={[styles.sectionHeader, { marginTop: 8 }]}>
-              <Text style={styles.sectionTitle}>Categorías</Text>
+              <Text style={styles.sectionTitle}>{t('home.categories')}</Text>
               <TouchableOpacity onPress={() => navigation.navigate('Stats')}>
                 <Text style={styles.sectionLink}>Ver todas</Text>
               </TouchableOpacity>
@@ -645,8 +806,8 @@ const now = new Date();
                 styles={styles}
                 COLORS={COLORS}
                 icon="receipt-outline"
-                title="Sin categorías todavía"
-                text="No gastaste en ninguna categoría durante este mes."
+                title={t('home.emptyCategories.title')}
+                text={t('home.emptyCategories.text')}
               />
             ) : (
               categories.map((cat) => (
@@ -691,6 +852,10 @@ const now = new Date();
               ))
             )}
 
+            <Text style={styles.footerText}>
+              Spendly © 2026
+            </Text>
+
             <View style={{ height: 90 }} />
           </>
         )}
@@ -713,7 +878,7 @@ const now = new Date();
           size={24}
           color={COLORS.textMuted}
         />
-          <Text style={styles.navLabel}>Movimientos</Text>
+          <Text style={styles.navLabel}>{t('navigation.transactions')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -739,7 +904,7 @@ const now = new Date();
             size={24}
             color={COLORS.textMuted}
           />
-          <Text style={styles.navLabel}>Stats</Text>
+          <Text style={styles.navLabel}>{t('home.quick.stats')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -747,7 +912,7 @@ const now = new Date();
           onPress={() => navigation.navigate('Goals')}
         >
           <AppIcon name="flag-outline" size={24} color={COLORS.textMuted} />
-          <Text style={styles.navLabel}>Metas</Text>
+          <Text style={styles.navLabel}>{t('navigation.goals')}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -1068,6 +1233,96 @@ function createStyles(COLORS) {
     fontWeight: '800',
     color: '#0D1A12',
   },
+
+
+errorCard: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 10,
+  backgroundColor: `${COLORS.orange}12`,
+  borderRadius: 18,
+  borderWidth: 1,
+  borderColor: `${COLORS.orange}35`,
+  padding: 14,
+  marginBottom: 16,
+},
+errorTitle: {
+  fontSize: 13,
+  fontWeight: '800',
+  color: COLORS.textPrimary,
+},
+errorText: {
+  marginTop: 2,
+  fontSize: 11,
+  color: COLORS.textSecondary,
+},
+retryButton: {
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  borderRadius: 12,
+  backgroundColor: COLORS.surfaceHigh,
+},
+retryButtonText: {
+  fontSize: 11,
+  fontWeight: '800',
+  color: COLORS.accent,
+},
+
+goalCard: {
+  backgroundColor: COLORS.surface,
+  borderRadius: 20,
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  padding: 16,
+  marginBottom: 18,
+},
+goalHeader: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 11,
+  marginBottom: 14,
+},
+goalIcon: {
+  width: 44,
+  height: 44,
+  borderRadius: 14,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+goalEmoji: {
+  fontSize: 22,
+},
+goalTitle: {
+  fontSize: 15,
+  fontWeight: '800',
+  color: COLORS.textPrimary,
+},
+goalSubtitle: {
+  marginTop: 3,
+  fontSize: 11,
+  color: COLORS.textSecondary,
+},
+goalFooter: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  marginTop: 10,
+},
+goalAmount: {
+  fontSize: 12,
+  fontWeight: '800',
+  color: COLORS.accent,
+},
+goalTarget: {
+  fontSize: 12,
+  color: COLORS.textSecondary,
+},
+footerText: {
+  marginTop: 28,
+  textAlign: 'center',
+  fontSize: 12,
+  color: COLORS.textMuted,
+  fontWeight: '600',
+},
 
   bottomNav: {
     position: 'absolute',

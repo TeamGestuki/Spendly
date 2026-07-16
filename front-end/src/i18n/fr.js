@@ -698,4 +698,127 @@ notifications: {
   copy: { dailyTitle: 'Any transaction still pending?', dailyBody: 'Recording today’s activity takes less than a minute.', weeklyTitle: 'Your weekly financial summary is ready', weeklyBody: 'Review income, expenses and your weekly balance.', monthlyTitle: 'A new month, a new summary', monthlyBody: 'See how the previous month ended in Statistics.', testTitle: 'Spendly is ready', testBody: 'Notifications are working correctly.' },
 },
 
+goals: {
+  title: 'Objectifs', subtitle: 'Transformez vos objectifs en progrès concrets.', loading: 'Chargement des objectifs...', search: 'Rechercher...',
+  filters: { all: 'Tous', active: 'Actifs', paused: 'En pause', completed: 'Terminés', cancelled: 'Annulés' },
+  status: { active: 'Actif', paused: 'En pause', completed: 'Terminé', cancelled: 'Annulé' },
+  priority: { low: 'Basse', medium: 'Moyenne', high: 'Haute' },
+  category: { emergency: 'Urgence', travel: 'Voyage', home: 'Maison', education: 'Études', vehicle: 'Véhicule', technology: 'Technologie', health: 'Santé', other: 'Autre' },
+  summary: { active: 'Actifs', completed: 'Terminés', saved: 'Total épargné' }, card: { remaining: 'Reste' },
+  empty: { title: 'Aucun objectif pour le moment', text: 'Créez votre premier objectif et commencez à enregistrer des versements.' },
+  actions: { create: 'Créer', saveChanges: 'Enregistrer', contribute: 'Verser', withdraw: 'Retirer', confirm: 'Confirmer', edit: 'Modifier', pause: 'Mettre en pause', resume: 'Reprendre', cancelGoal: 'Annuler l’objectif', delete: 'Supprimer' },
+  form: { createTitle: 'Nouvel objectif', editTitle: 'Modifier l’objectif', namePlaceholder: 'Ex. Voyage au Japon', descriptionPlaceholder: 'Que souhaitez-vous atteindre ?', targetAmount: 'Montant cible', category: 'Catégorie', priority: 'Priorité' },
+  detail: { of: 'sur', history: 'Historique' }, movement: { aporte: 'Versement', retiro: 'Retrait', ajuste: 'Ajustement' },
+  movementForm: { aporte: 'Ajouter un versement', retiro: 'Ajouter un retrait', ajuste: 'Ajouter un ajustement', amount: 'Montant', note: 'Note facultative' },
+  validation: { name: 'Saisissez un nom.', amount: 'Saisissez un montant cible valide.', movementAmount: 'Saisissez un montant valide.' },
+  confirm: { deleteTitle: 'Supprimer l’objectif', deleteText: 'L’objectif et tout son historique seront supprimés.', deleteMovementTitle: 'Supprimer le mouvement', deleteMovementText: 'La progression sera recalculée.' },
+  notifications: { deadlineTitle: 'Un objectif approche de son échéance', deadlineBody: 'L’objectif « {goal} » arrive à échéance dans quelques jours.', progressTitle: 'Belle progression !', progressBody: 'L’objectif « {goal} » a atteint {percentage} %.', completedTitle: 'Objectif atteint !', completedBody: 'Vous avez atteint l’objectif « {goal} ».' },
+  errors: { load: 'Impossible de charger les objectifs.', save: 'Impossible d’enregistrer l’objectif.', movement: 'Impossible d’enregistrer le mouvement.' }
+},
+
+support: { category:{ transactions:'Transactions', profile:'Profil', authentication:'Authentification', scan:'Scan', statistics:'Statistiques', goals:'Objectifs', notifications:'Notifications', appearance:'Apparence', language:'Langue', currency:'Devise', performance:'Performances', other:'Autre' }, status:{ all:'Tous', open:'Ouvert', in_review:'En cours', resolved:'Résolu', closed:'Fermé' }, validation:{ subject:'Le sujet doit contenir au moins 5 caractères.', description:'La description doit contenir au moins 10 caractères.' }, success:{ title:'Rapport envoyé', text:'Votre rapport a été enregistré. Suivez son état dans Mes rapports.' }, errors:{ submit:'Impossible d’envoyer le rapport.' }, report:{ title:'Signaler un problème', heroTitle:'Dites-nous ce qui s’est passé', heroText:'Votre rapport nous aide à améliorer Spendly.', category:'Catégorie', subject:'Sujet', subjectPlaceholder:'Résumez le problème', description:'Description', descriptionPlaceholder:'Expliquez ce qui s’est passé et le résultat attendu.', steps:'Étapes de reproduction', stepsPlaceholder:'1. Ouvrir...\n2. Appuyer...\n3. Le problème apparaît...', technicalTitle:'Inclure les informations techniques', technicalText:'Ajoute la version, le système et le modèle de l’appareil.', privacy:'Aucun mot de passe ou donnée financière n’est envoyé.', submit:'Envoyer le rapport' }, list:{ title:'Mes rapports', loading:'Chargement des rapports...', emptyTitle:'Aucun rapport envoyé', emptyText:'Créez un rapport lorsque vous avez besoin d’aide.', create:'Créer un rapport' }, detail:{ title:'Détail du rapport', description:'Description', steps:'Étapes de reproduction', dates:'Dates', created:'Créé', updated:'Mis à jour', resolved:'Résolu', technical:'Informations techniques', appVersion:'Version de l’application', platform:'Plateforme', os:'Système', device:'Appareil', responseTitle:'Réponse de l’équipe', pendingTitle:'En attente de réponse', pendingText:'L’équipe n’a pas encore répondu.' } },
+
+
+home: {
+  greeting: 'Bonjour, {name}',
+  welcomeBack: 'Bon retour',
+  defaultUser: 'Utilisateur',
+  loading: 'Chargement du résumé...',
+  balanceMonth: 'Solde total du mois',
+  income: 'Revenus',
+  expenses: 'Dépenses',
+  available: 'Disponible',
+  monthSummary: 'Résumé du mois',
+  totalSpent: 'Total dépensé',
+  totalIncome: 'Total reçu',
+  topCategory: 'Catégorie principale',
+  noData: 'Aucune donnée',
+  featuredGoal: 'Objectif mis en avant',
+  goalProgress: '{percent}% terminé',
+  recentExpenses: 'Dépenses récentes',
+  categories: 'Catégories',
+  viewAll: 'Tout voir',
+  expenseNoDescription: 'Dépense sans description',
+  otherCategory: 'Autre',
+
+  quick: {
+    expense: 'Dépense',
+    income: 'Revenu',
+    scan: 'Scanner',
+    stats: 'Stats',
+  },
+
+  emptyGoal: {
+    title: 'Aucun objectif actif',
+    text:
+      'Créez un objectif pour suivre sa progression depuis l’accueil.',
+    action: 'Créer un objectif',
+  },
+
+  emptyExpenses: {
+    title: 'Aucune dépense',
+    text:
+      'Vos premières dépenses apparaîtront ici.',
+    action: 'Ajouter une dépense',
+  },
+
+  emptyCategories: {
+    title: 'Aucune catégorie',
+    text:
+      'Aucune dépense n’a été enregistrée par catégorie ce mois-ci.',
+  },
+
+  date: {
+    today: 'Aujourd’hui',
+    yesterday: 'Hier',
+  },
+
+  errors: {
+    title: 'Impossible de mettre à jour l’accueil',
+    load:
+      'Les données principales n’ont pas pu être chargées.',
+    retry: 'Réessayer',
+  },
+},
+
+register: {
+  tagline: 'Gestion intelligente des dépenses', title: 'Créer un compte', subtitle: 'Commencez à gérer vos finances',
+  fullName: 'Nom complet', fullNamePlaceholder: 'Votre nom', email: 'Adresse e-mail', emailPlaceholder: 'vous@email.com',
+  password: 'Mot de passe', passwordPlaceholder: '********', confirmPassword: 'Confirmer le mot de passe', passwordRequirement: 'Au moins 8 caractères',
+  termsPrefix: 'J’accepte les', terms: 'Conditions générales', and: 'et la', privacy: 'Politique de confidentialité',
+  create: 'Créer un compte', creating: 'Création du compte...', or: 'ou', haveAccount: 'Vous avez déjà un compte ?', login: 'Se connecter',
+  validation: { name: 'Saisissez au moins 2 caractères.', email: 'Saisissez une adresse e-mail valide.', password: 'Le mot de passe doit contenir au moins 8 caractères.', confirm: 'Les mots de passe ne correspondent pas.', terms: 'Vous devez accepter les conditions et la politique de confidentialité.' },
+  errors: { emailExists: 'Cette adresse e-mail est déjà utilisée. Essayez-en une autre ou connectez-vous.', generic: 'Impossible de créer le compte. Réessayez.' },
+},
+
+login: {
+  tagline: 'Gestion intelligente des dépenses',
+  title: 'Se connecter',
+  subtitle: 'Bon retour',
+  email: 'Adresse e-mail',
+  emailPlaceholder: 'vous@email.com',
+  password: 'Mot de passe',
+  passwordPlaceholder: '••••••••',
+  forgotPassword: 'Mot de passe oublié ?',
+  rememberSession: 'Rester connecté',
+  submit: 'Se connecter',
+  verifying: 'Vérification...',
+  or: 'ou',
+  noAccount: 'Vous n’avez pas de compte ?',
+  register: 'Créer un compte',
+  footerPrefix: 'En continuant, vous acceptez les',
+  terms: 'Conditions générales',
+  and: 'et la',
+  privacy: 'Politique de confidentialité',
+  validation: {
+    email: 'Saisissez une adresse e-mail valide.',
+    password: 'Saisissez votre mot de passe.',
+  },
+  errors: {
+    invalidCredentials: 'L’adresse e-mail ou le mot de passe est incorrect.',
+    connection: 'Impossible de se connecter au serveur. Vérifiez votre connexion.',
+    generic: 'Impossible de vous connecter. Réessayez.',
+  },
+},
+
 };

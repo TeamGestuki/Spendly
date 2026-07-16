@@ -663,4 +663,126 @@ notifications: {
   copy: { dailyTitle: 'Any transaction still pending?', dailyBody: 'Recording today’s activity takes less than a minute.', weeklyTitle: 'Your weekly financial summary is ready', weeklyBody: 'Review income, expenses and your weekly balance.', monthlyTitle: 'A new month, a new summary', monthlyBody: 'See how the previous month ended in Statistics.', testTitle: 'Spendly is ready', testBody: 'Notifications are working correctly.' },
 },
 
+goals: {
+  title: 'Цели', subtitle: 'Превращайте цели в реальный прогресс.', loading: 'Загрузка целей...', search: 'Поиск целей...',
+  filters: { all: 'Все', active: 'Активные', paused: 'Приостановленные', completed: 'Завершённые', cancelled: 'Отменённые' },
+  status: { active: 'Активная', paused: 'Приостановлена', completed: 'Завершена', cancelled: 'Отменена' },
+  priority: { low: 'Низкий', medium: 'Средний', high: 'Высокий' },
+  category: { emergency: 'Резерв', travel: 'Путешествие', home: 'Дом', education: 'Образование', vehicle: 'Автомобиль', technology: 'Технологии', health: 'Здоровье', other: 'Другое' },
+  summary: { active: 'Активные', completed: 'Завершённые', saved: 'Всего накоплено' }, card: { remaining: 'Осталось' },
+  empty: { title: 'Целей пока нет', text: 'Создайте первую цель и начните добавлять взносы.' },
+  actions: { create: 'Создать цель', saveChanges: 'Сохранить', contribute: 'Внести', withdraw: 'Снять', confirm: 'Подтвердить', edit: 'Изменить', pause: 'Пауза', resume: 'Продолжить', cancelGoal: 'Отменить цель', delete: 'Удалить' },
+  form: { createTitle: 'Новая цель', editTitle: 'Изменить цель', namePlaceholder: 'Напр. поездка в Японию', descriptionPlaceholder: 'Чего вы хотите достичь?', targetAmount: 'Целевая сумма', category: 'Категория', priority: 'Приоритет' },
+  detail: { of: 'из', history: 'История операций' }, movement: { aporte: 'Взнос', retiro: 'Снятие', ajuste: 'Корректировка' },
+  movementForm: { aporte: 'Добавить взнос', retiro: 'Добавить снятие', ajuste: 'Добавить корректировку', amount: 'Сумма', note: 'Необязательная заметка' },
+  validation: { name: 'Введите название цели.', amount: 'Введите корректную целевую сумму.', movementAmount: 'Введите корректную сумму.' },
+  confirm: { deleteTitle: 'Удалить цель', deleteText: 'Цель и история будут удалены навсегда.', deleteMovementTitle: 'Удалить операцию', deleteMovementText: 'Прогресс будет пересчитан.' },
+  notifications: { deadlineTitle: 'Срок цели приближается', deadlineBody: 'До срока цели «{goal}» осталось несколько дней.', progressTitle: 'Отличный прогресс!', progressBody: 'Цель «{goal}» достигла {percentage}%.', completedTitle: 'Цель достигнута!', completedBody: 'Вы достигли цели «{goal}».' },
+  errors: { load: 'Не удалось загрузить цели.', save: 'Не удалось сохранить цель.', movement: 'Не удалось записать операцию.' }
+},
+
+support: { category:{ transactions:'Операции', profile:'Профиль', authentication:'Авторизация', scan:'Сканирование', statistics:'Статистика', goals:'Цели', notifications:'Уведомления', appearance:'Оформление', language:'Язык', currency:'Валюта', performance:'Производительность', other:'Другое' }, status:{ all:'Все', open:'Открыт', in_review:'На рассмотрении', resolved:'Решён', closed:'Закрыт' }, validation:{ subject:'Тема должна содержать не менее 5 символов.', description:'Описание должно содержать не менее 10 символов.' }, success:{ title:'Отчёт отправлен', text:'Отчёт сохранён. Статус доступен в разделе «Мои отчёты».' }, errors:{ submit:'Не удалось отправить отчёт.' }, report:{ title:'Сообщить о проблеме', heroTitle:'Расскажите, что произошло', heroText:'Ваш отчёт помогает улучшать Spendly.', category:'Категория', subject:'Тема', subjectPlaceholder:'Кратко опишите проблему', description:'Описание', descriptionPlaceholder:'Что произошло и чего вы ожидали?', steps:'Шаги воспроизведения', stepsPlaceholder:'1. Открыть...\n2. Нажать...\n3. Происходит...', technicalTitle:'Добавить технические данные', technicalText:'Версия приложения, ОС и модель устройства.', privacy:'Пароли и финансовые данные не отправляются.', submit:'Отправить отчёт' }, list:{ title:'Мои отчёты', loading:'Загрузка отчётов...', emptyTitle:'Отчётов пока нет', emptyText:'Создайте отчёт, когда понадобится помощь.', create:'Создать отчёт' }, detail:{ title:'Детали отчёта', description:'Описание', steps:'Шаги воспроизведения', dates:'Даты', created:'Создан', updated:'Обновлён', resolved:'Решён', technical:'Технические данные', appVersion:'Версия приложения', platform:'Платформа', os:'Операционная система', device:'Устройство', responseTitle:'Ответ команды', pendingTitle:'Ожидание ответа', pendingText:'Команда пока не ответила.' } },
+
+home: {
+  greeting: 'Здравствуйте, {name}',
+  welcomeBack: 'С возвращением',
+  defaultUser: 'Пользователь',
+  loading: 'Загрузка сводки...',
+  balanceMonth: 'Общий баланс за месяц',
+  income: 'Доходы',
+  expenses: 'Расходы',
+  available: 'Доступно',
+  monthSummary: 'Сводка за месяц',
+  totalSpent: 'Всего потрачено',
+  totalIncome: 'Всего получено',
+  topCategory: 'Главная категория',
+  noData: 'Нет данных',
+  featuredGoal: 'Главная цель',
+  goalProgress: 'Выполнено на {percent}%',
+  recentExpenses: 'Последние расходы',
+  categories: 'Категории',
+  viewAll: 'Показать все',
+  expenseNoDescription: 'Расход без описания',
+  otherCategory: 'Другое',
+
+  quick: {
+    expense: 'Расход',
+    income: 'Доход',
+    scan: 'Сканировать',
+    stats: 'Статистика',
+  },
+
+  emptyGoal: {
+    title: 'Активных целей пока нет',
+    text:
+      'Создайте цель, чтобы видеть прогресс на главном экране.',
+    action: 'Создать цель',
+  },
+
+  emptyExpenses: {
+    title: 'Расходов пока нет',
+    text:
+      'Первые расходы появятся здесь.',
+    action: 'Добавить расход',
+  },
+
+  emptyCategories: {
+    title: 'Категорий пока нет',
+    text:
+      'В этом месяце расходы по категориям ещё не зарегистрированы.',
+  },
+
+  date: {
+    today: 'Сегодня',
+    yesterday: 'Вчера',
+  },
+
+  errors: {
+    title: 'Не удалось обновить главный экран',
+    load:
+      'Не удалось загрузить основные данные.',
+    retry: 'Повторить',
+  },
+},
+
+register: {
+  tagline: 'Умное управление расходами', title: 'Создать аккаунт', subtitle: 'Начните управлять своими финансами',
+  fullName: 'Полное имя', fullNamePlaceholder: 'Ваше имя', email: 'Электронная почта', emailPlaceholder: 'you@email.com',
+  password: 'Пароль', passwordPlaceholder: '********', confirmPassword: 'Подтвердите пароль', passwordRequirement: 'Минимум 8 символов',
+  termsPrefix: 'Я принимаю', terms: 'Условия использования', and: 'и', privacy: 'Политику конфиденциальности',
+  create: 'Создать аккаунт', creating: 'Создание аккаунта...', or: 'или', haveAccount: 'Уже есть аккаунт?', login: 'Войти',
+  validation: { name: 'Введите не менее 2 символов.', email: 'Введите корректный адрес электронной почты.', password: 'Пароль должен содержать не менее 8 символов.', confirm: 'Пароли не совпадают.', terms: 'Необходимо принять условия и политику конфиденциальности.' },
+  errors: { emailExists: 'Этот адрес уже зарегистрирован. Используйте другой адрес или войдите.', generic: 'Не удалось создать аккаунт. Попробуйте ещё раз.' },
+},
+
+login: {
+  tagline: 'Умное управление расходами',
+  title: 'Войти',
+  subtitle: 'С возвращением',
+  email: 'Электронная почта',
+  emailPlaceholder: 'you@email.com',
+  password: 'Пароль',
+  passwordPlaceholder: '••••••••',
+  forgotPassword: 'Забыли пароль?',
+  rememberSession: 'Оставаться в системе',
+  submit: 'Войти',
+  verifying: 'Проверка...',
+  or: 'или',
+  noAccount: 'Нет аккаунта?',
+  register: 'Зарегистрироваться',
+  footerPrefix: 'Продолжая, вы принимаете',
+  terms: 'Условия использования',
+  and: 'и',
+  privacy: 'Политику конфиденциальности',
+  validation: {
+    email: 'Введите корректный адрес электронной почты.',
+    password: 'Введите пароль.',
+  },
+  errors: {
+    invalidCredentials: 'Неверный адрес электронной почты или пароль.',
+    connection: 'Не удалось подключиться к серверу. Проверьте соединение.',
+    generic: 'Не удалось войти. Попробуйте ещё раз.',
+  },
+},
+
 };

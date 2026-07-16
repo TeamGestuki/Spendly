@@ -445,18 +445,6 @@ export default function ProfileScreen({ navigation }) {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>{t('profile.data')}</Text>
-        <View style={styles.card}>
-          <SettingItem
-            icon="download-outline"
-            iconColor={COLORS.accent}
-            label={t('profile.exportData')}
-            value={t('profile.exportDataSubtitle')}
-            onPress={() => navigation.navigate('ExportData')}
-            isLast
-          />
-        </View>
-
         <Text style={styles.sectionTitle}>{t('profile.support')}</Text>
         <View style={styles.card}>
           <SettingItem

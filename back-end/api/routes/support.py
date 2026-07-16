@@ -42,8 +42,10 @@ def get_user_email(user_id: int, db: Session):
 
 SMTP_HOST = os.getenv("SMTP_HOST")
 try:
-    SMTP_PORT = int(os.getenv("SMTP_PORT"))
-except ValueError:
+    SMTP_PORT = int(
+        os.getenv("SMTP_PORT", "587")
+    )
+except (TypeError, ValueError):
     SMTP_PORT = 587
 SMTP_USERNAME = os.getenv("SMTP_USER")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
@@ -64,8 +66,20 @@ def send_support_email(
     device_model: str,
     report_status: str,
     created_at: str,
-):
-    """Send notification email to support team (runs in background)"""
+): 
+    """Send notification email to support team (runs in background)""" 
+
+    print("========== SMTP CONFIG ==========")
+    print("SMTP_HOST:", SMTP_HOST)
+    print("SMTP_PORT:", SMTP_PORT)
+    print("SMTP_USER:", SMTP_USERNAME)
+    print(
+        "SMTP_PASSWORD CARGADA:",
+        bool(SMTP_PASSWORD),
+    )
+    print("=================================")
+
+    
     try:
         import smtplib
         from email.mime.multipart import MIMEMultipart
@@ -101,14 +115,38 @@ def send_support_email(
 
         msg.attach(MIMEText(email_body, "plain"))
 
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+        print("Conectando con servidor SMTP...")
+
+        with smtplib.SMTP(
+            SMTP_HOST,
+            SMTP_PORT,
+            timeout=10,
+        ) as server:
+            print("Conexión SMTP abierta")
+
             server.starttls()
-            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+            print("TLS iniciado")
+
+            server.login(
+                SMTP_USERNAME,
+                SMTP_PASSWORD,
+            )
+            print("Autenticación SMTP correcta")
+
+            print("Enviando email...")
             server.send_message(msg)
+            print("EMAIL ENVIADO CORRECTAMENTE")
 
         return True
     except Exception as e:
-        print(f"Error sending email: {e}")
+        import traceback
+
+        print("========== ERROR SMTP ==========")
+        print("Tipo:", type(e).__name__)
+        print("Detalle:", repr(e))
+        traceback.print_exc()
+        print("================================")
+
         return False
 
 
@@ -143,6 +181,16 @@ async def create_support_report(
     db.commit()
     db.refresh(new_report)
 
+
+    logger.warning(
+        "SMTP CONFIG CHECK: "
+        "host=%s port=%s user=%s password_loaded=%s",
+        SMTP_HOST,
+        SMTP_PORT,
+        SMTP_USERNAME,
+        bool(SMTP_PASSWORD),
+    )
+    
     # Send email notification in background (non-blocking)
     if SMTP_HOST and SMTP_USERNAME and SMTP_PASSWORD:
         background_tasks.add_task(
