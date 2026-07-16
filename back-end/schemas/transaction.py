@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from datetime import DateType
+from datetime import data as DateType
 from typing import Optional, Literal
 
 PaymentMethod = Literal[
