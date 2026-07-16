@@ -799,4 +799,44 @@ support: {
   },
 },
 
+register: {
+  tagline: 'Intelligente Ausgabenverwaltung', title: 'Konto erstellen', subtitle: 'Beginne mit der Verwaltung deiner Finanzen',
+  fullName: 'Vollständiger Name', fullNamePlaceholder: 'Dein Name', email: 'E-Mail-Adresse', emailPlaceholder: 'du@email.com',
+  password: 'Passwort', passwordPlaceholder: '********', confirmPassword: 'Passwort bestätigen', passwordRequirement: 'Mindestens 8 Zeichen',
+  termsPrefix: 'Ich akzeptiere die', terms: 'Allgemeinen Geschäftsbedingungen', and: 'und die', privacy: 'Datenschutzerklärung',
+  create: 'Konto erstellen', creating: 'Konto wird erstellt...', or: 'oder', haveAccount: 'Du hast bereits ein Konto?', login: 'Anmelden',
+  validation: { name: 'Gib mindestens 2 Zeichen ein.', email: 'Gib eine gültige E-Mail-Adresse ein.', password: 'Das Passwort muss mindestens 8 Zeichen lang sein.', confirm: 'Die Passwörter stimmen nicht überein.', terms: 'Du musst die Bedingungen und die Datenschutzerklärung akzeptieren.' },
+  errors: { emailExists: 'Diese E-Mail-Adresse ist bereits registriert. Verwende eine andere oder melde dich an.', generic: 'Das Konto konnte nicht erstellt werden. Versuche es erneut.' },
+},
+
+login: {
+  tagline: 'Intelligente Ausgabenverwaltung',
+  title: 'Anmelden',
+  subtitle: 'Willkommen zurück',
+  email: 'E-Mail-Adresse',
+  emailPlaceholder: 'du@email.com',
+  password: 'Passwort',
+  passwordPlaceholder: '••••••••',
+  forgotPassword: 'Passwort vergessen?',
+  rememberSession: 'Angemeldet bleiben',
+  submit: 'Anmelden',
+  verifying: 'Überprüfung...',
+  or: 'oder',
+  noAccount: 'Noch kein Konto?',
+  register: 'Registrieren',
+  footerPrefix: 'Mit dem Fortfahren akzeptierst du die',
+  terms: 'Allgemeinen Geschäftsbedingungen',
+  and: 'und die',
+  privacy: 'Datenschutzerklärung',
+  validation: {
+    email: 'Gib eine gültige E-Mail-Adresse ein.',
+    password: 'Gib dein Passwort ein.',
+  },
+  errors: {
+    invalidCredentials: 'E-Mail-Adresse oder Passwort sind falsch.',
+    connection: 'Keine Verbindung zum Server. Prüfe deine Verbindung.',
+    generic: 'Die Anmeldung ist fehlgeschlagen. Versuche es erneut.',
+  },
+},
+
 };

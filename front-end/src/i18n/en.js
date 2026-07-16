@@ -762,4 +762,44 @@ home: {
   },
 },
 
+register: {
+  tagline: 'Smart expense management', title: 'Create account', subtitle: 'Start managing your finances',
+  fullName: 'Full name', fullNamePlaceholder: 'Your name', email: 'Email address', emailPlaceholder: 'you@email.com',
+  password: 'Password', passwordPlaceholder: '********', confirmPassword: 'Confirm password', passwordRequirement: 'At least 8 characters',
+  termsPrefix: 'I accept the', terms: 'Terms and conditions', and: 'and the', privacy: 'Privacy policy',
+  create: 'Create account', creating: 'Creating account...', or: 'or', haveAccount: 'Already have an account?', login: 'Log in',
+  validation: { name: 'Enter at least 2 characters.', email: 'Enter a valid email address.', password: 'The password must contain at least 8 characters.', confirm: 'Passwords do not match.', terms: 'You must accept the terms and privacy policy.' },
+  errors: { emailExists: 'This email is already registered. Try another one or log in.', generic: 'We could not create the account. Please try again.' },
+},
+
+login: {
+  tagline: 'Smart expense management',
+  title: 'Log in',
+  subtitle: 'Welcome back',
+  email: 'Email address',
+  emailPlaceholder: 'you@email.com',
+  password: 'Password',
+  passwordPlaceholder: '••••••••',
+  forgotPassword: 'Forgot your password?',
+  rememberSession: 'Keep me signed in',
+  submit: 'Log in',
+  verifying: 'Verifying...',
+  or: 'or',
+  noAccount: 'Do not have an account?',
+  register: 'Sign up',
+  footerPrefix: 'By continuing, you accept the',
+  terms: 'Terms and conditions',
+  and: 'and the',
+  privacy: 'Privacy policy',
+  validation: {
+    email: 'Enter a valid email address.',
+    password: 'Enter your password.',
+  },
+  errors: {
+    invalidCredentials: 'The email or password is incorrect.',
+    connection: 'We could not connect to the server. Check your connection.',
+    generic: 'We could not log you in. Please try again.',
+  },
+},
+
 };

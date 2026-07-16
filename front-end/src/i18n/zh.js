@@ -751,4 +751,45 @@ home: {
     retry: '重试',
   },
 },
+
+register: {
+  tagline: '智能支出管理', title: '创建账户', subtitle: '开始管理您的财务',
+  fullName: '姓名', fullNamePlaceholder: '您的姓名', email: '电子邮箱', emailPlaceholder: 'you@email.com',
+  password: '密码', passwordPlaceholder: '********', confirmPassword: '确认密码', passwordRequirement: '至少 8 个字符',
+  termsPrefix: '我接受', terms: '条款与条件', and: '以及', privacy: '隐私政策',
+  create: '创建账户', creating: '正在创建账户...', or: '或', haveAccount: '已有账户？', login: '登录',
+  validation: { name: '请输入至少 2 个字符。', email: '请输入有效的电子邮箱。', password: '密码必须至少包含 8 个字符。', confirm: '两次输入的密码不一致。', terms: '您必须接受条款与隐私政策。' },
+  errors: { emailExists: '该电子邮箱已注册。请使用其他邮箱或直接登录。', generic: '无法创建账户，请重试。' },
+},
+
+login: {
+  tagline: '智能支出管理',
+  title: '登录',
+  subtitle: '欢迎回来',
+  email: '电子邮箱',
+  emailPlaceholder: 'you@email.com',
+  password: '密码',
+  passwordPlaceholder: '••••••••',
+  forgotPassword: '忘记密码？',
+  rememberSession: '保持登录状态',
+  submit: '登录',
+  verifying: '正在验证...',
+  or: '或',
+  noAccount: '还没有账户？',
+  register: '注册',
+  footerPrefix: '继续即表示您接受',
+  terms: '条款与条件',
+  and: '以及',
+  privacy: '隐私政策',
+  validation: {
+    email: '请输入有效的电子邮箱。',
+    password: '请输入密码。',
+  },
+  errors: {
+    invalidCredentials: '电子邮箱或密码错误。',
+    connection: '无法连接服务器，请检查网络。',
+    generic: '无法登录，请重试。',
+  },
+},
+
 };
