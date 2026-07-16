@@ -23,6 +23,7 @@ def create_transaction(
         description=transaction_data.description,
         date=transaction_data.date,
         currency=transaction_data.currency,
+        payment_method=transaction_data.payment_method,
         owner_id=current_user.id
     )
     db.add(new_transaction)
