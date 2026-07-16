@@ -253,7 +253,16 @@ def reset_password(
             matched_token = token_record
             break
 
-    if not matched_token or matched_token.expires_at <= now:
+    if not matched_token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La solicitud de recuperación no es válida o venció.",
+        )
+
+    expires_at = matched_token.expires_at
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at <= now:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="La solicitud de recuperación no es válida o venció.",
