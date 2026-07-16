@@ -56,12 +56,13 @@ back-end/.env.*
 back-end/venv/
 back-end/env
 
-Archivos de la Base de Datos local
+# Archivos de la Base de Datos local
 *.db
 *.sqlite3
 
-Archivos cacheados de Python
+# Archivos cacheados de Python
 back-end/pycache/
 *.pyc
 /AGENTS.md
 /AGENTS.md
+/back-end/migrations

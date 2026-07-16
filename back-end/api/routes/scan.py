@@ -36,7 +36,8 @@ Devolvé ÚNICAMENTE un objeto JSON válido, sin markdown ni texto adicional:
   "category": "other",
   "description": "Nombre del comercio - Tipo de comprobante",
   "date": "YYYY-MM-DD",
-  "currency": "ARS"
+  "currency": "ARS",
+  "payment_method": "other"
 }
 
 Reglas:
@@ -90,6 +91,42 @@ Reglas:
    - promociones;
    - movimientos sin monto ni fecha;
    - imágenes sin evidencia de una operación concreta.
+
+11. payment_method:
+   - devolver únicamente una de estas claves:
+     cash
+     debit_card
+     credit_card
+     transfer
+     bank_account
+     digital_wallet
+     contactless_payment
+     deposit
+     other
+
+   - Mercado Pago, Lemon, Ualá, Personal Pay, MODO y billeteras similares:
+     digital_wallet
+
+   - Transferencia bancaria o entre cuentas:
+     transfer
+
+   - Comprobante de tarjeta de débito:
+     debit_card
+
+   - Comprobante de tarjeta de crédito:
+     credit_card
+
+   - Pago en efectivo:
+     cash
+
+   - Pago NFC o sin contacto:
+     contactless_payment
+
+   - Depósito bancario:
+     deposit
+
+   - Si no se puede determinar:
+     other
 """
 
 ALLOWED_CATEGORIES = {
@@ -102,6 +139,18 @@ ALLOWED_CATEGORIES = {
     "entertainment",
     "clothing",
     "technology",
+    "other",
+}
+
+ALLOWED_PAYMENT_METHODS = {
+    "cash",
+    "debit_card",
+    "credit_card",
+    "transfer",
+    "bank_account",
+    "digital_wallet",
+    "contactless_payment",
+    "deposit",
     "other",
 }
 
@@ -187,6 +236,12 @@ async def scan_ticket(
     detected_date = str(result.get("date") or date.today().isoformat()).strip()
     currency = str(result.get("currency") or "ARS").upper().strip()
 
+    payment_method = str(
+        result.get("payment_method") or "other"
+    ).lower().strip()
+    if payment_method not in ALLOWED_PAYMENT_METHODS:
+        payment_method = "other"
+
     return {
         "status": "success",
         "message": "Comprobante analizado correctamente.",
@@ -197,5 +252,6 @@ async def scan_ticket(
             "description": description,
             "date": detected_date,
             "currency": currency,
+            "payment_method": payment_method,
         },
     }
