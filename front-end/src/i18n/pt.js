@@ -753,4 +753,44 @@ home: {
   },
 },
 
+register: {
+  tagline: 'Gestão inteligente de despesas', title: 'Criar conta', subtitle: 'Comece a gerenciar suas finanças',
+  fullName: 'Nome completo', fullNamePlaceholder: 'Seu nome', email: 'E-mail', emailPlaceholder: 'voce@email.com',
+  password: 'Senha', passwordPlaceholder: '********', confirmPassword: 'Confirmar senha', passwordRequirement: 'No mínimo 8 caracteres',
+  termsPrefix: 'Aceito os', terms: 'Termos e condições', and: 'e a', privacy: 'Política de privacidade',
+  create: 'Criar conta', creating: 'Criando conta...', or: 'ou', haveAccount: 'Já tem uma conta?', login: 'Entrar',
+  validation: { name: 'Digite pelo menos 2 caracteres.', email: 'Digite um e-mail válido.', password: 'A senha deve ter pelo menos 8 caracteres.', confirm: 'As senhas não coincidem.', terms: 'Você deve aceitar os termos e a política de privacidade.' },
+  errors: { emailExists: 'Este e-mail já está registrado. Use outro ou entre na sua conta.', generic: 'Não foi possível criar a conta. Tente novamente.' },
+},
+
+login: {
+  tagline: 'Gestão inteligente de despesas',
+  title: 'Entrar',
+  subtitle: 'Bem-vindo de volta',
+  email: 'E-mail',
+  emailPlaceholder: 'voce@email.com',
+  password: 'Senha',
+  passwordPlaceholder: '••••••••',
+  forgotPassword: 'Esqueceu sua senha?',
+  rememberSession: 'Manter sessão iniciada',
+  submit: 'Entrar',
+  verifying: 'Verificando...',
+  or: 'ou',
+  noAccount: 'Ainda não tem uma conta?',
+  register: 'Cadastre-se',
+  footerPrefix: 'Ao continuar, você aceita os',
+  terms: 'Termos e condições',
+  and: 'e a',
+  privacy: 'Política de privacidade',
+  validation: {
+    email: 'Digite um e-mail válido.',
+    password: 'Digite sua senha.',
+  },
+  errors: {
+    invalidCredentials: 'O e-mail ou a senha estão incorretos.',
+    connection: 'Não foi possível conectar ao servidor. Verifique sua conexão.',
+    generic: 'Não foi possível entrar. Tente novamente.',
+  },
+},
+
 };

@@ -774,4 +774,44 @@ home: {
   },
 },
 
+register: {
+  tagline: 'Gestión inteligente de gastos', title: 'Crear cuenta', subtitle: 'Empezá a gestionar tus finanzas',
+  fullName: 'Nombre completo', fullNamePlaceholder: 'Tu nombre', email: 'Correo electrónico', emailPlaceholder: 'tu@correo.com',
+  password: 'Contraseña', passwordPlaceholder: '********', confirmPassword: 'Confirmar contraseña', passwordRequirement: 'Mínimo 8 caracteres',
+  termsPrefix: 'Acepto los', terms: 'Términos y condiciones', and: 'y la', privacy: 'Política de privacidad',
+  create: 'Crear cuenta', creating: 'Creando cuenta...', or: 'o', haveAccount: '¿Ya tenés cuenta?', login: 'Iniciar sesión',
+  validation: { name: 'Ingresá al menos 2 caracteres.', email: 'Ingresá un correo válido.', password: 'La contraseña debe tener al menos 8 caracteres.', confirm: 'Las contraseñas no coinciden.', terms: 'Debés aceptar los términos y la política de privacidad.' },
+  errors: { emailExists: 'El correo ya está registrado. Probá con otro o iniciá sesión.', generic: 'No pudimos crear la cuenta. Intentá nuevamente.' },
+},
+
+login: {
+  tagline: 'Gestión inteligente de gastos',
+  title: 'Iniciar sesión',
+  subtitle: 'Bienvenido de vuelta',
+  email: 'Correo electrónico',
+  emailPlaceholder: 'tu@correo.com',
+  password: 'Contraseña',
+  passwordPlaceholder: '••••••••',
+  forgotPassword: '¿Olvidaste tu contraseña?',
+  rememberSession: 'Mantener sesión iniciada',
+  submit: 'Iniciar sesión',
+  verifying: 'Verificando...',
+  or: 'o',
+  noAccount: '¿No tenés cuenta?',
+  register: 'Registrate',
+  footerPrefix: 'Al continuar aceptás los',
+  terms: 'Términos y condiciones',
+  and: 'y la',
+  privacy: 'Política de privacidad',
+  validation: {
+    email: 'Ingresá un correo válido.',
+    password: 'Ingresá tu contraseña.',
+  },
+  errors: {
+    invalidCredentials: 'El correo o la contraseña son incorrectos.',
+    connection: 'No pudimos conectarnos con el servidor. Revisá tu conexión.',
+    generic: 'No pudimos iniciar sesión. Intentá nuevamente.',
+  },
+},
+
 };

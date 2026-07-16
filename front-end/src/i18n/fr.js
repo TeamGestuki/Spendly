@@ -781,4 +781,44 @@ home: {
   },
 },
 
+register: {
+  tagline: 'Gestion intelligente des dépenses', title: 'Créer un compte', subtitle: 'Commencez à gérer vos finances',
+  fullName: 'Nom complet', fullNamePlaceholder: 'Votre nom', email: 'Adresse e-mail', emailPlaceholder: 'vous@email.com',
+  password: 'Mot de passe', passwordPlaceholder: '********', confirmPassword: 'Confirmer le mot de passe', passwordRequirement: 'Au moins 8 caractères',
+  termsPrefix: 'J’accepte les', terms: 'Conditions générales', and: 'et la', privacy: 'Politique de confidentialité',
+  create: 'Créer un compte', creating: 'Création du compte...', or: 'ou', haveAccount: 'Vous avez déjà un compte ?', login: 'Se connecter',
+  validation: { name: 'Saisissez au moins 2 caractères.', email: 'Saisissez une adresse e-mail valide.', password: 'Le mot de passe doit contenir au moins 8 caractères.', confirm: 'Les mots de passe ne correspondent pas.', terms: 'Vous devez accepter les conditions et la politique de confidentialité.' },
+  errors: { emailExists: 'Cette adresse e-mail est déjà utilisée. Essayez-en une autre ou connectez-vous.', generic: 'Impossible de créer le compte. Réessayez.' },
+},
+
+login: {
+  tagline: 'Gestion intelligente des dépenses',
+  title: 'Se connecter',
+  subtitle: 'Bon retour',
+  email: 'Adresse e-mail',
+  emailPlaceholder: 'vous@email.com',
+  password: 'Mot de passe',
+  passwordPlaceholder: '••••••••',
+  forgotPassword: 'Mot de passe oublié ?',
+  rememberSession: 'Rester connecté',
+  submit: 'Se connecter',
+  verifying: 'Vérification...',
+  or: 'ou',
+  noAccount: 'Vous n’avez pas de compte ?',
+  register: 'Créer un compte',
+  footerPrefix: 'En continuant, vous acceptez les',
+  terms: 'Conditions générales',
+  and: 'et la',
+  privacy: 'Politique de confidentialité',
+  validation: {
+    email: 'Saisissez une adresse e-mail valide.',
+    password: 'Saisissez votre mot de passe.',
+  },
+  errors: {
+    invalidCredentials: 'L’adresse e-mail ou le mot de passe est incorrect.',
+    connection: 'Impossible de se connecter au serveur. Vérifiez votre connexion.',
+    generic: 'Impossible de vous connecter. Réessayez.',
+  },
+},
+
 };

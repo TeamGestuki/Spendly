@@ -13,6 +13,7 @@ class Transaction(Base):
     description = Column(String(255), nullable=True)
     date = Column(Date, nullable=False)
     currency = Column(String(10), default="ARS")
+    payment_method = Column(String(50), nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     # Relaciones inversas (Un usuario tiene una lista de transacciones)

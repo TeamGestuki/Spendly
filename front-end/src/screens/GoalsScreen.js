@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet,
   StatusBar, ActivityIndicator, RefreshControl, Modal, Alert, Image,
+  KeyboardAvoidingView, Keyboard, Platform, Pressable,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -63,6 +64,7 @@ export default function GoalsScreen({ navigation, route }) {
   const [selected, setSelected] = useState(null);
   const [formVisible, setFormVisible] = useState(false);
   const [movementVisible, setMovementVisible] = useState(false);
+  const [movementGoal, setMovementGoal] = useState(null);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: '', description: '', target_amount: '', category: 'other', priority: 'medium', icon: '🎯', color: '#4ADE80' });
@@ -168,9 +170,18 @@ export default function GoalsScreen({ navigation, route }) {
   }
 
   function openMovement(goal, type = 'aporte') {
-    setSelected(goal);
+    Keyboard.dismiss();
+    setMovementGoal(goal);
     setMovement({ type, amount: '', note: '' });
-    setMovementVisible(true);
+    setSelected(null);
+    setTimeout(() => setMovementVisible(true), 180);
+  }
+
+  function closeMovement() {
+    Keyboard.dismiss();
+    setMovementVisible(false);
+    setMovement({ type: 'aporte', amount: '', note: '' });
+    setMovementGoal(null);
   }
 
   async function saveMovement() {
@@ -178,9 +189,10 @@ export default function GoalsScreen({ navigation, route }) {
     if (!Number.isFinite(amount) || amount === 0) return Alert.alert(t('common.error'), t('goals.validation.movementAmount'));
     try {
       setSaving(true);
-      const previousProgress = progress(selected);
-      const previousStatus = selected.status;
-      const updated = await addGoalMovement(selected.id, { type: movement.type, amount, note: movement.note.trim() || null });
+      if (!movementGoal) return;
+      const previousProgress = progress(movementGoal);
+      const previousStatus = movementGoal.status;
+      const updated = await addGoalMovement(movementGoal.id, { type: movement.type, amount, note: movement.note.trim() || null });
       const nextProgress = progress(updated);
       if (previousProgress < 80 && nextProgress >= 80 && nextProgress < 100) {
         await sendGoalProgressNotification({ goalId: updated.id, goalName: updated.name, percentage: nextProgress, title: t('goals.notifications.progressTitle'), body: t('goals.notifications.progressBody') });
@@ -188,7 +200,9 @@ export default function GoalsScreen({ navigation, route }) {
       if (previousStatus !== 'completed' && updated.status === 'completed') {
         await sendGoalCompletedNotification({ goalId: updated.id, goalName: updated.name, title: t('goals.notifications.completedTitle'), body: t('goals.notifications.completedBody') });
       }
+      Keyboard.dismiss();
       setMovementVisible(false);
+      setMovementGoal(null);
       setSelected(updated);
       await load(false);
     } catch (error) {
@@ -258,7 +272,7 @@ export default function GoalsScreen({ navigation, route }) {
             <Text style={styles.amount}>{money(goal, goal.current_amount)} <Text style={styles.target}>/ {money(goal, goal.target_amount)}</Text></Text>
             <View style={styles.track}><View style={[styles.fill, { width: `${progress(goal)}%`, backgroundColor: goal.color || COLORS.accent }]} /></View>
             <View style={styles.cardBottom}><Text style={styles.percent}>{Math.round(progress(goal))}%</Text><Text style={styles.remaining}>{t('goals.card.remaining')}: {money(goal, goal.monto_restante)}</Text></View>
-            {goal.status === 'active' && <TouchableOpacity style={styles.addButton} onPress={() => openMovement(goal)}><Text style={styles.addButtonText}>{t('goals.actions.contribute')}</Text></TouchableOpacity>}
+            
           </TouchableOpacity>
         )) : <View style={styles.empty}><AppIcon name="flag-outline" size={38} color={COLORS.accent} /><Text style={styles.emptyTitle}>{t('goals.empty.title')}</Text><Text style={styles.emptyText}>{t('goals.empty.text')}</Text></View>}
 
@@ -292,27 +306,107 @@ export default function GoalsScreen({ navigation, route }) {
           <View style={styles.detailHeader}><Text style={styles.detailTitle}>{selected.icon} {selected.name}</Text><TouchableOpacity onPress={() => setSelected(null)}><AppIcon name="close" size={24} color={COLORS.textSecondary} /></TouchableOpacity></View>
           <Text style={styles.detailAmount}>{money(selected, selected.current_amount)}</Text><Text style={styles.detailSub}>{t('goals.detail.of')} {money(selected, selected.target_amount)}</Text>
           <View style={styles.track}><View style={[styles.fill, { width: `${progress(selected)}%`, backgroundColor: selected.color || COLORS.accent }]} /></View>
-          <View style={styles.detailActions}><TouchableOpacity style={styles.primarySmall} onPress={() => openMovement(selected, 'aporte')}><Text style={styles.primaryText}>{t('goals.actions.contribute')}</Text></TouchableOpacity><TouchableOpacity style={styles.secondarySmall} onPress={() => openMovement(selected, 'retiro')}><Text style={styles.secondaryText}>{t('goals.actions.withdraw')}</Text></TouchableOpacity></View>
-          <View style={styles.rowWrap}>
-            <TouchableOpacity style={styles.action} onPress={() => openEdit(selected)}><Text style={styles.actionText}>{t('goals.actions.edit')}</Text></TouchableOpacity>
-            {selected.status === 'active' && <TouchableOpacity style={styles.action} onPress={() => changeStatus('pause')}><Text style={styles.actionText}>{t('goals.actions.pause')}</Text></TouchableOpacity>}
-            {selected.status === 'paused' && <TouchableOpacity style={styles.action} onPress={() => changeStatus('resume')}><Text style={styles.actionText}>{t('goals.actions.resume')}</Text></TouchableOpacity>}
-            {!['completed','cancelled'].includes(selected.status) && <TouchableOpacity style={styles.action} onPress={() => changeStatus('cancel')}><Text style={styles.actionText}>{t('goals.actions.cancelGoal')}</Text></TouchableOpacity>}
-            <TouchableOpacity style={styles.action} onPress={confirmDelete}><Text style={[styles.actionText, { color: COLORS.red }]}>{t('goals.actions.delete')}</Text></TouchableOpacity>
+          {selected.status === 'active' && (
+            <View style={styles.detailActions}>
+              <TouchableOpacity style={styles.primarySmall} onPress={() => openMovement(selected, 'aporte')}>
+                <AppIcon name="add-circle-outline" size={20} color={COLORS.buttonText || COLORS.bg} />
+                <Text style={styles.primaryText}>{t('goals.actions.contribute')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.secondarySmall} onPress={() => openMovement(selected, 'retiro')}>
+                <AppIcon name="remove-circle-outline" size={20} color={COLORS.textPrimary} />
+                <Text style={styles.secondaryText}>{t('goals.actions.withdraw')}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          <View style={styles.actionList}>
+            <TouchableOpacity style={styles.actionRow} onPress={() => openEdit(selected)}>
+              <AppIcon name="create-outline" size={20} color={COLORS.blue} />
+              <Text style={styles.actionRowText}>{t('goals.actions.edit')}</Text>
+              <AppIcon name="chevron-forward" size={17} color={COLORS.textMuted} />
+            </TouchableOpacity>
+            {selected.status === 'active' && <TouchableOpacity style={styles.actionRow} onPress={() => changeStatus('pause')}>
+              <AppIcon name="pause-outline" size={20} color={COLORS.orange} />
+              <Text style={styles.actionRowText}>{t('goals.actions.pause')}</Text>
+              <AppIcon name="chevron-forward" size={17} color={COLORS.textMuted} />
+            </TouchableOpacity>}
+            {selected.status === 'paused' && <TouchableOpacity style={styles.actionRow} onPress={() => changeStatus('resume')}>
+              <AppIcon name="play-outline" size={20} color={COLORS.accent} />
+              <Text style={styles.actionRowText}>{t('goals.actions.resume')}</Text>
+              <AppIcon name="chevron-forward" size={17} color={COLORS.textMuted} />
+            </TouchableOpacity>}
+            {!['completed','cancelled'].includes(selected.status) && <TouchableOpacity style={styles.actionRow} onPress={() => changeStatus('cancel')}>
+              <AppIcon name="close-circle-outline" size={20} color={COLORS.orange} />
+              <Text style={styles.actionRowText}>{t('goals.actions.cancelGoal')}</Text>
+              <AppIcon name="chevron-forward" size={17} color={COLORS.textMuted} />
+            </TouchableOpacity>}
+            <TouchableOpacity style={[styles.actionRow, styles.actionRowLast]} onPress={confirmDelete}>
+              <AppIcon name="trash-outline" size={20} color={COLORS.red} />
+              <Text style={[styles.actionRowText, { color: COLORS.red }]}>{t('goals.actions.delete')}</Text>
+              <AppIcon name="chevron-forward" size={17} color={COLORS.red} />
+            </TouchableOpacity>
           </View>
           <Text style={styles.sectionLabel}>{t('goals.detail.history')}</Text>
           {(selected.movements || []).map((item) => <View key={item.id} style={styles.movementRow}><View style={{ flex: 1 }}><Text style={styles.goalName}>{t(`goals.movement.${item.type}`)}</Text><Text style={styles.goalMeta}>{new Date(item.date).toLocaleDateString(language)}{item.note ? ` · ${item.note}` : ''}</Text></View><Text style={styles.movementAmount}>{item.type === 'retiro' ? '-' : '+'}{money(selected, Math.abs(item.amount))}</Text><TouchableOpacity onPress={() => confirmDeleteMovement(item)}><AppIcon name="trash-outline" color={COLORS.red} /></TouchableOpacity></View>)}
         </ScrollView>}</View></View>
       </Modal>
 
-      <Modal visible={movementVisible} transparent animationType="fade" onRequestClose={() => setMovementVisible(false)}>
-        <View style={styles.overlay}><View style={styles.smallSheet}><Text style={styles.sheetTitle}>{t(`goals.movementForm.${movement.type}`)}</Text>
-          <View style={styles.row}>{['aporte','retiro','ajuste'].map((type) => <TouchableOpacity key={type} style={[styles.chip, movement.type === type && styles.chipActive]} onPress={() => setMovement({ ...movement, type })}><Text style={[styles.chipText, movement.type === type && styles.chipTextActive]}>{t(`goals.movement.${type}`)}</Text></TouchableOpacity>)}</View>
-          <TextInput style={styles.input} value={movement.amount} onChangeText={(amount) => setMovement({ ...movement, amount })} placeholder={t('goals.movementForm.amount')} placeholderTextColor={COLORS.textMuted} keyboardType="decimal-pad" />
-          <TextInput style={[styles.input, styles.area]} value={movement.note} onChangeText={(note) => setMovement({ ...movement, note })} placeholder={t('goals.movementForm.note')} placeholderTextColor={COLORS.textMuted} multiline />
-          <TouchableOpacity style={styles.primary} onPress={saveMovement} disabled={saving}>{saving ? <ActivityIndicator color={COLORS.buttonText || COLORS.bg} /> : <Text style={styles.primaryText}>{t('goals.actions.confirm')}</Text>}</TouchableOpacity>
-          <TouchableOpacity style={styles.secondary} onPress={() => setMovementVisible(false)}><Text style={styles.secondaryText}>{t('common.cancel')}</Text></TouchableOpacity>
-        </View></View>
+      <Modal visible={movementVisible} transparent animationType="slide" onRequestClose={closeMovement}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
+        >
+          <Pressable style={styles.overlay} onPress={closeMovement}>
+            <Pressable style={styles.smallSheet} onPress={() => {}}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.sheetTitle}>{t(`goals.movementForm.${movement.type}`)}</Text>
+                <TouchableOpacity onPress={closeMovement}>
+                  <AppIcon name="close" size={24} color={COLORS.textSecondary} />
+                </TouchableOpacity>
+              </View>
+              <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                <View style={styles.movementTypeRow}>
+                  {['aporte','retiro','ajuste'].map((type) => (
+                    <TouchableOpacity
+                      key={type}
+                      style={[styles.movementTypeBtn, movement.type === type && styles.movementTypeBtnActive]}
+                      onPress={() => setMovement({ ...movement, type })}
+                    >
+                      <Text style={[styles.movementTypeText, movement.type === type && styles.movementTypeTextActive]}>
+                        {t(`goals.movement.${type}`)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <TextInput
+                  style={styles.input}
+                  value={movement.amount}
+                  onChangeText={(amount) => setMovement({ ...movement, amount })}
+                  placeholder={t('goals.movementForm.amount')}
+                  placeholderTextColor={COLORS.textMuted}
+                  keyboardType="decimal-pad"
+                  returnKeyType="done"
+                  onSubmitEditing={Keyboard.dismiss}
+                />
+                <TextInput
+                  style={[styles.input, styles.area]}
+                  value={movement.note}
+                  onChangeText={(note) => setMovement({ ...movement, note })}
+                  placeholder={t('goals.movementForm.note')}
+                  placeholderTextColor={COLORS.textMuted}
+                  multiline
+                />
+                <TouchableOpacity style={styles.primary} onPress={saveMovement} disabled={saving}>
+                  {saving ? <ActivityIndicator color={COLORS.buttonText || COLORS.bg} /> : <Text style={styles.primaryText}>{t('goals.actions.confirm')}</Text>}
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.secondary} onPress={closeMovement}>
+                  <Text style={styles.secondaryText}>{t('common.cancel')}</Text>
+                </TouchableOpacity>
+                <View style={{ height: 12 }} />
+              </ScrollView>
+            </Pressable>
+          </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -320,6 +414,6 @@ export default function GoalsScreen({ navigation, route }) {
 
 function createStyles(COLORS) {
   return StyleSheet.create({
-    flex:{flex:1,backgroundColor:COLORS.bg},loading:{flex:1,alignItems:'center',justifyContent:'center',backgroundColor:COLORS.bg},loadingText:{marginTop:10,color:COLORS.textSecondary},content:{paddingHorizontal:20,paddingTop:56,paddingBottom:150},header:{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginBottom:20},title:{fontSize:25,fontWeight:'800',color:COLORS.textPrimary},subtitle:{marginTop:4,fontSize:13,color:COLORS.textSecondary},avatarRing:{width:44,height:44,borderRadius:22,borderWidth:2,borderColor:`${COLORS.accent}55`,alignItems:'center',justifyContent:'center'},avatarImage:{width:38,height:38,borderRadius:19},avatarFallback:{width:38,height:38,borderRadius:19,backgroundColor:COLORS.accentDim,alignItems:'center',justifyContent:'center'},avatarText:{fontWeight:'800',color:COLORS.accent},summaryRow:{gap:10,paddingBottom:18},summaryCard:{width:105,padding:14,borderRadius:18,backgroundColor:COLORS.surface,borderWidth:1,borderColor:COLORS.border},summaryWide:{width:165,padding:14,borderRadius:18,backgroundColor:COLORS.surface,borderWidth:1,borderColor:COLORS.border},summaryValue:{fontSize:24,fontWeight:'800',color:COLORS.textPrimary},summaryAmount:{fontSize:18,fontWeight:'800',color:COLORS.accent},summaryLabel:{marginTop:5,fontSize:11,color:COLORS.textSecondary},searchBox:{height:50,borderRadius:15,backgroundColor:COLORS.surface,borderWidth:1,borderColor:COLORS.border,flexDirection:'row',alignItems:'center',gap:10,paddingHorizontal:14},searchInput:{flex:1,color:COLORS.textPrimary},filters:{gap:8,paddingVertical:14},chip:{paddingHorizontal:13,height:38,borderRadius:12,backgroundColor:COLORS.surfaceHigh,borderWidth:1,borderColor:COLORS.border,alignItems:'center',justifyContent:'center',marginRight:8},chipActive:{backgroundColor:COLORS.accentDim,borderColor:`${COLORS.accent}55`},chipText:{fontSize:11,fontWeight:'700',color:COLORS.textSecondary},chipTextActive:{color:COLORS.accent},goalCard:{backgroundColor:COLORS.surface,borderRadius:22,borderWidth:1,borderColor:COLORS.border,padding:17,marginBottom:14,overflow:'hidden'},goalColor:{position:'absolute',top:0,bottom:0,left:0,width:4},goalHeader:{flexDirection:'row',alignItems:'center',gap:10},goalIcon:{width:44,height:44,borderRadius:14,alignItems:'center',justifyContent:'center'},emoji:{fontSize:22},goalName:{fontSize:15,fontWeight:'800',color:COLORS.textPrimary},goalMeta:{marginTop:3,fontSize:11,color:COLORS.textSecondary},amount:{fontSize:18,fontWeight:'800',color:COLORS.textPrimary,marginTop:16,marginBottom:10},target:{fontSize:12,fontWeight:'400',color:COLORS.textSecondary},track:{height:9,borderRadius:999,backgroundColor:COLORS.surfaceHigh,overflow:'hidden'},fill:{height:'100%',borderRadius:999},cardBottom:{flexDirection:'row',justifyContent:'space-between',marginTop:8},percent:{fontSize:12,fontWeight:'800',color:COLORS.textPrimary},remaining:{fontSize:11,color:COLORS.textSecondary},addButton:{alignSelf:'flex-end',marginTop:12,paddingHorizontal:13,height:36,borderRadius:12,backgroundColor:COLORS.accent,alignItems:'center',justifyContent:'center'},addButtonText:{fontSize:11,fontWeight:'800',color:COLORS.buttonText||COLORS.bg},empty:{padding:28,alignItems:'center',backgroundColor:COLORS.surface,borderRadius:22,borderWidth:1,borderColor:COLORS.border},emptyTitle:{fontSize:18,fontWeight:'800',color:COLORS.textPrimary,marginTop:12},emptyText:{fontSize:13,color:COLORS.textSecondary,textAlign:'center',marginTop:6},footer:{textAlign:'center',marginTop:28,color:COLORS.textMuted,fontSize:12,fontWeight:'600'},fab:{position:'absolute',right:22,bottom:105,width:58,height:58,borderRadius:29,backgroundColor:COLORS.accent,alignItems:'center',justifyContent:'center',elevation:8},bottomNav:{position:'absolute',bottom:0,left:0,right:0,backgroundColor:COLORS.surface,borderTopWidth:1,borderTopColor:COLORS.border,flexDirection:'row',alignItems:'flex-end',paddingBottom:24,paddingTop:12,paddingHorizontal:20},navItem:{flex:1,alignItems:'center',gap:4},navLabel:{fontSize:10,color:COLORS.textMuted},scanWrap:{flex:1,alignItems:'center',marginBottom:8},scanBtn:{width:60,height:60,borderRadius:30,backgroundColor:COLORS.accent,alignItems:'center',justifyContent:'center',marginTop:-28},overlay:{flex:1,backgroundColor:'rgba(0,0,0,0.68)',justifyContent:'flex-end'},sheet:{maxHeight:'92%',backgroundColor:COLORS.surface,borderTopLeftRadius:28,borderTopRightRadius:28,padding:20},detailSheet:{height:'88%',backgroundColor:COLORS.surface,borderTopLeftRadius:28,borderTopRightRadius:28,padding:20},smallSheet:{backgroundColor:COLORS.surface,borderTopLeftRadius:28,borderTopRightRadius:28,padding:20},sheetTitle:{fontSize:20,fontWeight:'800',color:COLORS.textPrimary,marginBottom:16},input:{minHeight:50,borderRadius:14,backgroundColor:COLORS.surfaceHigh,borderWidth:1,borderColor:COLORS.border,paddingHorizontal:14,paddingVertical:12,color:COLORS.textPrimary,marginBottom:14},area:{minHeight:85,textAlignVertical:'top'},sectionLabel:{fontSize:12,fontWeight:'700',color:COLORS.textSecondary,textTransform:'uppercase',marginTop:6,marginBottom:10},row:{flexDirection:'row',marginBottom:14},rowWrap:{flexDirection:'row',flexWrap:'wrap',gap:8,marginBottom:14},iconChoice:{width:48,height:48,borderRadius:14,backgroundColor:COLORS.surfaceHigh,borderWidth:1,borderColor:COLORS.border,alignItems:'center',justifyContent:'center'},choiceActive:{borderColor:COLORS.accent,backgroundColor:COLORS.accentDim},colorChoice:{width:34,height:34,borderRadius:17,marginRight:10,borderWidth:3,borderColor:'transparent'},colorSelected:{borderColor:COLORS.textPrimary},primary:{height:52,borderRadius:16,backgroundColor:COLORS.accent,alignItems:'center',justifyContent:'center',marginTop:8},primaryText:{fontSize:14,fontWeight:'800',color:COLORS.buttonText||COLORS.bg},secondary:{height:48,borderRadius:14,backgroundColor:COLORS.surfaceHigh,alignItems:'center',justifyContent:'center',marginTop:10},secondaryText:{fontSize:13,fontWeight:'700',color:COLORS.textSecondary},detailHeader:{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginBottom:16},detailTitle:{fontSize:20,fontWeight:'800',color:COLORS.textPrimary},detailAmount:{fontSize:26,fontWeight:'800',color:COLORS.textPrimary,textAlign:'center'},detailSub:{fontSize:12,color:COLORS.textSecondary,textAlign:'center',marginBottom:15},detailActions:{flexDirection:'row',gap:10,marginTop:18},primarySmall:{flex:1,height:46,borderRadius:14,backgroundColor:COLORS.accent,alignItems:'center',justifyContent:'center'},secondarySmall:{flex:1,height:46,borderRadius:14,backgroundColor:COLORS.surfaceHigh,alignItems:'center',justifyContent:'center'},action:{paddingHorizontal:12,height:40,borderRadius:12,backgroundColor:COLORS.surfaceHigh,alignItems:'center',justifyContent:'center'},actionText:{fontSize:11,fontWeight:'700',color:COLORS.textPrimary},movementRow:{flexDirection:'row',alignItems:'center',gap:10,paddingVertical:12,borderBottomWidth:1,borderBottomColor:COLORS.border},movementAmount:{fontSize:12,fontWeight:'800',color:COLORS.accent}
+    flex:{flex:1,backgroundColor:COLORS.bg}, loading:{flex:1,alignItems:'center',justifyContent:'center',backgroundColor:COLORS.bg},loadingText:{marginTop:10,color:COLORS.textSecondary},content:{paddingHorizontal:20,paddingTop:56,paddingBottom:150},header:{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginBottom:20},title:{fontSize:25,fontWeight:'800',color:COLORS.textPrimary},subtitle:{marginTop:4,fontSize:13,color:COLORS.textSecondary},avatarRing:{width:44,height:44,borderRadius:22,borderWidth:2,borderColor:`${COLORS.accent}55`,alignItems:'center',justifyContent:'center'},avatarImage:{width:38,height:38,borderRadius:19},avatarFallback:{width:38,height:38,borderRadius:19,backgroundColor:COLORS.accentDim,alignItems:'center',justifyContent:'center'},avatarText:{fontWeight:'800',color:COLORS.accent},summaryRow:{gap:10,paddingBottom:18},summaryCard:{width:105,padding:14,borderRadius:18,backgroundColor:COLORS.surface,borderWidth:1,borderColor:COLORS.border},summaryWide:{width:165,padding:14,borderRadius:18,backgroundColor:COLORS.surface,borderWidth:1,borderColor:COLORS.border},summaryValue:{fontSize:24,fontWeight:'800',color:COLORS.textPrimary},summaryAmount:{fontSize:18,fontWeight:'800',color:COLORS.accent},summaryLabel:{marginTop:5,fontSize:11,color:COLORS.textSecondary},searchBox:{height:50,borderRadius:15,backgroundColor:COLORS.surface,borderWidth:1,borderColor:COLORS.border,flexDirection:'row',alignItems:'center',gap:10,paddingHorizontal:14},searchInput:{flex:1,color:COLORS.textPrimary},filters:{gap:8,paddingVertical:14},chip:{paddingHorizontal:13,height:38,borderRadius:12,backgroundColor:COLORS.surfaceHigh,borderWidth:1,borderColor:COLORS.border,alignItems:'center',justifyContent:'center',marginRight:8},chipActive:{backgroundColor:COLORS.accentDim,borderColor:`${COLORS.accent}55`},chipText:{fontSize:11,fontWeight:'700',color:COLORS.textSecondary},chipTextActive:{color:COLORS.accent},goalCard:{backgroundColor:COLORS.surface,borderRadius:22,borderWidth:1,borderColor:COLORS.border,padding:17,marginBottom:14,overflow:'hidden'},goalColor:{position:'absolute',top:0,bottom:0,left:0,width:4},goalHeader:{flexDirection:'row',alignItems:'center',gap:10},goalIcon:{width:44,height:44,borderRadius:14,alignItems:'center',justifyContent:'center'},emoji:{fontSize:22},goalName:{fontSize:15,fontWeight:'800',color:COLORS.textPrimary},goalMeta:{marginTop:3,fontSize:11,color:COLORS.textSecondary},amount:{fontSize:18,fontWeight:'800',color:COLORS.textPrimary,marginTop:16,marginBottom:10},target:{fontSize:12,fontWeight:'400',color:COLORS.textSecondary},track:{height:9,borderRadius:999,backgroundColor:COLORS.surfaceHigh,overflow:'hidden'},fill:{height:'100%',borderRadius:999},cardBottom:{flexDirection:'row',justifyContent:'space-between',marginTop:8},percent:{fontSize:12,fontWeight:'800',color:COLORS.textPrimary},remaining:{fontSize:11,color:COLORS.textSecondary},addButton:{alignSelf:'flex-end',marginTop:12,paddingHorizontal:13,height:36,borderRadius:12,backgroundColor:COLORS.accent,alignItems:'center',justifyContent:'center'},addButtonText:{fontSize:11,fontWeight:'800',color:COLORS.buttonText||COLORS.bg},empty:{padding:28,alignItems:'center',backgroundColor:COLORS.surface,borderRadius:22,borderWidth:1,borderColor:COLORS.border},emptyTitle:{fontSize:18,fontWeight:'800',color:COLORS.textPrimary,marginTop:12},emptyText:{fontSize:13,color:COLORS.textSecondary,textAlign:'center',marginTop:6},footer:{textAlign:'center',marginTop:28,color:COLORS.textMuted,fontSize:12,fontWeight:'600'},fab:{position:'absolute',right:22,bottom:105,width:58,height:58,borderRadius:29,backgroundColor:COLORS.accent,alignItems:'center',justifyContent:'center',elevation:8},bottomNav:{position:'absolute',bottom:0,left:0,right:0,backgroundColor:COLORS.surface,borderTopWidth:1,borderTopColor:COLORS.border,flexDirection:'row',alignItems:'flex-end',paddingBottom:24,paddingTop:12,paddingHorizontal:20},navItem:{flex:1,alignItems:'center',gap:4},navLabel:{fontSize:10,color:COLORS.textMuted},scanWrap:{flex:1,alignItems:'center',marginBottom:8},scanBtn:{width:60,height:60,borderRadius:30,backgroundColor:COLORS.accent,alignItems:'center',justifyContent:'center',marginTop:-28},overlay:{flex:1,backgroundColor:'rgba(0,0,0,0.68)',justifyContent:'flex-end'},sheet:{maxHeight:'92%',backgroundColor:COLORS.surface,borderTopLeftRadius:28,borderTopRightRadius:28,padding:20},detailSheet:{height:'88%',backgroundColor:COLORS.surface,borderTopLeftRadius:28,borderTopRightRadius:28,padding:20},smallSheet:{backgroundColor:COLORS.surface,borderTopLeftRadius:28,borderTopRightRadius:28,padding:20},sheetTitle:{fontSize:20,fontWeight:'800',color:COLORS.textPrimary,marginBottom:16},input:{minHeight:50,borderRadius:14,backgroundColor:COLORS.surfaceHigh,borderWidth:1,borderColor:COLORS.border,paddingHorizontal:14,paddingVertical:12,color:COLORS.textPrimary,marginBottom:14},area:{minHeight:85,textAlignVertical:'top'},sectionLabel:{fontSize:12,fontWeight:'700',color:COLORS.textSecondary,textTransform:'uppercase',marginTop:6,marginBottom:10},row:{flexDirection:'row',marginBottom:14},rowWrap:{flexDirection:'row',flexWrap:'wrap',gap:8,marginBottom:14},iconChoice:{width:48,height:48,borderRadius:14,backgroundColor:COLORS.surfaceHigh,borderWidth:1,borderColor:COLORS.border,alignItems:'center',justifyContent:'center'},choiceActive:{borderColor:COLORS.accent,backgroundColor:COLORS.accentDim},colorChoice:{width:34,height:34,borderRadius:17,marginRight:10,borderWidth:3,borderColor:'transparent'},colorSelected:{borderColor:COLORS.textPrimary},primary:{height:52,borderRadius:16,backgroundColor:COLORS.accent,alignItems:'center',justifyContent:'center',marginTop:8},primaryText:{fontSize:14,fontWeight:'800',color:COLORS.buttonText||COLORS.bg},secondary:{height:48,borderRadius:14,backgroundColor:COLORS.surfaceHigh,alignItems:'center',justifyContent:'center',marginTop:10},secondaryText:{fontSize:13,fontWeight:'700',color:COLORS.textSecondary},detailHeader:{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginBottom:16},detailTitle:{fontSize:20,fontWeight:'800',color:COLORS.textPrimary},detailAmount:{fontSize:26,fontWeight:'800',color:COLORS.textPrimary,textAlign:'center'},detailSub:{fontSize:12,color:COLORS.textSecondary,textAlign:'center',marginBottom:15},detailActions:{flexDirection:'row',gap:10,marginTop:18},primarySmall:{flex:1,height:50,borderRadius:14,backgroundColor:COLORS.accent,flexDirection:'row',gap:8,alignItems:'center',justifyContent:'center'},secondarySmall:{flex:1,height:50,borderRadius:14,backgroundColor:COLORS.surfaceHigh,borderWidth:1,borderColor:COLORS.border,flexDirection:'row',gap:8,alignItems:'center',justifyContent:'center'},action:{paddingHorizontal:12,height:40,borderRadius:12,backgroundColor:COLORS.surfaceHigh,alignItems:'center',justifyContent:'center'},actionText:{fontSize:11,fontWeight:'700',color:COLORS.textPrimary},actionList:{backgroundColor:COLORS.surfaceHigh,borderRadius:18,borderWidth:1,borderColor:COLORS.border,overflow:'hidden', marginTop:20, marginBottom:20},actionRow:{minHeight:52,flexDirection:'row',alignItems:'center',gap:12,paddingHorizontal:15,borderBottomWidth:1,borderBottomColor:COLORS.border},actionRowLast:{borderBottomWidth:0},actionRowText:{flex:1,fontSize:14,fontWeight:'700',color:COLORS.textPrimary},modalHeader:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginBottom:16},movementTypeRow:{flexDirection:'row',gap:8,marginBottom:16},movementTypeBtn:{flex:1,minHeight:42,borderRadius:13,backgroundColor:COLORS.surfaceHigh,borderWidth:1,borderColor:COLORS.border,alignItems:'center',justifyContent:'center',paddingHorizontal:6},movementTypeBtnActive:{backgroundColor:COLORS.accentDim,borderColor:COLORS.accent},movementTypeText:{fontSize:11,fontWeight:'700',color:COLORS.textSecondary},movementTypeTextActive:{color:COLORS.accent},movementRow:{flexDirection:'row',alignItems:'center',gap:10,paddingVertical:12,borderBottomWidth:1,borderBottomColor:COLORS.border},movementAmount:{fontSize:12,fontWeight:'800',color:COLORS.accent}
   });
 }
