@@ -1,496 +1,318 @@
-/**
- * RegisterScreen.js
- * Pantalla de registro para Spendly
- */
-
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  StatusBar,
-  ScrollView,
-  Animated,
-  KeyboardAvoidingView,
-  Platform,
+  View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar,
+  ScrollView, Animated, KeyboardAvoidingView, Platform,
+  ActivityIndicator, Keyboard,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { registerUser } from '../services/authService';
 
-const COLORS = {
-  bg:            '#0D0F14',
-  surface:       '#161A23',
-  surfaceHigh:   '#1E2330',
-  border:        '#272D3D',
-  borderFocus:   '#4ADE80',
-  accent:        '#4ADE80',
-  accentDim:     '#1A3D28',
-  textPrimary:   '#F0F2F7',
-  textSecondary: '#6B748A',
-  textMuted:     '#3E4557',
-  error:         '#F87171',
-};
+const normalizeEmail = (value = '') => value.trim().toLowerCase();
+const validEmail = (value = '') => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 export default function RegisterScreen({ navigation }) {
-  const [name, setName]                       = useState('');
-  const [email, setEmail]                     = useState('');
-  const [password, setPassword]               = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword]       = useState(false);
-  const [showConfirm, setShowConfirm]         = useState(false);
-  const [acceptedTerms, setAcceptedTerms]     = useState(false);
-  const [loading, setLoading]                 = useState(false);
+  const { colors: C, isDark } = useTheme();
+  const { t } = useLanguage();
+  const s = useMemo(() => styles(C), [C]);
 
-  const [emailError, setEmailError]       = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [confirmError, setConfirmError]   = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [loading, setLoading] = useState(false);
+  // const [focused, setFocused] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
   const [registerError, setRegisterError] = useState('');
 
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+  const confirmRef = useRef(null);
   const buttonScale = useRef(new Animated.Value(1)).current;
 
-  // Referencias para cambiar borde sin re-render
-  const nameWrapperRef    = useRef(null);
-  const emailWrapperRef   = useRef(null);
-  const passWrapperRef    = useRef(null);
-  const confirmWrapperRef = useRef(null);
+  const cleanEmail = normalizeEmail(email);
+  const nameError = submitted && name.trim().length < 2 ? t('register.validation.name') : '';
+  const emailError = email.length > 0 && !validEmail(cleanEmail) ? t('register.validation.email') : '';
+  const passwordError = password.length > 0 && password.length < 8 ? t('register.validation.password') : '';
+  const confirmError = confirmPassword.length > 0 && confirmPassword !== password ? t('register.validation.confirm') : '';
+  const termsError = submitted && !acceptedTerms ? t('register.validation.terms') : '';
 
-  const validateEmail = useCallback((text) => {
-    setEmail(text);
-    if (text.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) {
-      setEmailError('Ingresá un correo válido');
-    } else {
-      setEmailError('');
-    }
-  }, []);
-
-  const validatePassword = useCallback((text) => {
-    setPassword(text);
-    if (text.length > 0 && text.length < 8) {
-      setPasswordError('Mínimo 8 caracteres');
-    } else {
-      setPasswordError('');
-    }
-    if (confirmPassword.length > 0) {
-      setConfirmError(text !== confirmPassword ? 'Las contraseñas no coinciden' : '');
-    }
-  }, [confirmPassword]);
-
-  const validateConfirm = useCallback((text) => {
-    setConfirmPassword(text);
-    if (text.length > 0 && text !== password) {
-      setConfirmError('Las contraseñas no coinciden');
-    } else {
-      setConfirmError('');
-    }
-  }, [password]);
-
-  const isFormValid =
-    name.trim().length > 0 &&
-    email.length > 0 && !emailError &&
-    password.length >= 8 && !passwordError &&
-    confirmPassword === password && !confirmError &&
+  const isValid =
+    name.trim().length >= 2 &&
+    validEmail(cleanEmail) &&
+    password.length >= 8 &&
+    confirmPassword === password &&
     acceptedTerms;
 
-  const handlePressIn = useCallback(() => {
-    Animated.spring(buttonScale, { toValue: 0.97, useNativeDriver: true }).start();
-  }, [buttonScale]);
+   /* const wrapper = (field, error) => [
+    s.inputWrapper,
+    focused === field && s.inputWrapperFocused,
+    !!error && s.inputWrapperError,
+  ]; */
 
-  const handlePressOut = useCallback(() => {
-    Animated.spring(buttonScale, { toValue: 1, friction: 3, useNativeDriver: true }).start();
-  }, [buttonScale]);
+  const wrapper = (error) => [
+  s.inputWrapper,
+  !!error && s.inputWrapperError,
+  ];
 
-const handleRegister = useCallback(async () => {
-  if (!isFormValid) return;
-
-  try {
-    setLoading(true);
+  const submit = useCallback(async () => {
+    setSubmitted(true);
     setRegisterError('');
+    if (!isValid || loading) return;
 
-    await registerUser(
-      name.trim(),
-      email,
-      password
-    );
-
-    navigation.replace('Login');
-  } catch (error) {
-    if (
-      error.message?.includes('registrado')
-    ) {
-      setRegisterError(
-        'El email ya se encuentra registrado. Probá con otro o inicia sesión.'
-      );
-    } else {
-      setRegisterError(
-        'Tuvimos un problema, intentalo más tarde.'
-      );
+    try {
+      setLoading(true);
+      Keyboard.dismiss();
+      await registerUser(name.trim(), cleanEmail, password);
+      navigation.replace('Login', { registeredEmail: cleanEmail });
+    } catch (error) {
+      const message = String(error?.message || '').toLowerCase();
+      if (message.includes('registrado') || message.includes('already') || message.includes('exist')) {
+        setRegisterError(t('register.errors.emailExists'));
+        emailRef.current?.focus();
+      } else {
+        setRegisterError(error?.message || t('register.errors.generic'));
+      }
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-}, [isFormValid, name, email, password, navigation]);
+  }, [isValid, loading, name, cleanEmail, password, navigation, t]);
 
   return (
-        <KeyboardAvoidingView
-          style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={0}
-        >
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+    <KeyboardAvoidingView
+      style={s.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={0}
+    >
+      <StatusBar
+        barStyle={isDark ? 'light-content' : 'dark-content'}
+        backgroundColor={C.bg}
+      />
 
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={s.scroll}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Branding ── */}
-        <View style={styles.header}>
-          <View style={styles.logoOuter}>
-            <Text style={styles.logoIcon}>$</Text>
-          </View>
-          <Text style={styles.appName}>Spendly</Text>
-          <Text style={styles.tagline}>Gestión inteligente de gastos</Text>
+        <View style={s.header}>
+          <View style={s.logoOuter}><Text style={s.logoIcon}>$</Text></View>
+          <Text style={s.appName}>Spendly</Text>
+          <Text style={s.tagline}>{t('register.tagline')}</Text>
         </View>
 
-        {/* ── Tarjeta ── */}
-        <View style={styles.card}>
-          <Text style={styles.formTitle}>Crear cuenta</Text>
-          <Text style={styles.formSubtitle}>Empezá a gestionar tus gastos</Text>
+        <View style={s.card}>
+          <Text style={s.formTitle}>{t('register.title')}</Text>
+          <Text style={s.formSubtitle}>{t('register.subtitle')}</Text>
 
-          {/* Nombre */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Nombre completo</Text>
-              <View ref={nameWrapperRef} style={styles.inputWrapper}>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Tu nombre"
-                  placeholderTextColor={COLORS.textSecondary}
-                  value={name}
-                  onChangeText={setName}
-                  onFocus={() =>
-                    nameWrapperRef.current?.setNativeProps({
-                      style: styles.inputWrapper,
-                    })
-                  }
-                  onBlur={() =>
-                    nameWrapperRef.current?.setNativeProps({
-                      style: styles.inputWrapper,
-                    })
-                  }
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                  returnKeyType="next"
-                />
-              </View>
+          <View style={s.fieldGroup}>
+            <Text style={s.label}>{t('register.fullName')}</Text>
+            <View style={wrapper(nameError)}>
+              <TextInput
+                style={s.input}
+                value={name}
+                onChangeText={(v) => { setName(v); setRegisterError(''); }}
+                placeholder={t('register.fullNamePlaceholder')}
+                placeholderTextColor={C.textSecondary}
+                autoCapitalize="words"
+                autoCorrect={false}
+                returnKeyType="next"
+                blurOnSubmit={false}
+                onSubmitEditing={() => emailRef.current?.focus()}
+              />
             </View>
+            {!!nameError && <Text style={s.errorText}>{nameError}</Text>}
+          </View>
 
-          {/* Email */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Correo electrónico</Text>
-              <View
-                ref={emailWrapperRef}
-                style={[
-                  styles.inputWrapper,
-                  !!emailError && styles.inputWrapperError,
-                ]}
-              >
-                <TextInput
-                  style={styles.input}
-                  placeholder="tu@correo.com"
-                  placeholderTextColor={COLORS.textSecondary}
-                  value={email}
-                  onChangeText={validateEmail}
-                  onFocus={() =>
-                    emailWrapperRef.current?.setNativeProps({
-                      style: [
-                        styles.inputWrapper,
-                        !!emailError && styles.inputWrapperError,
-                      ],
-                    })
-                  }
-                  onBlur={() =>
-                    emailWrapperRef.current?.setNativeProps({
-                      style: [
-                        styles.inputWrapper,
-                        !!emailError && styles.inputWrapperError,
-                      ],
-                    })
-                  }
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  returnKeyType="next"
-                />
-              </View>
-              {!!emailError && <Text style={styles.errorText}>{emailError}</Text>}
+          <View style={s.fieldGroup}>
+            <Text style={s.label}>{t('register.email')}</Text>
+            <View style={wrapper(emailError || registerError)}>
+              <TextInput
+                ref={emailRef}
+                style={s.input}
+                value={email}
+                onChangeText={(v) => {
+                  setEmail(v);
+                  setRegisterError('');
+                }}
+                placeholder={t('register.emailPlaceholder')}
+                placeholderTextColor={C.textSecondary}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="next"
+                blurOnSubmit={false}
+                onSubmitEditing={() => passwordRef.current?.focus()}
+              />
             </View>
+            {!!emailError && <Text style={s.errorText}>{emailError}</Text>}
+          </View>
 
-         {/* Contraseña */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Contraseña</Text>
-              <View
-                ref={passWrapperRef}
-                style={[
-                  styles.inputWrapper,
-                  !!passwordError && styles.inputWrapperError,
-                ]}
-              >
-                <TextInput
-                  style={styles.input}
-                  placeholder="********"
-                  placeholderTextColor={COLORS.textSecondary}
-                  value={password}
-                  onChangeText={validatePassword}
-                  onFocus={() =>
-                    passWrapperRef.current?.setNativeProps({
-                      style: [
-                        styles.inputWrapper,
-                        !!passwordError && styles.inputWrapperError,
-                      ],
-                    })
-                  }
-                  onBlur={() =>
-                    passWrapperRef.current?.setNativeProps({
-                      style: [
-                        styles.inputWrapper,
-                        !!passwordError && styles.inputWrapperError,
-                      ],
-                    })
-                  }
-                  secureTextEntry={!showPassword}
-                  returnKeyType="next"
-                />
-                <TouchableOpacity onPress={() => setShowPassword(v => !v)} style={styles.eyeButton}>
-                  <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={18} color="#64748B" />
-                </TouchableOpacity>
-              </View>
-              {!!passwordError && <Text style={styles.errorText}>{passwordError}</Text>}
-            </View>
-
-          {/* Confirmar contraseña */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Confirmar contraseña</Text>
-              <View
-                ref={confirmWrapperRef}
-                style={[
-                  styles.inputWrapper,
-                  !!confirmError && styles.inputWrapperError,
-                ]}
-              >
-                <TextInput
-                  style={styles.input}
-                  placeholder="********"
-                  placeholderTextColor={COLORS.textSecondary}
-                  value={confirmPassword}
-                  onChangeText={validateConfirm}
-                  onFocus={() =>
-                    confirmWrapperRef.current?.setNativeProps({
-                      style: [
-                        styles.inputWrapper,
-                        !!confirmError && styles.inputWrapperError,
-                      ],
-                    })
-                  }
-                  onBlur={() =>
-                    confirmWrapperRef.current?.setNativeProps({
-                      style: [
-                        styles.inputWrapper,
-                        !!confirmError && styles.inputWrapperError,
-                      ],
-                    })
-                  }
-                  secureTextEntry={!showConfirm}
-                  returnKeyType="done"
-                  onSubmitEditing={handleRegister}
-                />
-                <TouchableOpacity onPress={() => setShowConfirm(v => !v)} style={styles.eyeButton}>
-                  <Ionicons name={showConfirm ? 'eye-off-outline' : 'eye-outline'} size={18} color="#64748B" />
-                </TouchableOpacity>
-              </View>
-              {!!confirmError && <Text style={styles.errorText}>{confirmError}</Text>}
-            </View>
-          {/* Términos */}
-            <View style={styles.checkboxRow}>
-              <TouchableOpacity
-                onPress={() => setAcceptedTerms(v => !v)}
-                activeOpacity={0.8}
-              >
-                <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
-                  {acceptedTerms && (
-                    <Ionicons name="checkmark" size={13} color="#0D1A12" />
-                  )}
-                </View>
+          <View style={s.fieldGroup}>
+            <Text style={s.label}>{t('register.password')}</Text>
+            <View style={wrapper(passwordError)}>
+              <TextInput
+                ref={passwordRef}
+                style={s.input}
+                value={password}
+                onChangeText={(v) => {
+                  setPassword(v);
+                  setRegisterError('');
+                }}
+                placeholder={t('register.passwordPlaceholder')}
+                placeholderTextColor={C.textSecondary}
+                secureTextEntry={!showPassword}
+                returnKeyType="next"
+                blurOnSubmit={false}
+                onSubmitEditing={() => confirmRef.current?.focus()}
+              />
+              <TouchableOpacity style={s.eyeButton} onPress={() => setShowPassword(v => !v)}>
+                <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={19} color={C.textSecondary} />
               </TouchableOpacity>
-
-              <Text style={styles.checkboxLabel}>
-                Acepto los{' '}
-                <Text
-                  style={styles.checkboxLink}
-                  onPress={() => navigation.navigate('Terms')}
-                >
-                  Términos y condiciones
-                </Text>
-                {' '}y la{' '}
-                <Text
-                  style={styles.checkboxLink}
-                  onPress={() => navigation.navigate('Privacy')}
-                >
-                  Política de privacidad
-                </Text>
+            </View>
+            {!!passwordError && <Text style={s.errorText}>{passwordError}</Text>}
+            <View style={s.hintRow}>
+              <Ionicons
+                name={password.length >= 8 ? 'checkmark-circle' : 'ellipse-outline'}
+                size={15}
+                color={password.length >= 8 ? C.accent : C.textMuted}
+              />
+              <Text style={[s.hintText, password.length >= 8 && { color: C.accent }]}>
+                {t('register.passwordRequirement')}
               </Text>
             </View>
+          </View>
 
-          {/* ERROR REGISTER */}
-            {!!registerError && (
-              <Text style={styles.errorText}>
-                {registerError}
-              </Text>
-            )}
+          <View style={s.fieldGroup}>
+            <Text style={s.label}>{t('register.confirmPassword')}</Text>
+            <View style={wrapper(confirmError)}>
+              <TextInput
+                ref={confirmRef}
+                style={s.input}
+                value={confirmPassword}
+                onChangeText={(v) => {
+                  setConfirmPassword(v);
+                  setRegisterError('');
+                }}
+                placeholder={t('register.passwordPlaceholder')}
+                placeholderTextColor={C.textSecondary}
+                secureTextEntry={!showConfirm}
+                returnKeyType="done"
+                onSubmitEditing={submit}
+              />
+              <TouchableOpacity style={s.eyeButton} onPress={() => setShowConfirm(v => !v)}>
+                <Ionicons name={showConfirm ? 'eye-off-outline' : 'eye-outline'} size={19} color={C.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            {!!confirmError && <Text style={s.errorText}>{confirmError}</Text>}
+          </View>
 
-          {/* Botón */}
+          <View style={s.checkboxRow}>
+            <TouchableOpacity onPress={() => setAcceptedTerms(v => !v)} activeOpacity={0.8}>
+              <View style={[s.checkbox, acceptedTerms && s.checkboxChecked, !!termsError && s.checkboxError]}>
+                {acceptedTerms && <Ionicons name="checkmark" size={14} color={C.buttonText || C.bg} />}
+              </View>
+            </TouchableOpacity>
+            <Text style={s.checkboxLabel}>
+              {t('register.termsPrefix')}{' '}
+              <Text style={s.checkboxLink} onPress={() => navigation.navigate('Terms')}>{t('register.terms')}</Text>{' '}
+              {t('register.and')}{' '}
+              <Text style={s.checkboxLink} onPress={() => navigation.navigate('Privacy')}>{t('register.privacy')}</Text>
+            </Text>
+          </View>
+          {!!termsError && <Text style={s.errorText}>{termsError}</Text>}
+
+          {!!registerError && (
+            <View style={s.errorBox}>
+              <Ionicons name="alert-circle-outline" size={19} color={C.error || C.red} />
+              <Text style={s.errorBoxText}>{registerError}</Text>
+            </View>
+          )}
+
           <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
             <TouchableOpacity
-              style={[styles.primaryButton, !isFormValid && styles.primaryButtonDisabled]}
-              onPress={handleRegister}
-              onPressIn={handlePressIn}
-              onPressOut={handlePressOut}
+              style={[s.primaryButton, (!isValid || loading) && s.primaryButtonDisabled]}
+              onPress={submit}
+              onPressIn={() => Animated.spring(buttonScale, { toValue: 0.97, useNativeDriver: true }).start()}
+              onPressOut={() => Animated.spring(buttonScale, { toValue: 1, friction: 3, useNativeDriver: true }).start()}
               activeOpacity={0.9}
-              disabled={!isFormValid || loading}
+              disabled={loading}
             >
-              <Text style={styles.primaryButtonText}>
-                {loading ? 'Creando cuenta...' : 'Crear cuenta'}
-              </Text>
+              {loading ? (
+                <>
+                  <ActivityIndicator size="small" color={C.buttonText || C.bg} />
+                  <Text style={s.primaryButtonText}>{t('register.creating')}</Text>
+                </>
+              ) : (
+                <Text style={s.primaryButtonText}>{t('register.create')}</Text>
+              )}
             </TouchableOpacity>
           </Animated.View>
 
-          {/* Separador */}
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>o</Text>
-            <View style={styles.dividerLine} />
+          <View style={s.divider}>
+            <View style={s.dividerLine} />
+            <Text style={s.dividerText}>{t('register.or')}</Text>
+            <View style={s.dividerLine} />
           </View>
 
-          {/* Volver al login */}
-          <View style={styles.registerRow}>
-            <Text style={styles.registerText}>¿Ya tenés cuenta? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.registerLink}>Iniciar sesión</Text>
+          <View style={s.registerRow}>
+            <Text style={s.registerText}>{t('register.haveAccount')} </Text>
+            <TouchableOpacity onPress={() => navigation.replace('Login')}>
+              <Text style={s.registerLink}>{t('register.login')}</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        <View style={{ height: 20 }} />
+        <Text style={s.footer}>Spendly © 2026</Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: COLORS.bg },
-  scroll: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 32,
-    alignItems: 'center',
-  },
-
-  // Branding
-  header: { alignItems: 'center', marginBottom: 36 },
-  logoOuter: {
-    width: 72, height: 72, borderRadius: 20,
-    backgroundColor: COLORS.accentDim,
-    borderWidth: 1, borderColor: COLORS.accent,
-    alignItems: 'center', justifyContent: 'center',
-    marginBottom: 16,
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4, shadowRadius: 16, elevation: 12,
-  },
-  logoIcon:  { fontSize: 30, color: COLORS.accent },
-  appName:   { fontSize: 34, fontWeight: '800', color: COLORS.textPrimary, letterSpacing: -0.5, marginBottom: 6 },
-  tagline:   { fontSize: 14, color: COLORS.textSecondary, letterSpacing: 0.3 },
-
-  // Tarjeta
-  card: {
-    width: '100%', backgroundColor: COLORS.surface,
-    borderRadius: 24, padding: 28,
-    borderWidth: 1, borderColor: COLORS.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3, shadowRadius: 20, elevation: 8,
-  },
-  formTitle:    { fontSize: 22, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 4 },
-  formSubtitle: { fontSize: 13, color: COLORS.textSecondary, marginBottom: 28 },
-
-  // Campos
-  fieldGroup: { marginBottom: 20 },
-  label: {
-    fontSize: 13, fontWeight: '600', color: COLORS.textSecondary,
-    marginBottom: 8, letterSpacing: 0.4, textTransform: 'uppercase',
-  },
-  inputWrapper: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: COLORS.surfaceHigh,
-    borderRadius: 12, borderWidth: 1, borderColor: COLORS.border,
-    paddingHorizontal: 14, height: 52,
-  },
-
-  inputWrapperError: {
-  borderColor: COLORS.error,
-  shadowColor: COLORS.error,
-  shadowOffset: { width: 0, height: 0 },
-  shadowOpacity: 0.25,
-  shadowRadius: 8,
-  elevation: 4,
-  },
-  input: { flex: 1, fontSize: 15, color: COLORS.textPrimary, paddingVertical: 0 },
-  eyeButton: { padding: 4 },
-
-  errorText: {
-  fontSize: 13,
-  fontWeight: '600',
-  color: COLORS.error,
-  marginTop: 2,
-  marginBottom: 14,
-  marginLeft: 2,
-  letterSpacing: 0.2,
-},
-
-  // Checkbox términos
-  checkboxRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 18, gap: 10 },
-  checkbox: {
-    width: 20, height: 20, borderRadius: 6,
-    borderWidth: 1.5, borderColor: COLORS.border,
-    backgroundColor: COLORS.surfaceHigh,
-    alignItems: 'center', justifyContent: 'center',
-    marginTop: 1, flexShrink: 0,
-  },
-  checkboxChecked: { backgroundColor: COLORS.accent, borderColor: COLORS.accent },
-  checkboxLabel: { flex: 1, fontSize: 13, color: COLORS.textSecondary, lineHeight: 20 },
-  checkboxLink: { color: COLORS.accent, fontWeight: '500' },
-
-  // Botón
-  primaryButton: {
-    backgroundColor: COLORS.accent, borderRadius: 14,
-    height: 54, alignItems: 'center', justifyContent: 'center',
-    marginTop: 8,
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4, shadowRadius: 12, elevation: 6,
-  },
-  primaryButtonDisabled: { backgroundColor: COLORS.accentDim, shadowOpacity: 0, elevation: 0 },
-  primaryButtonText: { fontSize: 16, fontWeight: '700', color: '#0D1A12', letterSpacing: 0.3 },
-
-  // Separador
-  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 24 },
-  dividerLine: { flex: 1, height: 1, backgroundColor: COLORS.border },
-  dividerText: { fontSize: 12, color: COLORS.textMuted, marginHorizontal: 12, fontWeight: '500' },
-
-  // Navegación
-  registerRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
-  registerText: { fontSize: 14, color: COLORS.textSecondary },
-  registerLink: { fontSize: 14, color: COLORS.accent, fontWeight: '700' },
-});
+function styles(C) {
+  const error = C.error || C.red || '#F87171';
+  return StyleSheet.create({
+    flex:{flex:1,backgroundColor:C.bg},
+    scroll:{flexGrow:1,paddingHorizontal:24,paddingTop:60,paddingBottom:32,alignItems:'center'},
+    header:{alignItems:'center',marginBottom:36},
+    logoOuter:{width:72,height:72,borderRadius:20,backgroundColor:C.accentDim,borderWidth:1,borderColor:C.accent,alignItems:'center',justifyContent:'center',marginBottom:16,shadowColor:C.accent,shadowOffset:{width:0,height:0},shadowOpacity:.4,shadowRadius:16,elevation:12},
+    logoIcon:{fontSize:30,color:C.accent},
+    appName:{fontSize:34,fontWeight:'800',color:C.textPrimary,letterSpacing:-.5,marginBottom:6},
+    tagline:{fontSize:14,color:C.textSecondary,textAlign:'center'},
+    card:{width:'100%',backgroundColor:C.surface,borderRadius:24,padding:24,borderWidth:1,borderColor:C.border,shadowColor:'#000',shadowOffset:{width:0,height:8},shadowOpacity:.3,shadowRadius:20,elevation:8},
+    formTitle:{fontSize:22,fontWeight:'700',color:C.textPrimary,marginBottom:4},
+    formSubtitle:{fontSize:13,color:C.textSecondary,marginBottom:28},
+    fieldGroup:{marginBottom:18},
+    label:{fontSize:13,fontWeight:'600',color:C.textSecondary,marginBottom:8,letterSpacing:.4,textTransform:'uppercase'},
+    inputWrapper:{flexDirection:'row',alignItems:'center',backgroundColor:C.surfaceHigh,borderRadius:12,borderWidth:1,borderColor:C.border,paddingHorizontal:14,minHeight:52},
+    // inputWrapperFocused:{borderColor:C.accent,shadowColor:C.accent,shadowOpacity:.18,shadowRadius:8,elevation:3},
+    inputWrapperError:{borderColor:error},
+    input:{flex:1,minHeight:50,fontSize:15,color:C.textPrimary,paddingVertical:0},
+    eyeButton:{padding:6,marginLeft:6},
+    errorText:{fontSize:12,fontWeight:'600',color:error,marginTop:7,marginLeft:2,lineHeight:17},
+    hintRow:{flexDirection:'row',alignItems:'center',gap:6,marginTop:8,marginLeft:2},
+    hintText:{fontSize:11,color:C.textMuted},
+    checkboxRow:{flexDirection:'row',alignItems:'flex-start',marginBottom:10,gap:10},
+    checkbox:{width:21,height:21,borderRadius:6,borderWidth:1.5,borderColor:C.border,backgroundColor:C.surfaceHigh,alignItems:'center',justifyContent:'center',marginTop:1},
+    checkboxChecked:{backgroundColor:C.accent,borderColor:C.accent},
+    checkboxError:{borderColor:error},
+    checkboxLabel:{flex:1,fontSize:13,color:C.textSecondary,lineHeight:20},
+    checkboxLink:{color:C.accent,fontWeight:'600'},
+    errorBox:{flexDirection:'row',alignItems:'flex-start',gap:9,backgroundColor:`${error}12`,borderWidth:1,borderColor:`${error}45`,borderRadius:14,padding:12,marginTop:6,marginBottom:10},
+    errorBoxText:{flex:1,fontSize:12,fontWeight:'600',color:error,lineHeight:18},
+    primaryButton:{backgroundColor:C.accent,borderRadius:14,minHeight:54,alignItems:'center',justifyContent:'center',flexDirection:'row',gap:8,marginTop:8,shadowColor:C.accent,shadowOffset:{width:0,height:4},shadowOpacity:.4,shadowRadius:12,elevation:6},
+    primaryButtonDisabled:{backgroundColor:C.accentDim,shadowOpacity:0,elevation:0},
+    primaryButtonText:{fontSize:16,fontWeight:'700',color:C.buttonText || C.bg},
+    divider:{flexDirection:'row',alignItems:'center',marginVertical:24},
+    dividerLine:{flex:1,height:1,backgroundColor:C.border},
+    dividerText:{fontSize:12,color:C.textMuted,marginHorizontal:12},
+    registerRow:{flexDirection:'row',justifyContent:'center',alignItems:'center',flexWrap:'wrap'},
+    registerText:{fontSize:14,color:C.textSecondary},
+    registerLink:{fontSize:14,color:C.accent,fontWeight:'700'},
+    footer:{marginTop:24,textAlign:'center',fontSize:12,color:C.textMuted,fontWeight:'600'},
+  });
+}

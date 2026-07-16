@@ -1,60 +1,172 @@
 import json
 import logging
 import os
-from datetime import datetime
+from datetime import date
 
 from api.dependencies import get_current_user
-
-from core.database import get_db
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from google import genai
 from google.genai import types
-from models.transaction import Transaction
 from models.user import User
-from sqlalchemy.orm import Session
 
 router = APIRouter()
-
 logger = logging.getLogger(__name__)
 
 API_KEY = os.getenv("GOOGLE_API_KEY")
-client = genai.Client(api_key=API_KEY)
+
+if not API_KEY:
+    logger.warning("GOOGLE_API_KEY no está configurada.")
+
+client = genai.Client(api_key=API_KEY) if API_KEY else None
 
 PROMPT_INSTRUCCIONES = """
-Actúa como un extractor de datos de tickets de compra y comprobantes de gastos optimizado para bases de datos relacionales.
-Analiza la imagen provista y extrae la información requerida. 
+Actuá como un extractor de datos de tickets, facturas, recibos,
+comprobantes bancarios, comprobantes de transferencias y capturas
+de pagos realizados desde billeteras virtuales o aplicaciones financieras.
 
-Es obligatorio que devuelvas ÚNICAMENTE un objeto JSON con la estructura exacta del siguiente ejemplo, sin agregar formato markdown (sin ```json), ni textos explicativos:
+La imagen puede provenir de aplicaciones como Mercado Pago, Lemon,
+Ualá, Personal Pay, bancos u otras plataformas similares.
+
+Devolvé ÚNICAMENTE un objeto JSON válido, sin markdown ni texto adicional:
 
 {
   "comprobante_detectado": true,
   "type": "expense",
   "amount": 0.0,
-  "category": "string o null (ej: Alimentos, Transporte, Indumentaria, Servicios, etc.)",
-  "description": "string (Formato: 'Nombre del Comercio - Tipo de Comprobante')",
+  "category": "other",
+  "description": "Nombre del comercio - Tipo de comprobante",
   "date": "YYYY-MM-DD",
-  "currency": "string (ej: ARS, USD)"
+  "currency": "ARS",
+  "payment_method": "other"
 }
 
-Reglas estrictas de extracción:
-1. "comprobante_detectado": Cambiar a false si la imagen no corresponde a un ticket, factura o comprobante de pago.
-2. "type": Siempre debe ser el texto "expense" (ya que representa un gasto de un ticket).
-3. "amount": Debe ser un número decimal (Float) con el total absoluto pagado en el ticket.
-4. "description": Debe combinar el nombre del comercio emisor y el tipo de comprobante de forma concisa.
-5. "date": La fecha de emisión en formato estricto YYYY-MM-DD. Si no se encuentra, usar la fecha actual.
-6. "currency": Código de tres letras de la moneda (si no se especifica, usar "ARS").
+Reglas:
+1. comprobante_detectado:
+   - true si la imagen contiene un ticket, factura o comprobante de pago.
+   - false si no corresponde a un comprobante válido.
+
+2. type:
+   - siempre "expense".
+
+3. amount:
+   - número decimal con el total pagado.
+   - no devolver símbolos monetarios.
+
+4. category:
+   - devolver únicamente una de estas claves:
+     food
+     transport
+     supermarket
+     services
+     health
+     education
+     entertainment
+     clothing
+     technology
+     other
+
+5. description:
+   - texto breve con comercio y tipo de comprobante.
+
+6. date:
+   - formato YYYY-MM-DD.
+   - si no se detecta, usar la fecha actual.
+
+7. currency:
+   - código ISO de tres letras.
+   - usar ARS si no se puede identificar.
+
+8. No inventar datos que no puedan inferirse razonablemente.
+
+9. Si es una captura de una billetera virtual o banco:
+   - usar como amount el monto total pagado o transferido;
+   - usar como description el comercio, destinatario o concepto visible;
+   - usar la fecha de la operación;
+   - detectar la moneda;
+   - considerar el comprobante válido aunque no tenga formato de ticket físico.
+
+10. No considerar válidas:
+   - pantallas de saldo;
+   - menús de la aplicación;
+   - promociones;
+   - movimientos sin monto ni fecha;
+   - imágenes sin evidencia de una operación concreta.
+
+11. payment_method:
+   - devolver únicamente una de estas claves:
+     cash
+     debit_card
+     credit_card
+     transfer
+     bank_account
+     digital_wallet
+     contactless_payment
+     deposit
+     other
+
+   - Mercado Pago, Lemon, Ualá, Personal Pay, MODO y billeteras similares:
+     digital_wallet
+
+   - Transferencia bancaria o entre cuentas:
+     transfer
+
+   - Comprobante de tarjeta de débito:
+     debit_card
+
+   - Comprobante de tarjeta de crédito:
+     credit_card
+
+   - Pago en efectivo:
+     cash
+
+   - Pago NFC o sin contacto:
+     contactless_payment
+
+   - Depósito bancario:
+     deposit
+
+   - Si no se puede determinar:
+     other
 """
+
+ALLOWED_CATEGORIES = {
+    "food",
+    "transport",
+    "supermarket",
+    "services",
+    "health",
+    "education",
+    "entertainment",
+    "clothing",
+    "technology",
+    "other",
+}
+
+ALLOWED_PAYMENT_METHODS = {
+    "cash",
+    "debit_card",
+    "credit_card",
+    "transfer",
+    "bank_account",
+    "digital_wallet",
+    "contactless_payment",
+    "deposit",
+    "other",
+}
 
 
 @router.post("/ticket", status_code=status.HTTP_200_OK)
-async def escanear_ticket(
+async def scan_ticket(
     file: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(
-        get_current_user
-    ),
+    current_user: User = Depends(get_current_user),
 ):
-    if not file.content_type.startswith("image/"):
+    if not API_KEY or client is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="El servicio de análisis no está configurado.",
+        )
+
+    if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="El archivo enviado debe ser una imagen.",
@@ -63,85 +175,83 @@ async def escanear_ticket(
     try:
         image_bytes = await file.read()
 
+        if not image_bytes:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="La imagen está vacía.",
+            )
+
         image_part = types.Part.from_bytes(
-            data=image_bytes, mime_type=file.content_type
+            data=image_bytes,
+            mime_type=file.content_type,
         )
 
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=[image_part, PROMPT_INSTRUCCIONES],
-            config=types.GenerateContentConfig(response_mime_type="application/json"),
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+            ),
         )
 
-        resultado_json = json.loads(response.text)
+        result = json.loads(response.text)
+
+    except HTTPException:
+        raise
 
     except json.JSONDecodeError:
+        logger.exception("Gemini devolvió un JSON inválido.")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error al procesar la estructura JSON devuelta por la IA.",
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error en el procesamiento del ticket con Gemini: {str(e)}",
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="La IA devolvió una respuesta inválida.",
         )
 
-    if not resultado_json.get("comprobante_detectado", False):
+    except Exception as error:
+        logger.exception("Error analizando comprobante: %r", error)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No se pudo analizar el comprobante.",
+        )
+
+    if not result.get("comprobante_detectado", False):
         return {
             "status": "error",
-            "message": "No se pudo detectar un comprobante válido en la imagen.",
-            "data": resultado_json,
+            "message": "No se detectó un comprobante válido en la imagen.",
+            "data": None,
         }
-
-    monto = float(resultado_json.get("amount", 0.0))
-
-    categoria = resultado_json.get("category", "Otros")
-
-    descripcion = resultado_json.get("descripcion", "Ticket escaneado")
-
-    moneda = resultado_json.get("currency", "ARS")
-
-    fecha_str = resultado_json.get("date")
 
     try:
-        # ID de usuario fijo provisional (ID 1) hasta que vuelvan a activar 'current_user'
-        usuario = db.query(User).filter(User.email == current_user.email).first()
-        id_usuario = usuario.id if usuario else 1
+        amount = float(result.get("amount", 0))
+    except (TypeError, ValueError):
+        amount = 0
 
-        nueva_transaccion = Transaction(
-            type="expense",
-            amount=monto,
-            category=categoria,
-            description=descripcion,
-            date=fecha_str,
-            currency=moneda,
-            owner_id=id_usuario,
-        )
+    category = str(result.get("category") or "other").lower().strip()
+    if category not in ALLOWED_CATEGORIES:
+        category = "other"
 
-        db.add(nueva_transaccion)
-        db.commit()
-        db.refresh(nueva_transaccion)
+    description = str(
+        result.get("description") or "Comprobante escaneado"
+    ).strip()
 
-        logger.info(
-            f"¡Éxito! Transacción guardada en BD con ID: {nueva_transaccion.id}"
-        )
+    detected_date = str(result.get("date") or date.today().isoformat()).strip()
+    currency = str(result.get("currency") or "ARS").upper().strip()
 
-        return {
-            "status": "success",
-            "message": "Ticket escaneado y guardado en la base de datos con éxito.",
-            "transaction_id": nueva_transaccion.id,
-            "data": resultado_json,
-        }
+    payment_method = str(
+        result.get("payment_method") or "other"
+    ).lower().strip()
+    if payment_method not in ALLOWED_PAYMENT_METHODS:
+        payment_method = "other"
 
-    except Exception as bd_error:
-        # MODO TESTING SEGURO: Si la base de datos falla o no está conectada,
-        # cancela la transacción fallida, te avisa en consola y te devuelve el JSON igual.
-        db.rollback()
-        logger.warning(f"Bypass de BD activado: {str(bd_error)}")
-
-        return {
-            "status": "success_mock",
-            "message": "Ticket procesado por IA correctamente (Modo de prueba sin Base de Datos).",
-            "error_bd_detalle": str(bd_error),
-            "data": resultado_json,
-        }
+    return {
+        "status": "success",
+        "message": "Comprobante analizado correctamente.",
+        "data": {
+            "type": "expense",
+            "amount": amount,
+            "category": category,
+            "description": description,
+            "date": detected_date,
+            "currency": currency,
+            "payment_method": payment_method,
+        },
+    }
