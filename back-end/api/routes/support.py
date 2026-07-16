@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 from typing import List, Optional
 
@@ -13,8 +12,6 @@ from fastapi import (
     Query,
     status,
 )
-from fastapi.responses import JSONResponse
-from models.session import UserSession
 from models.support_report import SupportReport
 from models.user import User
 from schemas.support_report import (
@@ -25,6 +22,7 @@ from schemas.support_report import (
     SupportReportStatus,
     SupportReportUpdate,
 )
+from services.email_service import send_support_report_email
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -38,116 +36,6 @@ def get_user_email(user_id: int, db: Session):
             detail="No se encontrado el usuario o no exite",
         )
     return usuario
-
-
-SMTP_HOST = os.getenv("SMTP_HOST")
-try:
-    SMTP_PORT = int(
-        os.getenv("SMTP_PORT", "587")
-    )
-except (TypeError, ValueError):
-    SMTP_PORT = 587
-SMTP_USERNAME = os.getenv("SMTP_USER")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
-
-
-def send_support_email(
-    report_id: int,
-    user_name: str,
-    user_email: str,
-    category: str,
-    subject: str,
-    description: str,
-    steps_to_reproduce: str,
-    include_technical_info: bool,
-    app_version: str,
-    platform: str,
-    os_version: str,
-    device_model: str,
-    report_status: str,
-    created_at: str,
-): 
-    """Send notification email to support team (runs in background)""" 
-
-    print("========== SMTP CONFIG ==========")
-    print("SMTP_HOST:", SMTP_HOST)
-    print("SMTP_PORT:", SMTP_PORT)
-    print("SMTP_USER:", SMTP_USERNAME)
-    print(
-        "SMTP_PASSWORD CARGADA:",
-        bool(SMTP_PASSWORD),
-    )
-    print("=================================")
-
-    
-    try:
-        import smtplib
-        from email.mime.multipart import MIMEMultipart
-        from email.mime.text import MIMEText
-
-        msg = MIMEMultipart()
-        msg["From"] = SMTP_USERNAME
-        msg["To"] = SMTP_USERNAME
-        msg["Reply-To"] = user_email
-        msg["Subject"] = f"Nuevo reporte de soporte: {subject}"
-
-        email_body = f"""
-        Nuevo reporte de soporte creado:
-
-        ID: {report_id}
-        Usuario: {user_name} ({user_email})
-        Categoría: {category}
-        Asunto: {subject}
-        Descripción: {description}
-
-        Información Técnica:
-        - Plataforma: {platform or "N/A"}
-        - OS: {os_version or "N/A"}
-        - App: {app_version or "N/A"}
-        - Dispositivo: {device_model or "N/A"}
-        - Incluir info técnica: {include_technical_info}
-
-        Pasos para reproducir: {steps_to_reproduce or "N/A"}
-
-        Estado: {report_status}
-        Creado el: {created_at}
-        """
-
-        msg.attach(MIMEText(email_body, "plain"))
-
-        print("Conectando con servidor SMTP...")
-
-        with smtplib.SMTP(
-            SMTP_HOST,
-            SMTP_PORT,
-            timeout=10,
-        ) as server:
-            print("Conexión SMTP abierta")
-
-            server.starttls()
-            print("TLS iniciado")
-
-            server.login(
-                SMTP_USERNAME,
-                SMTP_PASSWORD,
-            )
-            print("Autenticación SMTP correcta")
-
-            print("Enviando email...")
-            server.send_message(msg)
-            print("EMAIL ENVIADO CORRECTAMENTE")
-
-        return True
-    except Exception as e:
-        import traceback
-
-        print("========== ERROR SMTP ==========")
-        print("Tipo:", type(e).__name__)
-        print("Detalle:", repr(e))
-        traceback.print_exc()
-        print("================================")
-
-        return False
 
 
 @router.post(
@@ -181,37 +69,23 @@ async def create_support_report(
     db.commit()
     db.refresh(new_report)
 
-
-    logger.warning(
-        "SMTP CONFIG CHECK: "
-        "host=%s port=%s user=%s password_loaded=%s",
-        SMTP_HOST,
-        SMTP_PORT,
-        SMTP_USERNAME,
-        bool(SMTP_PASSWORD),
+    background_tasks.add_task(
+        send_support_report_email,
+        report_id=new_report.id,
+        user_name=current_user.full_name,
+        user_email=current_user.email,
+        category=str(new_report.category),
+        subject=new_report.subject,
+        description=new_report.description,
+        steps_to_reproduce=new_report.steps_to_reproduce,
+        include_technical_info=new_report.include_technical_info,
+        app_version=new_report.app_version,
+        platform=new_report.platform,
+        os_version=new_report.os_version,
+        device_model=new_report.device_model,
+        report_status=str(new_report.status),
+        created_at=str(new_report.created_at),
     )
-    
-    # Send email notification in background (non-blocking)
-    if SMTP_HOST and SMTP_USERNAME and SMTP_PASSWORD:
-        background_tasks.add_task(
-            send_support_email,
-            report_id=new_report.id,
-            user_name=current_user.full_name,
-            user_email=current_user.email,
-            category=str(new_report.category),
-            subject=new_report.subject,
-            description=new_report.description,
-            steps_to_reproduce=new_report.steps_to_reproduce,
-            include_technical_info=new_report.include_technical_info,
-            app_version=new_report.app_version,
-            platform=new_report.platform,
-            os_version=new_report.os_version,
-            device_model=new_report.device_model,
-            report_status=str(new_report.status),
-            created_at=str(new_report.created_at),
-        )
-    else:
-        logger.warning("SMTP no configurado. Reporte guardado sin enviar email.")
 
     logger.info(f"¡Reporte de soporte creado: {new_report.id} - {new_report.subject}")
 
