@@ -793,4 +793,87 @@ login: {
   },
 },
 
+scan: {
+  title: 'Escanear comprovante',
+  heroTitle: 'Envie um recibo ou comprovante',
+  heroText: 'O Spendly analisará a imagem e preencherá automaticamente os dados da despesa para você revisar antes de salvar.',
+  camera: 'Câmera',
+  cameraText: 'Tire uma foto nítida do comprovante.',
+  gallery: 'Galeria',
+  galleryText: 'Escolha uma imagem salva no dispositivo.',
+  change: 'Alterar imagem',
+  remove: 'Excluir',
+  analyze: 'Analisar comprovante',
+  analyzing: 'Analisando comprovante...',
+  reviewTitle: 'Revise os dados detectados',
+  reviewText: 'Você pode corrigir qualquer dado antes de criar a despesa.',
+  saveExpense: 'Salvar despesa',
+  saving: 'Salvando despesa...',
+  startAgain: 'Escanear outro comprovante',
+  fields: {
+    amount: 'Valor',
+    description: 'Descrição',
+    category: 'Categoria',
+    date: 'Data',
+    currency: 'Moeda',
+    paymentMethod: 'Método de pagamento',
+  },
+  permissions: {
+    title: 'Permissão necessária',
+    camera: 'Precisamos acessar a câmera para tirar uma foto.',
+    gallery: 'Precisamos acessar a galeria para escolher uma imagem.',
+  },
+  validation: {
+    amount: 'Digite um valor válido maior que zero.',
+    description: 'Digite uma descrição.',
+    date: 'A data deve estar no formato YYYY-MM-DD.',
+  },
+  errors: {
+    title: 'Não foi possível processar',
+    analyze: 'Não foi possível analisar o comprovante.',
+    save: 'Não foi possível salvar a despesa.',
+  },
+  success: {
+    title: 'Despesa registrada',
+    text: 'A despesa foi criada corretamente a partir do comprovante.',
+  },
+},
+
+biometricUnlock: {
+  title: 'Desbloqueie o Spendly',
+  subtitle:
+    'Use Face ID, Touch ID ou a autenticação do dispositivo para continuar.',
+  prompt: 'Desbloquear Spendly',
+  verifying: 'Verificando...',
+  retry: 'Tentar novamente',
+  failed:
+    'Não foi possível verificar sua identidade. Tente novamente.',
+  unavailable:
+    'A autenticação biométrica não está disponível ou não está configurada.',
+},
+
+editTransaction: {
+  expenseTitle: 'Editar despesa',
+  incomeTitle: 'Editar receita',
+  heroTitle: 'Atualize a transação',
+  heroText: 'Altere os dados necessários e salve as mudanças.',
+  amount: 'Valor',
+  paymentMethod: 'Método de pagamento',
+  date: 'Data',
+  currency: 'Moeda',
+  save: 'Salvar alterações',
+  saving: 'Salvando alterações...',
+  successTitle: 'Alterações salvas',
+  successText: 'A transação foi atualizada corretamente.',
+  missing: 'Não foi possível encontrar a transação que você deseja editar.',
+  errors: {
+    amount: 'Digite um valor válido maior que zero.',
+    description: 'Digite uma descrição.',
+    save: 'Não foi possível atualizar a transação.',
+  },
+},
+
+passwordRecovery: { common:{errorTitle:'Não foi possível continuar'}, forgot:{title:'Recuperar senha',heading:'Esqueceu sua senha?',subtitle:'Digite o e-mail associado à conta e enviaremos um código de verificação.',emailLabel:'E-mail',emailPlaceholder:'nome@email.com',send:'Enviar código',sending:'Enviando código...',securityNote:'Por segurança, a resposta será a mesma mesmo que o e-mail não esteja cadastrado.'}, verify:{title:'Verificar código',heading:'Digite o código',subtitle:'Digite o código de 6 dígitos enviado ao seu e-mail.',confirm:'Verificar código',verifying:'Verificando...',noCode:'Não recebeu o código?',resend:'Reenviar',resending:'Reenviando...',resendIn:'Reenviar em {seconds}s',expiration:'O código expira em 10 minutos e permite no máximo 5 tentativas.',resentTitle:'Código reenviado',resentText:'Enviamos um novo código de recuperação.'}, reset:{title:'Nova senha',heading:'Crie uma nova senha',subtitle:'Escolha uma senha segura que ainda não tenha utilizado.',passwordLabel:'Nova senha',passwordPlaceholder:'Mínimo de 8 caracteres',confirmLabel:'Confirmar senha',confirmPlaceholder:'Repita a senha',requirements:'Use pelo menos 8 caracteres e combine letras, números e símbolos.',save:'Atualizar senha',saving:'Atualizando...',successTitle:'Senha atualizada',successText:'Sua senha foi atualizada. Todas as sessões anteriores foram encerradas.',goToLogin:'Ir para o login'}, errors:{emailRequired:'Digite seu e-mail.',emailInvalid:'Digite um e-mail válido.',sendCode:'Não foi possível enviar o código.',codeIncomplete:'Digite os 6 dígitos.',verifyCode:'Não foi possível verificar o código.',resend:'Não foi possível reenviar o código.',invalidRequest:'A solicitação é inválida.',passwordLength:'A senha deve ter pelo menos 8 caracteres.',passwordMismatch:'As senhas não coincidem.',reset:'Não foi possível atualizar a senha.'}},
+
+
 };

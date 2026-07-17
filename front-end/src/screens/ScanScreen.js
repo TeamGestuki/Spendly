@@ -6,6 +6,7 @@ import React, {
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   TouchableOpacity,
   StatusBar,
@@ -13,432 +14,1459 @@ import {
   Image,
   ActivityIndicator,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
 } from 'react-native';
 
 import * as ImagePicker from 'expo-image-picker';
-
 import { Ionicons } from '@expo/vector-icons';
+
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
-const API_BASE_URL =
-  'https://spendly-production-1793.up.railway.app';
+import { analyzeTicket } from '../services/scanService';
+import { createTransaction } from '../services/transactionService';
 
-export default function ScanScreen({ navigation }) {
-    const {
+const CATEGORIES = [
+  'food',
+  'transport',
+  'supermarket',
+  'services',
+  'health',
+  'education',
+  'entertainment',
+  'clothing',
+  'technology',
+  'other',
+];
+
+
+const PAYMENT_METHODS = [
+  { value: 'cash', translationKey: 'cash', icon: 'cash-outline' },
+  { value: 'debit_card', translationKey: 'debitCard', icon: 'card-outline' },
+  { value: 'credit_card', translationKey: 'creditCard', icon: 'card-outline' },
+  { value: 'transfer', translationKey: 'transfer', icon: 'swap-horizontal-outline' },
+  { value: 'bank_account', translationKey: 'bankAccount', icon: 'business-outline' },
+  { value: 'digital_wallet', translationKey: 'digitalWallet', icon: 'phone-portrait-outline' },
+  { value: 'contactless_payment', translationKey: 'contactlessPayment', icon: 'wifi-outline' },
+  { value: 'deposit', translationKey: 'deposit', icon: 'download-outline' },
+  { value: 'other', translationKey: 'other', icon: 'ellipsis-horizontal-outline' },
+];
+
+const CATEGORY_TO_STORAGE = {
+  food: 'Comida',
+  transport: 'Transporte',
+  supermarket: 'Supermercado',
+  services: 'Servicios',
+  health: 'Salud',
+  education: 'Educación',
+  entertainment: 'Entretenimiento',
+  clothing: 'Ropa',
+  technology: 'Tecnología',
+  other: 'Otros',
+};
+
+const CURRENCIES = [
+  'ARS',
+  'USD',
+  'EUR',
+  'BRL',
+  'CLP',
+  'UYU',
+  'MXN',
+  'CNY',
+  'RUB',
+];
+
+export default function ScanScreen({
+  navigation,
+}) {
+  const {
     colors: COLORS,
     isDark,
   } = useTheme();
 
+  const {
+    t,
+  } = useLanguage();
+
   const styles = useMemo(
-    () => createStyles(COLORS),
+    () =>
+      createStyles(
+        COLORS
+      ),
     [COLORS]
   );
-  const [image, setImage] = useState(null);
 
-  const [loading, setLoading] = useState(false);
+  const [
+    imageAsset,
+    setImageAsset,
+  ] = useState(null);
 
-  const [result, setResult] = useState(null);
+  const [
+    analyzing,
+    setAnalyzing,
+  ] = useState(false);
 
-  const pickImage = async () => {
-    const permission =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
+  const [
+    saving,
+    setSaving,
+  ] = useState(false);
 
-    if (!permission.granted) {
-      Alert.alert(
-        'Permiso requerido',
-        'Necesitamos acceso a tu galería.'
-      );
-      return;
-    }
+  const [
+    result,
+    setResult,
+  ] = useState(null);
 
-    const response =
-      await ImagePicker.launchImageLibraryAsync({
-        mediaTypes:
-          ImagePicker.MediaTypeOptions.Images,
-        quality: 0.8,
-      });
-
-    if (!response.canceled) {
-      setImage(response.assets[0].uri);
+  const resetProcess =
+    () => {
+      Keyboard.dismiss();
+      setImageAsset(null);
       setResult(null);
-    }
-  };
+    };
 
-  const takePhoto = async () => {
-    const permission =
-      await ImagePicker.requestCameraPermissionsAsync();
-
-    if (!permission.granted) {
-      Alert.alert(
-        'Permiso requerido',
-        'Necesitamos acceso a tu cámara.'
+  const applyImage =
+    (asset) => {
+      setImageAsset(
+        asset
       );
-      return;
-    }
-
-    const response =
-      await ImagePicker.launchCameraAsync({
-        quality: 0.8,
-      });
-
-    if (!response.canceled) {
-      setImage(response.assets[0].uri);
       setResult(null);
-    }
-  };
+    };
 
-  const analyzeTicket = async () => {
-    if (!image) return;
-
-    try {
-      setLoading(true);
-
-      const formData = new FormData();
-
-      formData.append('file', {
-        uri: image,
-        name: 'ticket.jpg',
-        type: 'image/jpeg',
-      });
-
-      const response = await fetch(
-        `${API_BASE_URL}/api/v1/scan/ticket`,
-        {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      console.log('SCAN RESPONSE:', data);
+  const pickImage =
+    async () => {
+      const permission =
+        await ImagePicker
+          .requestMediaLibraryPermissionsAsync();
 
       if (
-        data.status === 'error'
+        !permission.granted
       ) {
         Alert.alert(
-          'Error',
-          data.message
+          t(
+            'scan.permissions.title'
+          ),
+          t(
+            'scan.permissions.gallery'
+          )
         );
-
         return;
       }
 
-      setResult(data.data);
+      const response =
+        await ImagePicker
+          .launchImageLibraryAsync({
+            mediaTypes:
+              ImagePicker
+                .MediaTypeOptions
+                .Images,
+            quality: 0.85,
+            allowsEditing: false,
+          });
 
-    } catch (error) {
-      console.log(error);
+      if (
+        !response.canceled &&
+        response.assets?.[0]
+      ) {
+        applyImage(
+          response.assets[0]
+        );
+      }
+    };
 
-      Alert.alert(
-        'Error',
-        'No se pudo analizar el ticket.'
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  const takePhoto =
+    async () => {
+      const permission =
+        await ImagePicker
+          .requestCameraPermissionsAsync();
+
+      if (
+        !permission.granted
+      ) {
+        Alert.alert(
+          t(
+            'scan.permissions.title'
+          ),
+          t(
+            'scan.permissions.camera'
+          )
+        );
+        return;
+      }
+
+      const response =
+        await ImagePicker
+          .launchCameraAsync({
+            quality: 0.85,
+            allowsEditing: false,
+          });
+
+      if (
+        !response.canceled &&
+        response.assets?.[0]
+      ) {
+        applyImage(
+          response.assets[0]
+        );
+      }
+    };
+
+  const handleAnalyze =
+    async () => {
+      if (
+        !imageAsset ||
+        analyzing
+      ) {
+        return;
+      }
+
+      try {
+        setAnalyzing(true);
+
+        const data =
+          await analyzeTicket(
+            imageAsset
+          );
+
+        setResult({
+          type:
+            'expense',
+          amount:
+            String(
+              data.amount ??
+              ''
+            ),
+          category:
+            data.category ||
+            'other',
+          description:
+            data.description ||
+            '',
+          date:
+            data.date ||
+            '',
+          currency:
+            data.currency ||
+            'ARS',
+          payment_method:
+            data.payment_method ||
+            'other',
+        });
+      } catch (error) {
+        Alert.alert(
+          t(
+            'scan.errors.title'
+          ),
+          error.message ||
+          t(
+            'scan.errors.analyze'
+          )
+        );
+      } finally {
+        setAnalyzing(false);
+      }
+    };
+
+  const handleSave =
+    async () => {
+      Keyboard.dismiss();
+
+      const amount =
+        Number(
+          String(
+            result?.amount ||
+            ''
+          ).replace(
+            ',',
+            '.'
+          )
+        );
+
+      if (
+        !Number.isFinite(
+          amount
+        ) ||
+        amount <= 0
+      ) {
+        Alert.alert(
+          t(
+            'common.error'
+          ),
+          t(
+            'scan.validation.amount'
+          )
+        );
+        return;
+      }
+
+      if (
+        !result.description
+          .trim()
+      ) {
+        Alert.alert(
+          t(
+            'common.error'
+          ),
+          t(
+            'scan.validation.description'
+          )
+        );
+        return;
+      }
+
+      if (
+        !/^\d{4}-\d{2}-\d{2}$/.test(
+          result.date
+        )
+      ) {
+        Alert.alert(
+          t(
+            'common.error'
+          ),
+          t(
+            'scan.validation.date'
+          )
+        );
+        return;
+      }
+
+      try {
+        setSaving(true);
+
+        await createTransaction({
+          type:
+            'expense',
+          amount,
+          category:
+            CATEGORY_TO_STORAGE[
+              result.category
+            ] ||
+            result.category ||
+            'Otros',
+          description:
+            result.description
+              .trim(),
+          date:
+            result.date,
+          currency:
+            result.currency,
+          payment_method:
+            result.payment_method ||
+            'other',
+        });
+
+        Alert.alert(
+          t(
+            'scan.success.title'
+          ),
+          t(
+            'scan.success.text'
+          ),
+          [
+            {
+              text:
+                t(
+                  'common.accept'
+                ),
+              onPress:
+                () =>
+                  navigation.replace(
+                    'Expenses'
+                  ),
+            },
+          ]
+        );
+      } catch (error) {
+        Alert.alert(
+          t(
+            'scan.errors.title'
+          ),
+          error.message ||
+          t(
+            'scan.errors.save'
+          )
+        );
+      } finally {
+        setSaving(false);
+      }
+    };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={
+        Platform.OS ===
+        'ios'
+          ? 'padding'
+          : 'height'
+      }
+    >
       <StatusBar
         barStyle={
           isDark
             ? 'light-content'
             : 'dark-content'
         }
-        backgroundColor={COLORS.bg}
+        backgroundColor={
+          COLORS.bg
+        }
       />
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={
+          styles.content
+        }
+        keyboardShouldPersistTaps="always"
+        keyboardDismissMode={
+          Platform.OS ===
+          'ios'
+            ? 'interactive'
+            : 'none'
+        }
+        removeClippedSubviews={
+          false
+        }
+        showsVerticalScrollIndicator={
+          false
+        }
       >
-
-    <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}
+        <View
+          style={
+            styles.topBar
+          }
         >
-        <Ionicons
-            name="arrow-back"
-            size={24}
-            color={COLORS.textPrimary}
-        />
-
-        <Text style={styles.backText}>
-            Volver
-        </Text>
-    </TouchableOpacity>
-
-        <Text style={styles.title}>
-          Escanear ticket
-        </Text>
-
-        <Text style={styles.subtitle}>
-          Sacá una foto o elegí una imagen de tu ticket o comprobante de compra para poder extraer sus datos.
-        </Text>
-
-        <View style={styles.actions}>
           <TouchableOpacity
-            style={styles.actionBtn}
-            onPress={takePhoto}
+            style={
+              styles.roundButton
+            }
+            onPress={() =>
+              navigation.goBack()
+            }
           >
             <Ionicons
-              name="camera-outline"
+              name="chevron-back"
               size={22}
-              color={COLORS.textPrimary}
+              color={
+                COLORS.textPrimary
+              }
             />
-
-            <Text style={styles.actionText}>
-              Cámara
-            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.actionBtn}
-            onPress={pickImage}
+          <Text
+            style={
+              styles.topTitle
+            }
           >
-            <Ionicons
-              name="image-outline"
-              size={22}
-              color={COLORS.textPrimary}
-            />
+            {t(
+              'scan.title'
+            )}
+          </Text>
 
-            <Text style={styles.actionText}>
-              Galería
-            </Text>
-          </TouchableOpacity>
+          <View
+            style={{
+              width: 42,
+            }}
+          />
         </View>
 
-        {image && (
-          <>
-            <Image
-              source={{ uri: image }}
-              style={styles.preview}
+        <View
+          style={
+            styles.hero
+          }
+        >
+          <View
+            style={
+              styles.heroIcon
+            }
+          >
+            <Ionicons
+              name="scan-outline"
+              size={30}
+              color={
+                COLORS.accent
+              }
             />
+          </View>
+
+          <Text
+            style={
+              styles.heroTitle
+            }
+          >
+            {t(
+              'scan.heroTitle'
+            )}
+          </Text>
+
+          <Text
+            style={
+              styles.heroText
+            }
+          >
+            {t(
+              'scan.heroText'
+            )}
+          </Text>
+        </View>
+
+        {!imageAsset && (
+          <View
+            style={
+              styles.actions
+            }
+          >
+            <TouchableOpacity
+              style={
+                styles.actionCard
+              }
+              onPress={
+                takePhoto
+              }
+            >
+              <Ionicons
+                name="camera-outline"
+                size={26}
+                color={
+                  COLORS.accent
+                }
+              />
+
+              <Text
+                style={
+                  styles.actionTitle
+                }
+              >
+                {t(
+                  'scan.camera'
+                )}
+              </Text>
+
+              <Text
+                style={
+                  styles.actionText
+                }
+              >
+                {t(
+                  'scan.cameraText'
+                )}
+              </Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.scanBtn}
-              onPress={analyzeTicket}
-              disabled={loading}
+              style={
+                styles.actionCard
+              }
+              onPress={
+                pickImage
+              }
             >
-              {loading ? (
-                <ActivityIndicator color="#0D1A12" />
-              ) : (
-                <>
+              <Ionicons
+                name="image-outline"
+                size={26}
+                color={
+                  COLORS.blue ||
+                  COLORS.accent
+                }
+              />
+
+              <Text
+                style={
+                  styles.actionTitle
+                }
+              >
+                {t(
+                  'scan.gallery'
+                )}
+              </Text>
+
+              <Text
+                style={
+                  styles.actionText
+                }
+              >
+                {t(
+                  'scan.galleryText'
+                )}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {imageAsset && (
+          <>
+            <View
+              style={
+                styles.previewCard
+              }
+            >
+              <Image
+                source={{
+                  uri:
+                    imageAsset.uri,
+                }}
+                style={
+                  styles.preview
+                }
+              />
+
+              <View
+                style={
+                  styles.previewActions
+                }
+              >
+                <TouchableOpacity
+                  style={
+                    styles.smallAction
+                  }
+                  onPress={
+                    pickImage
+                  }
+                >
                   <Ionicons
-                    name="sparkles-outline"
-                    size={22}
-                    color="#0D1A12"
+                    name="refresh-outline"
+                    size={18}
+                    color={
+                      COLORS.textPrimary
+                    }
                   />
 
-                  <Text style={styles.scanBtnText}>
-                    Analizar ticket
+                  <Text
+                    style={
+                      styles.smallActionText
+                    }
+                  >
+                    {t(
+                      'scan.change'
+                    )}
                   </Text>
-                </>
-              )}
-            </TouchableOpacity>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={
+                    styles.smallAction
+                  }
+                  onPress={
+                    resetProcess
+                  }
+                >
+                  <Ionicons
+                    name="trash-outline"
+                    size={18}
+                    color={
+                      COLORS.red ||
+                      '#F87171'
+                    }
+                  />
+
+                  <Text
+                    style={[
+                      styles.smallActionText,
+                      {
+                        color:
+                          COLORS.red ||
+                          '#F87171',
+                      },
+                    ]}
+                  >
+                    {t(
+                      'scan.remove'
+                    )}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {!result && (
+              <TouchableOpacity
+                style={
+                  styles.primaryButton
+                }
+                onPress={
+                  handleAnalyze
+                }
+                disabled={
+                  analyzing
+                }
+              >
+                {analyzing ? (
+                  <>
+                    <ActivityIndicator
+                      size="small"
+                      color={
+                        COLORS.buttonText ||
+                        COLORS.bg
+                      }
+                    />
+
+                    <Text
+                      style={
+                        styles.primaryButtonText
+                      }
+                    >
+                      {t(
+                        'scan.analyzing'
+                      )}
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Ionicons
+                      name="sparkles-outline"
+                      size={21}
+                      color={
+                        COLORS.buttonText ||
+                        COLORS.bg
+                      }
+                    />
+
+                    <Text
+                      style={
+                        styles.primaryButtonText
+                      }
+                    >
+                      {t(
+                        'scan.analyze'
+                      )}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
           </>
         )}
 
         {result && (
-          <View style={styles.resultCard}>
-            <Text style={styles.resultTitle}>
-              Resultado IA
+          <View
+            style={
+              styles.resultCard
+            }
+          >
+            <View
+              style={
+                styles.resultHeader
+              }
+            >
+              <View
+                style={
+                  styles.successIcon
+                }
+              >
+                <Ionicons
+                  name="checkmark"
+                  size={20}
+                  color={
+                    COLORS.buttonText ||
+                    COLORS.bg
+                  }
+                />
+              </View>
+
+              <View
+                style={{
+                  flex: 1,
+                }}
+              >
+                <Text
+                  style={
+                    styles.resultTitle
+                  }
+                >
+                  {t(
+                    'scan.reviewTitle'
+                  )}
+                </Text>
+
+                <Text
+                  style={
+                    styles.resultSubtitle
+                  }
+                >
+                  {t(
+                    'scan.reviewText'
+                  )}
+                </Text>
+              </View>
+            </View>
+
+            <Text
+              style={
+                styles.label
+              }
+            >
+              {t(
+                'scan.fields.amount'
+              )}
             </Text>
 
-            <Info
-              styles={styles}
-              label="Monto"
-              value={`${result.currency} ${result.amount}`}
+            <TextInput
+              style={
+                styles.input
+              }
+              value={
+                result.amount
+              }
+              onChangeText={(
+                amount
+              ) =>
+                setResult({
+                  ...result,
+                  amount,
+                })
+              }
+              keyboardType="decimal-pad"
+              placeholderTextColor={
+                COLORS.textMuted
+              }
             />
 
-            <Info
-              styles={styles}
-              label="Categoría"
-              value={result.category}
+            <Text
+              style={
+                styles.label
+              }
+            >
+              {t(
+                'scan.fields.description'
+              )}
+            </Text>
+
+            <TextInput
+              style={
+                styles.input
+              }
+              value={
+                result.description
+              }
+              onChangeText={(
+                description
+              ) =>
+                setResult({
+                  ...result,
+                  description,
+                })
+              }
+              placeholderTextColor={
+                COLORS.textMuted
+              }
             />
 
-            <Info
-              styles={styles}
-              label="Descripción"
-              value={result.description}
+            <Text
+              style={
+                styles.label
+              }
+            >
+              {t(
+                'scan.fields.category'
+              )}
+            </Text>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={
+                false
+              }
+              contentContainerStyle={
+                styles.chipRow
+              }
+            >
+              {CATEGORIES.map(
+                (category) => (
+                  <TouchableOpacity
+                    key={
+                      category
+                    }
+                    style={[
+                      styles.chip,
+                      result.category ===
+                        category &&
+                        styles.chipActive,
+                    ]}
+                    onPress={() =>
+                      setResult({
+                        ...result,
+                        category,
+                      })
+                    }
+                  >
+                    <Text
+                      style={[
+                        styles.chipText,
+                        result.category ===
+                          category &&
+                          styles.chipTextActive,
+                      ]}
+                    >
+                      {t(
+                        `categories.${category}`
+                      )}
+                    </Text>
+                  </TouchableOpacity>
+                )
+              )}
+            </ScrollView>
+
+            <Text
+              style={
+                styles.label
+              }
+            >
+              {t(
+                'scan.fields.date'
+              )}
+            </Text>
+
+            <TextInput
+              style={
+                styles.input
+              }
+              value={
+                result.date
+              }
+              onChangeText={(
+                date
+              ) =>
+                setResult({
+                  ...result,
+                  date,
+                })
+              }
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor={
+                COLORS.textMuted
+              }
+              autoCapitalize="none"
             />
 
-            <Info
-              styles={styles}
-              label="Fecha"
-              value={result.date}
-            />
+            <Text
+              style={
+                styles.label
+              }
+            >
+              {t(
+                'scan.fields.currency'
+              )}
+            </Text>
 
-            <View style={styles.successBox}>
-              <Ionicons
-                name="checkmark-circle"
-                size={22}
-                color={COLORS.accent}
-              />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={
+                false
+              }
+              contentContainerStyle={
+                styles.chipRow
+              }
+            >
+              {CURRENCIES.map(
+                (currency) => (
+                  <TouchableOpacity
+                    key={
+                      currency
+                    }
+                    style={[
+                      styles.chip,
+                      result.currency ===
+                        currency &&
+                        styles.chipActive,
+                    ]}
+                    onPress={() =>
+                      setResult({
+                        ...result,
+                        currency,
+                      })
+                    }
+                  >
+                    <Text
+                      style={[
+                        styles.chipText,
+                        result.currency ===
+                          currency &&
+                          styles.chipTextActive,
+                      ]}
+                    >
+                      {currency}
+                    </Text>
+                  </TouchableOpacity>
+                )
+              )}
+            </ScrollView>
 
-              <Text style={styles.successText}>
-                Ticket procesado correctamente
+
+<Text
+  style={
+    styles.label
+  }
+>
+  {t(
+    'scan.fields.paymentMethod'
+  )}
+</Text>
+
+<ScrollView
+  horizontal
+  showsHorizontalScrollIndicator={
+    false
+  }
+  contentContainerStyle={
+    styles.chipRow
+  }
+>
+  {PAYMENT_METHODS.map(
+    (item) => (
+      <TouchableOpacity
+        key={
+          item.value
+        }
+        style={[
+          styles.chip,
+          result.payment_method ===
+            item.value &&
+            styles.chipActive,
+        ]}
+        onPress={() =>
+          setResult({
+            ...result,
+            payment_method:
+              item.value,
+          })
+        }
+      >
+        <Ionicons
+          name={
+            item.icon
+          }
+          size={15}
+          color={
+            result.payment_method ===
+            item.value
+              ? COLORS.accent
+              : COLORS.textSecondary
+          }
+        />
+
+        <Text
+          style={[
+            styles.chipText,
+            result.payment_method ===
+              item.value &&
+              styles.chipTextActive,
+          ]}
+        >
+          {t(
+            `methods.${item.translationKey}`
+          )}
+        </Text>
+      </TouchableOpacity>
+    )
+  )}
+</ScrollView>
+
+            <TouchableOpacity
+              style={
+                styles.primaryButton
+              }
+              onPress={
+                handleSave
+              }
+              disabled={
+                saving
+              }
+            >
+              {saving ? (
+                <>
+                  <ActivityIndicator
+                    size="small"
+                    color={
+                      COLORS.buttonText ||
+                      COLORS.bg
+                    }
+                  />
+
+                  <Text
+                    style={
+                      styles.primaryButtonText
+                    }
+                  >
+                    {t(
+                      'scan.saving'
+                    )}
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Ionicons
+                    name="checkmark-circle-outline"
+                    size={21}
+                    color={
+                      COLORS.buttonText ||
+                      COLORS.bg
+                    }
+                  />
+
+                  <Text
+                    style={
+                      styles.primaryButtonText
+                    }
+                  >
+                    {t(
+                      'scan.saveExpense'
+                    )}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={
+                styles.secondaryButton
+              }
+              onPress={
+                resetProcess
+              }
+            >
+              <Text
+                style={
+                  styles.secondaryButtonText
+                }
+              >
+                {t(
+                  'scan.startAgain'
+                )}
               </Text>
-            </View>
+            </TouchableOpacity>
           </View>
         )}
+
+        <Text
+          style={
+            styles.footer
+          }
+        >
+          Spendly © 2026
+        </Text>
       </ScrollView>
-    </View>
-  );
-}
-
-function Info({
-  label,
-  value,
-  styles,
-}) {
-  return (
-    <View style={styles.infoRow}>
-      <Text style={styles.infoLabel}>
-        {label}
-      </Text>
-
-      <Text style={styles.infoValue}>
-        {value || '-'}
-      </Text>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 function createStyles(COLORS) {
   return StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.bg,
-  },
+    flex: {
+      flex: 1,
+      backgroundColor:
+        COLORS.bg,
+    },
 
-  content: {
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 60,
-  },
+    content: {
+      flexGrow: 1,
+      paddingTop: 56,
+      paddingHorizontal: 20,
+      paddingBottom: 40,
+    },
 
-backButton: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 8,
-  marginBottom: 24,
-},
+    topBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent:
+        'space-between',
+      marginBottom: 22,
+    },
 
-backText: {
-  color: COLORS.textPrimary,
-  fontSize: 15,
-  fontWeight: '700',
-},
+    roundButton: {
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      backgroundColor:
+        COLORS.surface,
+      borderWidth: 1,
+      borderColor:
+        COLORS.border,
+      alignItems: 'center',
+      justifyContent:
+        'center',
+    },
 
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-  },
+    topTitle: {
+      fontSize: 17,
+      fontWeight: '700',
+      color:
+        COLORS.textPrimary,
+    },
 
-  subtitle: {
-    marginTop: 10,
-    fontSize: 14,
-    lineHeight: 22,
-    color: COLORS.textSecondary,
-  },
+    hero: {
+      backgroundColor:
+        COLORS.surface,
+      borderRadius: 24,
+      borderWidth: 1,
+      borderColor:
+        COLORS.border,
+      padding: 22,
+      alignItems: 'center',
+      marginBottom: 20,
+    },
 
-  actions: {
-    flexDirection: 'row',
-    gap: 14,
-    marginTop: 28,
-  },
+    heroIcon: {
+      width: 62,
+      height: 62,
+      borderRadius: 31,
+      backgroundColor:
+        COLORS.accentDim,
+      alignItems: 'center',
+      justifyContent:
+        'center',
+      marginBottom: 14,
+    },
 
-  actionBtn: {
-    flex: 1,
-    height: 62,
-    backgroundColor: COLORS.surface,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    heroTitle: {
+      fontSize: 21,
+      fontWeight: '800',
+      color:
+        COLORS.textPrimary,
+      textAlign: 'center',
+    },
 
-  actionText: {
-    marginTop: 6,
-    color: COLORS.textPrimary,
-    fontWeight: '700',
-  },
+    heroText: {
+      marginTop: 7,
+      fontSize: 13,
+      lineHeight: 20,
+      color:
+        COLORS.textSecondary,
+      textAlign: 'center',
+    },
 
-  preview: {
-    width: '100%',
-    height: 420,
-    borderRadius: 24,
-    marginTop: 28,
-  },
+    actions: {
+      flexDirection: 'row',
+      gap: 12,
+    },
 
-  scanBtn: {
-    marginTop: 22,
-    height: 60,
-    borderRadius: 20,
-    backgroundColor: COLORS.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 10,
-  },
+    actionCard: {
+      flex: 1,
+      minHeight: 145,
+      borderRadius: 20,
+      backgroundColor:
+        COLORS.surface,
+      borderWidth: 1,
+      borderColor:
+        COLORS.border,
+      padding: 18,
+      alignItems: 'center',
+      justifyContent:
+        'center',
+    },
 
-  scanBtnText: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#0D1A12',
-  },
+    actionTitle: {
+      marginTop: 10,
+      fontSize: 15,
+      fontWeight: '800',
+      color:
+        COLORS.textPrimary,
+    },
 
-  resultCard: {
-    marginTop: 28,
-    backgroundColor: COLORS.surface,
-    borderRadius: 24,
-    padding: 22,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
+    actionText: {
+      marginTop: 5,
+      fontSize: 11,
+      lineHeight: 16,
+      color:
+        COLORS.textSecondary,
+      textAlign: 'center',
+    },
 
-  resultTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-    marginBottom: 18,
-  },
+    previewCard: {
+      backgroundColor:
+        COLORS.surface,
+      borderRadius: 22,
+      borderWidth: 1,
+      borderColor:
+        COLORS.border,
+      overflow: 'hidden',
+    },
 
-  infoRow: {
-    marginBottom: 16,
-  },
+    preview: {
+      width: '100%',
+      height: 360,
+      resizeMode: 'cover',
+    },
 
-  infoLabel: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    marginBottom: 4,
-  },
+    previewActions: {
+      flexDirection: 'row',
+      gap: 10,
+      padding: 12,
+    },
 
-  infoValue: {
-    fontSize: 16,
-    color: COLORS.textPrimary,
-    fontWeight: '700',
-  },
+    smallAction: {
+      flex: 1,
+      minHeight: 44,
+      borderRadius: 13,
+      backgroundColor:
+        COLORS.surfaceHigh,
+      alignItems: 'center',
+      justifyContent:
+        'center',
+      flexDirection: 'row',
+      gap: 7,
+    },
 
-  successBox: {
-    marginTop: 18,
-    backgroundColor: COLORS.accentSoft,
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
+    smallActionText: {
+      fontSize: 12,
+      fontWeight: '700',
+      color:
+        COLORS.textPrimary,
+    },
 
-  successText: {
-    color: COLORS.accent,
-    fontWeight: '700',
-  },
+    primaryButton: {
+      marginTop: 16,
+      minHeight: 54,
+      borderRadius: 16,
+      backgroundColor:
+        COLORS.accent,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent:
+        'center',
+      gap: 9,
+    },
+
+    primaryButtonText: {
+      fontSize: 15,
+      fontWeight: '800',
+      color:
+        COLORS.buttonText ||
+        COLORS.bg,
+    },
+
+    resultCard: {
+      marginTop: 20,
+      backgroundColor:
+        COLORS.surface,
+      borderRadius: 24,
+      borderWidth: 1,
+      borderColor:
+        COLORS.border,
+      padding: 20,
+    },
+
+    resultHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      marginBottom: 22,
+    },
+
+    successIcon: {
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      backgroundColor:
+        COLORS.accent,
+      alignItems: 'center',
+      justifyContent:
+        'center',
+    },
+
+    resultTitle: {
+      fontSize: 18,
+      fontWeight: '800',
+      color:
+        COLORS.textPrimary,
+    },
+
+    resultSubtitle: {
+      marginTop: 3,
+      fontSize: 11,
+      color:
+        COLORS.textSecondary,
+    },
+
+    label: {
+      fontSize: 12,
+      fontWeight: '700',
+      color:
+        COLORS.textSecondary,
+      textTransform:
+        'uppercase',
+      marginBottom: 8,
+      marginTop: 4,
+    },
+
+    input: {
+      minHeight: 50,
+      borderRadius: 14,
+      backgroundColor:
+        COLORS.surfaceHigh,
+      borderWidth: 1,
+      borderColor:
+        COLORS.border,
+      paddingHorizontal: 14,
+      color:
+        COLORS.textPrimary,
+      fontSize: 14,
+      marginBottom: 16,
+    },
+
+    chipRow: {
+      gap: 8,
+      paddingBottom: 16,
+    },
+
+    chip: {
+      minHeight: 38,
+      borderRadius: 999,
+      paddingHorizontal: 14,
+      backgroundColor:
+        COLORS.surfaceHigh,
+      borderWidth: 1,
+      borderColor:
+        COLORS.border,
+      alignItems: 'center',
+      justifyContent:
+        'center',
+      flexDirection: 'row',
+      gap: 7,
+    },
+
+    chipActive: {
+      backgroundColor:
+        COLORS.accentDim,
+      borderColor:
+        COLORS.accent,
+    },
+
+    chipText: {
+      fontSize: 11,
+      fontWeight: '700',
+      color:
+        COLORS.textSecondary,
+    },
+
+    chipTextActive: {
+      color:
+        COLORS.accent,
+    },
+
+    secondaryButton: {
+      minHeight: 48,
+      borderRadius: 14,
+      backgroundColor:
+        COLORS.surfaceHigh,
+      alignItems: 'center',
+      justifyContent:
+        'center',
+      marginTop: 10,
+    },
+
+    secondaryButtonText: {
+      fontSize: 13,
+      fontWeight: '700',
+      color:
+        COLORS.textSecondary,
+    },
+
+    footer: {
+      marginTop: 28,
+      textAlign: 'center',
+      fontSize: 12,
+      fontWeight: '600',
+      color:
+        COLORS.textMuted,
+    },
   });
 }

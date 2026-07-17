@@ -154,37 +154,37 @@ function getIncomeCategories(COLORS) {
 
 const EXPENSE_METHODS = [
   {
-    value: 'Efectivo',
+    value: 'cash',
     translationKey: 'cash',
     icon: 'cash-outline',
   },
   {
-    value: 'Tarjeta de débito',
+    value: 'debit_card',
     translationKey: 'debitCard',
     icon: 'card-outline',
   },
   {
-    value: 'Tarjeta de crédito',
+    value: 'credit_card',
     translationKey: 'creditCard',
     icon: 'card-outline',
   },
   {
-    value: 'Transferencia bancaria',
+    value: 'transfer',
     translationKey: 'bankTransfer',
     icon: 'swap-horizontal-outline',
   },
   {
-    value: 'Billetera digital',
+    value: 'digital_wallet',
     translationKey: 'digitalWallet',
     icon: 'phone-portrait-outline',
   },
   {
-    value: 'Pago sin contacto',
+    value: 'contactless_payment',
     translationKey: 'contactlessPayment',
     icon: 'wifi-outline',
   },
   {
-    value: 'Otro',
+    value: 'other',
     translationKey: 'other',
     icon: 'ellipsis-horizontal-outline',
   },
@@ -192,32 +192,32 @@ const EXPENSE_METHODS = [
 
 const INCOME_METHODS = [
   {
-    value: 'Cuenta bancaria',
+    value: 'bank_account',
     translationKey: 'bankAccount',
     icon: 'business-outline',
   },
   {
-    value: 'Transferencia',
+    value: 'transfer',
     translationKey: 'transfer',
     icon: 'swap-horizontal-outline',
   },
   {
-    value: 'Efectivo',
+    value: 'cash',
     translationKey: 'cash',
     icon: 'cash-outline',
   },
   {
-    value: 'Billetera digital',
+    value: 'digital_wallet',
     translationKey: 'digitalWallet',
     icon: 'phone-portrait-outline',
   },
   {
-    value: 'Depósito',
+    value: 'deposit',
     translationKey: 'deposit',
     icon: 'download-outline',
   },
   {
-    value: 'Otro',
+    value: 'other',
     translationKey: 'other',
     icon: 'ellipsis-horizontal-outline',
   },
@@ -583,20 +583,19 @@ export default function AddTransactionScreen({
     try {
       setLoading(true);
 
-      const formattedTransactionDate =
-        date
-          .toISOString()
-          .split('T')[0];
+      const year = date.getFullYear();
 
-      /*
-       * El backend actual solo guarda:
-       * type, amount, category,
-       * description, date y currency.
-       *
-       * method y note quedan preparados
-       * visualmente para agregarlos más
-       * adelante al modelo si lo desean.
-       */
+    const month = String(
+      date.getMonth() + 1
+    ).padStart(2, '0');
+
+    const day = String(
+      date.getDate()
+    ).padStart(2, '0');
+
+    const formattedTransactionDate =
+      `${year}-${month}-${day}`;
+
       const transactionData = {
         type: transactionType,
         amount: numericAmount,
@@ -606,6 +605,8 @@ export default function AddTransactionScreen({
           config.descriptionFallback,
         date: formattedTransactionDate,
         currency: currency.code,
+        payment_method:
+          method || null,
       };
 
       await createTransaction(
