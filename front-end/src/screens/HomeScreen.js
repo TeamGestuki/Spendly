@@ -130,7 +130,9 @@ function getMonthName(date, language) {
 
 function formatDate(isoString, language, t) {
   const date = new Date(isoString);
-  const now = new Date();
+  const avatarUrl = getAvatarUrl(user.profile_image_url);
+
+const now = new Date();
 
   const isToday =
     date.getDate() === now.getDate() &&
@@ -218,6 +220,7 @@ const styles = useMemo(
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [avatarError, setAvatarError] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -245,6 +248,7 @@ const loadHomeData = async () => {
       userData.preferred_currency || 'ARS'
     );
 
+    setAvatarError(false);
     setUser(userData);
     setCurrency(userCurrency);
     setTransactions(
@@ -371,10 +375,11 @@ const now = new Date();
               onPress={() => navigation.navigate('Profile')}
               activeOpacity={0.8}
             >
-              {getAvatarUrl(user.profile_image_url) ? (
+              {avatarUrl && !avatarError ? (
                 <Image
-                  source={{ uri: getAvatarUrl(user.profile_image_url) }}
+                  source={{ uri: avatarUrl }}
                   style={styles.avatarImage}
+                  onError={() => setAvatarError(true)}
                 />
               ) : (
                 <View style={styles.avatarFallback}>
