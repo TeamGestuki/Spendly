@@ -108,7 +108,42 @@ export async function deleteTransaction(id) {
 }
 
 export async function updateTransaction(id, data) {
-  throw new Error(
-    'Editar transacciones todavía no está implementado en backend.'
+  const headers =
+    await authHeaders();
+
+  const response =
+    await fetch(
+      `${API_URL}/${id}`,
+      {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify(
+          data
+        ),
+      }
+    );
+
+  const responseData =
+    await parseResponse(
+      response
+    );
+
+  console.log(
+    'UPDATE TRANSACTION STATUS:',
+    response.status
   );
+
+  console.log(
+    'UPDATE TRANSACTION DATA:',
+    responseData
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      responseData?.detail ||
+      'Error al actualizar transacción'
+    );
+  }
+
+  return responseData;
 }

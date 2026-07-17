@@ -821,4 +821,87 @@ login: {
   },
 },
 
+scan: {
+  title: 'Scanner un justificatif',
+  heroTitle: 'Importez un reçu ou justificatif',
+  heroText: 'Spendly analysera l’image et remplira automatiquement les données de la dépense afin que vous puissiez les vérifier avant l’enregistrement.',
+  camera: 'Appareil photo',
+  cameraText: 'Prenez une photo nette du justificatif.',
+  gallery: 'Galerie',
+  galleryText: 'Choisissez une image enregistrée sur votre appareil.',
+  change: 'Changer l’image',
+  remove: 'Supprimer',
+  analyze: 'Analyser le justificatif',
+  analyzing: 'Analyse du justificatif...',
+  reviewTitle: 'Vérifiez les données détectées',
+  reviewText: 'Vous pouvez corriger les informations avant de créer la dépense.',
+  saveExpense: 'Enregistrer la dépense',
+  saving: 'Enregistrement...',
+  startAgain: 'Scanner un autre justificatif',
+  fields: {
+    amount: 'Montant',
+    description: 'Description',
+    category: 'Catégorie',
+    date: 'Date',
+    currency: 'Devise',
+    paymentMethod: 'Mode de paiement',
+  },
+  permissions: {
+    title: 'Autorisation requise',
+    camera: 'L’accès à l’appareil photo est nécessaire.',
+    gallery: 'L’accès à la galerie est nécessaire.',
+  },
+  validation: {
+    amount: 'Saisissez un montant valide supérieur à zéro.',
+    description: 'Saisissez une description.',
+    date: 'La date doit respecter le format YYYY-MM-DD.',
+  },
+  errors: {
+    title: 'Traitement impossible',
+    analyze: 'Le justificatif n’a pas pu être analysé.',
+    save: 'La dépense n’a pas pu être enregistrée.',
+  },
+  success: {
+    title: 'Dépense enregistrée',
+    text: 'La dépense a été créée correctement à partir du justificatif.',
+  },
+},
+
+biometricUnlock: {
+  title: 'Déverrouillez Spendly',
+  subtitle:
+    'Utilisez Face ID, Touch ID ou l’authentification de votre appareil pour continuer.',
+  prompt: 'Déverrouiller Spendly',
+  verifying: 'Vérification...',
+  retry: 'Réessayer',
+  failed:
+    'Nous n’avons pas pu vérifier votre identité. Veuillez réessayer.',
+  unavailable:
+    "L'authentification biométrique n'est pas disponible ou n'est pas configurée.",
+},
+
+editTransaction: {
+  expenseTitle: 'Modifier la dépense',
+  incomeTitle: 'Modifier le revenu',
+  heroTitle: 'Mettez à jour le mouvement',
+  heroText: 'Modifiez les informations nécessaires et enregistrez les changements.',
+  amount: 'Montant',
+  paymentMethod: 'Mode de paiement',
+  date: 'Date',
+  currency: 'Devise',
+  save: 'Enregistrer les modifications',
+  saving: 'Enregistrement...',
+  successTitle: 'Modifications enregistrées',
+  successText: 'La transaction a été mise à jour correctement.',
+  missing: 'La transaction à modifier est introuvable.',
+  errors: {
+    amount: 'Saisissez un montant valide supérieur à zéro.',
+    description: 'Saisissez une description.',
+    save: 'La transaction n’a pas pu être mise à jour.',
+  },
+},
+
+passwordRecovery: { common:{errorTitle:'Impossible de continuer'}, forgot:{title:'Récupérer le mot de passe',heading:'Mot de passe oublié ?',subtitle:'Saisissez l’adresse e-mail associée au compte pour recevoir un code.',emailLabel:'Adresse e-mail',emailPlaceholder:'nom@email.com',send:'Envoyer le code',sending:'Envoi du code...',securityNote:'Pour votre sécurité, la réponse reste identique même si l’adresse n’est pas enregistrée.'}, verify:{title:'Vérifier le code',heading:'Saisissez le code',subtitle:'Saisissez le code à 6 chiffres envoyé par e-mail.',confirm:'Vérifier le code',verifying:'Vérification...',noCode:'Code non reçu ?',resend:'Renvoyer',resending:'Renvoi...',resendIn:'Renvoyer dans {seconds}s',expiration:'Le code expire dans 10 minutes et autorise 5 tentatives.',resentTitle:'Code renvoyé',resentText:'Un nouveau code a été envoyé.'}, reset:{title:'Nouveau mot de passe',heading:'Créez un nouveau mot de passe',subtitle:'Choisissez un mot de passe sécurisé et inédit.',passwordLabel:'Nouveau mot de passe',passwordPlaceholder:'8 caractères minimum',confirmLabel:'Confirmer le mot de passe',confirmPlaceholder:'Répétez le mot de passe',requirements:'Utilisez au moins 8 caractères avec lettres, chiffres et symboles.',save:'Mettre à jour',saving:'Mise à jour...',successTitle:'Mot de passe mis à jour',successText:'Le mot de passe a été mis à jour. Toutes les anciennes sessions ont été fermées.',goToLogin:'Aller à la connexion'}, errors:{emailRequired:'Saisissez votre e-mail.',emailInvalid:'Saisissez une adresse valide.',sendCode:'Le code n’a pas pu être envoyé.',codeIncomplete:'Saisissez les 6 chiffres.',verifyCode:'Le code n’a pas pu être vérifié.',resend:'Le code n’a pas pu être renvoyé.',invalidRequest:'La demande est invalide.',passwordLength:'Le mot de passe doit contenir 8 caractères.',passwordMismatch:'Les mots de passe ne correspondent pas.',reset:'Le mot de passe n’a pas pu être mis à jour.'}},
+
+
 };

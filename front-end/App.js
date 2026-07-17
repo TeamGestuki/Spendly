@@ -9,7 +9,6 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import * as LocalAuthentication from 'expo-local-authentication';
 import { LanguageProvider, } from './src/context/LanguageContext';
 
 import { ThemeProvider } from './src/context/ThemeContext';
@@ -22,6 +21,7 @@ import TermsScreen from './src/screens/TermsScreen';
 import PrivacyScreen from './src/screens/PrivacyScreen';
 import TransactionListScreen from './src/screens/TransactionListScreen';
 import AddTransactionScreen from './src/screens/AddTransactionScreen';
+import EditTransactionScreen from './src/screens/EditTransactionScreen';
 import EditProfileScreen from './src/screens/EditProfileScreen';
 import SecuritySettingsScreen from './src/screens/SecuritySettingsScreen';
 import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
@@ -38,6 +38,10 @@ import HelpCenterScreen from './src/screens/HelpCenterScreen';
 import NotificationsScreen from './src/screens/NotificationsScreen';
 import ReportProblemScreen from './src/screens/ReportProblemScreen';
 import LanguageSelectionScreen from './src/screens/LanguageSelectionScreen';
+import BiometricUnlockScreen from './src/screens/BiometricUnlockScreen';
+import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
+import VerifyResetCodeScreen from './src/screens/VerifyResetCodeScreen';
+import ResetPasswordScreen from './src/screens/ResetPasswordScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -80,27 +84,9 @@ export default function App() {
       }
 
       if (biometricEnabled === 'true') {
-        const result =
-          await LocalAuthentication.authenticateAsync(
-            {
-              promptMessage:
-                'Desbloquear Spendly',
-              cancelLabel: 'Cancelar',
-              disableDeviceFallback: true,
-            }
-          );
-
-        if (result.success) {
-          setInitialRoute('Home');
-          return;
-        }
-
-        if (pinEnabled === 'true') {
-          setInitialRoute('PinUnlock');
-          return;
-        }
-
-        setInitialRoute('Login');
+        setInitialRoute(
+          'BiometricUnlock'
+        );
         return;
       }
 
@@ -160,6 +146,23 @@ export default function App() {
             component={LoginScreen}
           />
 
+          <Stack.Screen 
+            name="ForgotPassword" 
+            component={ForgotPasswordScreen} 
+          />
+
+          <Stack.Screen 
+            name="VerifyResetCode" 
+            component={VerifyResetCodeScreen} 
+            options={{ gestureEnabled: false }} 
+          />
+
+          <Stack.Screen 
+            name="ResetPassword" 
+            component={ResetPasswordScreen} 
+            options={{ gestureEnabled: false }} 
+          />
+          
           <Stack.Screen
             name="Register"
             component={RegisterScreen}
@@ -196,6 +199,15 @@ export default function App() {
             component={ChangePasswordScreen}
           />
 
+
+          <Stack.Screen
+            name="BiometricUnlock"
+            component={BiometricUnlockScreen}
+            options={{
+              gestureEnabled: false,
+            }}
+          />
+          
           <Stack.Screen
             name="PinUnlock"
             component={PinUnlockScreen}
@@ -259,6 +271,11 @@ export default function App() {
               />
             )}
           </Stack.Screen>
+
+          <Stack.Screen
+            name="EditTransaction"
+            component={EditTransactionScreen}
+          />
 
           <Stack.Screen
             name="Stats"

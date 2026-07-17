@@ -340,3 +340,43 @@ export const revokeOtherSessions = async (
 
   return data;
 };
+
+export const forgotPassword = async (email) => {
+  const response = await fetch(`${API_URL}/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email.trim().toLowerCase() }),
+  });
+  const data = await parseResponse(response);
+  console.log('FORGOT PASSWORD STATUS:', response.status);
+  console.log('FORGOT PASSWORD DATA:', data);
+  if (!response.ok) throw new Error(data?.detail || 'No se pudo enviar el código.');
+  return data;
+};
+
+export const verifyResetCode = async (email, code) => {
+  const response = await fetch(`${API_URL}/verify-reset-code`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email.trim().toLowerCase(), code: code.trim() }),
+  });
+  const data = await parseResponse(response);
+  console.log('VERIFY RESET CODE STATUS:', response.status);
+  console.log('VERIFY RESET CODE DATA:', data);
+  if (!response.ok) throw new Error(data?.detail || 'No se pudo verificar el código.');
+  if (!data?.reset_token) throw new Error('El servidor no devolvió un token de recuperación.');
+  return data;
+};
+
+export const resetPassword = async (resetToken, newPassword) => {
+  const response = await fetch(`${API_URL}/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reset_token: resetToken, new_password: newPassword }),
+  });
+  const data = await parseResponse(response);
+  console.log('RESET PASSWORD STATUS:', response.status);
+  console.log('RESET PASSWORD DATA:', data);
+  if (!response.ok) throw new Error(data?.detail || 'No se pudo actualizar la contraseña.');
+  return data;
+};
