@@ -130,9 +130,7 @@ function getMonthName(date, language) {
 
 function formatDate(isoString, language, t) {
   const date = new Date(isoString);
-  const avatarUrl = getAvatarUrl(user.profile_image_url);
-
-const now = new Date();
+  const now = new Date();
 
   const isToday =
     date.getDate() === now.getDate() &&
@@ -221,6 +219,11 @@ const styles = useMemo(
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [avatarError, setAvatarError] = useState(false);
+
+  const avatarUrl =
+    getAvatarUrl(
+      user.profile_image_url
+    );
 
   useFocusEffect(
     useCallback(() => {
