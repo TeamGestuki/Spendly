@@ -166,6 +166,7 @@ export default function ProfileScreen({ navigation }) {
   const [loadingUser, setLoadingUser] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [preferredCurrency, setPreferredCurrency] = useState(null);
+  const [avatarError, setAvatarError] = useState(false);
 
   const [user, setUser] = useState({
     id: null,
@@ -195,6 +196,8 @@ export default function ProfileScreen({ navigation }) {
     setPreferredCurrency(currency);
 
     await savePreferredCurrency(currency.code);
+
+    setAvatarError(false);
 
     setUser({
       id: data.id,
@@ -266,6 +269,8 @@ export default function ProfileScreen({ navigation }) {
         const imageUri = result.assets[0].uri;
         const updatedUser = await uploadProfileAvatar(imageUri);
 
+        setAvatarError(false);
+
         setUser({
           id: updatedUser.id,
           full_name: updatedUser.full_name || t('profile.defaultUser'),
@@ -291,6 +296,8 @@ export default function ProfileScreen({ navigation }) {
 
     try {
       const updatedUser = await deleteProfileAvatar();
+
+      setAvatarError(false);
 
       setUser({
         id: updatedUser.id,
@@ -347,8 +354,12 @@ export default function ProfileScreen({ navigation }) {
             activeOpacity={0.8}
             onPress={openAvatarMenu}
           >
-            {avatarUrl ? (
-              <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+            {avatarUrl && !avatarError ? (
+              <Image
+                source={{ uri: avatarUrl }}
+                style={styles.avatarImage}
+                onError={() => setAvatarError(true)}
+              />
             ) : (
               <View style={styles.avatarFallback}>
                 <Text style={styles.avatarText}>{initials}</Text>
@@ -550,7 +561,16 @@ export default function ProfileScreen({ navigation }) {
             <AppIcon name="close" size={24} color={COLORS.textPrimary} />
           </TouchableOpacity>
 
-          {avatarUrl && <Image source={{ uri: avatarUrl }} style={styles.previewImage} />}
+          {avatarUrl && !avatarError && (
+            <Image
+              source={{ uri: avatarUrl }}
+              style={styles.previewImage}
+              onError={() => {
+                setAvatarError(true);
+                setAvatarPreviewVisible(false);
+              }}
+            />
+          )}
         </View>
       </Modal>
 

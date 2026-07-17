@@ -839,4 +839,87 @@ login: {
   },
 },
 
+scan: {
+  title: 'Beleg scannen',
+  heroTitle: 'Beleg oder Zahlungsnachweis hochladen',
+  heroText: 'Spendly analysiert das Bild und füllt die Ausgabendaten automatisch aus, damit du sie vor dem Speichern prüfen kannst.',
+  camera: 'Kamera',
+  cameraText: 'Mache ein klares Foto des Belegs.',
+  gallery: 'Galerie',
+  galleryText: 'Wähle ein Bild von deinem Gerät.',
+  change: 'Bild ändern',
+  remove: 'Entfernen',
+  analyze: 'Beleg analysieren',
+  analyzing: 'Beleg wird analysiert...',
+  reviewTitle: 'Erkannte Daten prüfen',
+  reviewText: 'Du kannst alle Angaben vor dem Erstellen der Ausgabe korrigieren.',
+  saveExpense: 'Ausgabe speichern',
+  saving: 'Ausgabe wird gespeichert...',
+  startAgain: 'Weiteren Beleg scannen',
+  fields: {
+    amount: 'Betrag',
+    description: 'Beschreibung',
+    category: 'Kategorie',
+    date: 'Datum',
+    currency: 'Währung',
+    paymentMethod: 'Zahlungsmethode',
+  },
+  permissions: {
+    title: 'Berechtigung erforderlich',
+    camera: 'Für das Foto wird Kamerazugriff benötigt.',
+    gallery: 'Für die Bildauswahl wird Galeriezugriff benötigt.',
+  },
+  validation: {
+    amount: 'Gib einen gültigen Betrag größer als null ein.',
+    description: 'Gib eine Beschreibung ein.',
+    date: 'Das Datum muss das Format YYYY-MM-DD haben.',
+  },
+  errors: {
+    title: 'Verarbeitung fehlgeschlagen',
+    analyze: 'Der Beleg konnte nicht analysiert werden.',
+    save: 'Die Ausgabe konnte nicht gespeichert werden.',
+  },
+  success: {
+    title: 'Ausgabe gespeichert',
+    text: 'Die Ausgabe wurde erfolgreich aus dem Beleg erstellt.',
+  },
+},
+
+biometricUnlock: {
+  title: 'Spendly entsperren',
+  subtitle:
+    'Verwende Face ID, Touch ID oder die Geräteauthentifizierung, um fortzufahren.',
+  prompt: 'Spendly entsperren',
+  verifying: 'Wird überprüft...',
+  retry: 'Erneut versuchen',
+  failed:
+    'Deine Identität konnte nicht bestätigt werden. Bitte versuche es erneut.',
+  unavailable:
+    'Die biometrische Authentifizierung ist nicht verfügbar oder nicht eingerichtet.',
+},
+
+editTransaction: {
+  expenseTitle: 'Ausgabe bearbeiten',
+  incomeTitle: 'Einnahme bearbeiten',
+  heroTitle: 'Transaktion aktualisieren',
+  heroText: 'Ändere die erforderlichen Angaben und speichere die Änderungen.',
+  amount: 'Betrag',
+  paymentMethod: 'Zahlungsmethode',
+  date: 'Datum',
+  currency: 'Währung',
+  save: 'Änderungen speichern',
+  saving: 'Änderungen werden gespeichert...',
+  successTitle: 'Änderungen gespeichert',
+  successText: 'Die Transaktion wurde erfolgreich aktualisiert.',
+  missing: 'Die zu bearbeitende Transaktion wurde nicht gefunden.',
+  errors: {
+    amount: 'Gib einen gültigen Betrag größer als null ein.',
+    description: 'Gib eine Beschreibung ein.',
+    save: 'Die Transaktion konnte nicht aktualisiert werden.',
+  },
+},
+
+passwordRecovery: { common:{errorTitle:'Vorgang konnte nicht fortgesetzt werden'}, forgot:{title:'Passwort wiederherstellen',heading:'Passwort vergessen?',subtitle:'Gib deine E-Mail-Adresse ein, um einen Bestätigungscode zu erhalten.',emailLabel:'E-Mail-Adresse',emailPlaceholder:'name@email.com',send:'Code senden',sending:'Code wird gesendet...',securityNote:'Aus Sicherheitsgründen ist die Antwort immer gleich.'}, verify:{title:'Code bestätigen',heading:'Code eingeben',subtitle:'Gib den sechsstelligen Code aus der E-Mail ein.',confirm:'Code bestätigen',verifying:'Wird überprüft...',noCode:'Keinen Code erhalten?',resend:'Erneut senden',resending:'Wird gesendet...',resendIn:'Erneut senden in {seconds}s',expiration:'Der Code läuft nach 10 Minuten ab und erlaubt 5 Versuche.',resentTitle:'Code erneut gesendet',resentText:'Ein neuer Code wurde gesendet.'}, reset:{title:'Neues Passwort',heading:'Neues Passwort erstellen',subtitle:'Wähle ein sicheres, bisher nicht verwendetes Passwort.',passwordLabel:'Neues Passwort',passwordPlaceholder:'Mindestens 8 Zeichen',confirmLabel:'Passwort bestätigen',confirmPlaceholder:'Passwort wiederholen',requirements:'Verwende mindestens 8 Zeichen sowie Buchstaben, Zahlen und Symbole.',save:'Passwort aktualisieren',saving:'Wird aktualisiert...',successTitle:'Passwort aktualisiert',successText:'Das Passwort wurde aktualisiert. Alle bisherigen Sitzungen wurden beendet.',goToLogin:'Zur Anmeldung'}, errors:{emailRequired:'Gib deine E-Mail-Adresse ein.',emailInvalid:'Gib eine gültige E-Mail-Adresse ein.',sendCode:'Der Code konnte nicht gesendet werden.',codeIncomplete:'Gib alle 6 Ziffern ein.',verifyCode:'Der Code konnte nicht bestätigt werden.',resend:'Der Code konnte nicht erneut gesendet werden.',invalidRequest:'Die Anfrage ist ungültig.',passwordLength:'Das Passwort muss mindestens 8 Zeichen haben.',passwordMismatch:'Die Passwörter stimmen nicht überein.',reset:'Das Passwort konnte nicht aktualisiert werden.'}},
+
+
 };
