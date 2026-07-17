@@ -792,4 +792,87 @@ login: {
   },
 },
 
+scan: {
+  title: '扫描凭证',
+  heroTitle: '上传收据或付款凭证',
+  heroText: 'Spendly 会分析图片并自动填写支出信息，您可以在保存前进行检查和修改。',
+  camera: '相机',
+  cameraText: '拍摄清晰的凭证照片。',
+  gallery: '相册',
+  galleryText: '从设备中选择图片。',
+  change: '更换图片',
+  remove: '删除',
+  analyze: '分析凭证',
+  analyzing: '正在分析凭证...',
+  reviewTitle: '检查识别结果',
+  reviewText: '创建支出前可以修改任何信息。',
+  saveExpense: '保存支出',
+  saving: '正在保存支出...',
+  startAgain: '扫描其他凭证',
+  fields: {
+    amount: '金额',
+    description: '描述',
+    category: '类别',
+    date: '日期',
+    currency: '货币',
+    paymentMethod: '付款方式',
+  },
+  permissions: {
+    title: '需要权限',
+    camera: '拍照需要相机权限。',
+    gallery: '选择图片需要相册权限。',
+  },
+  validation: {
+    amount: '请输入大于零的有效金额。',
+    description: '请输入描述。',
+    date: '日期必须使用 YYYY-MM-DD 格式。',
+  },
+  errors: {
+    title: '处理失败',
+    analyze: '无法分析该凭证。',
+    save: '无法保存支出。',
+  },
+  success: {
+    title: '支出已保存',
+    text: '已根据凭证成功创建支出。',
+  },
+},
+
+biometricUnlock: {
+  title: '解锁 Spendly',
+  subtitle:
+    '使用 Face ID、Touch ID 或设备身份验证继续。',
+  prompt: '解锁 Spendly',
+  verifying: '正在验证...',
+  retry: '重试',
+  failed:
+    '无法验证您的身份，请重试。',
+  unavailable:
+    '生物识别身份验证不可用或尚未配置。',
+},
+
+editTransaction: {
+  expenseTitle: '编辑支出',
+  incomeTitle: '编辑收入',
+  heroTitle: '更新交易',
+  heroText: '修改所需信息并保存更改。',
+  amount: '金额',
+  paymentMethod: '付款方式',
+  date: '日期',
+  currency: '货币',
+  save: '保存更改',
+  saving: '正在保存更改...',
+  successTitle: '更改已保存',
+  successText: '交易已成功更新。',
+  missing: '找不到要编辑的交易。',
+  errors: {
+    amount: '请输入大于零的有效金额。',
+    description: '请输入描述。',
+    save: '无法更新交易。',
+  },
+},
+
+passwordRecovery: { common:{errorTitle:'无法继续'}, forgot:{title:'找回密码',heading:'忘记密码？',subtitle:'请输入账户邮箱，我们将发送验证码。',emailLabel:'电子邮箱',emailPlaceholder:'name@email.com',send:'发送验证码',sending:'正在发送...',securityNote:'为了安全，无论邮箱是否注册，响应都相同。'}, verify:{title:'验证验证码',heading:'输入验证码',subtitle:'请输入邮件中的 6 位验证码。',confirm:'验证验证码',verifying:'正在验证...',noCode:'没有收到验证码？',resend:'重新发送',resending:'正在发送...',resendIn:'{seconds}秒后重发',expiration:'验证码 10 分钟后过期，最多尝试 5 次。',resentTitle:'验证码已重发',resentText:'新的恢复验证码已发送。'}, reset:{title:'新密码',heading:'创建新密码',subtitle:'请选择一个安全且未使用过的密码。',passwordLabel:'新密码',passwordPlaceholder:'至少 8 个字符',confirmLabel:'确认密码',confirmPlaceholder:'再次输入密码',requirements:'至少 8 个字符，并组合字母、数字和符号。',save:'更新密码',saving:'正在更新...',successTitle:'密码已更新',successText:'密码已更新，之前的所有会话均已退出。',goToLogin:'前往登录'}, errors:{emailRequired:'请输入电子邮箱。',emailInvalid:'请输入有效邮箱。',sendCode:'无法发送验证码。',codeIncomplete:'请输入完整的 6 位验证码。',verifyCode:'无法验证验证码。',resend:'无法重新发送验证码。',invalidRequest:'恢复请求无效。',passwordLength:'密码至少需要 8 个字符。',passwordMismatch:'两次密码不一致。',reset:'无法更新密码。'}},
+
+
 };

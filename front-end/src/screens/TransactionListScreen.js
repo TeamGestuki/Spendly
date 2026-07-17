@@ -144,54 +144,110 @@ function getDateLocale(language) {
   return locales[language] || locales.es;
 }
 
+function parseLocalDate(
+  dateString
+) {
+  if (!dateString) {
+    return null;
+  }
+
+  const [
+    year,
+    month,
+    day,
+  ] = dateString
+    .split('-')
+    .map(Number);
+
+  if (
+    !year ||
+    !month ||
+    !day
+  ) {
+    return null;
+  }
+
+  return new Date(
+    year,
+    month - 1,
+    day
+  );
+}
+
 function formatDate(
   dateString,
   language,
   t
 ) {
-  const date = new Date(dateString);
-  const now = new Date();
+  const date =
+    parseLocalDate(
+      dateString
+    );
 
-  if (Number.isNaN(date.getTime())) {
-    return t('transactionList.unknownDate');
+  const now =
+    new Date();
+
+  if (
+    !date ||
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return t(
+      'transactionList.unknownDate'
+    );
   }
 
-  const isToday =
-    date.getDate() === now.getDate() &&
-    date.getMonth() === now.getMonth() &&
-    date.getFullYear() === now.getFullYear();
+  const isSameDay = (
+    first,
+    second
+  ) =>
+    first.getDate() ===
+      second.getDate() &&
+    first.getMonth() ===
+      second.getMonth() &&
+    first.getFullYear() ===
+      second.getFullYear();
 
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
-
-  const isYesterday =
-    date.getDate() === yesterday.getDate() &&
-    date.getMonth() === yesterday.getMonth() &&
-    date.getFullYear() === yesterday.getFullYear();
-
-  const time = date.toLocaleTimeString(
-    getDateLocale(language),
-    {
-      hour: '2-digit',
-      minute: '2-digit',
-    }
-  );
-
-  if (isToday) {
-    return `${t('transactionList.today')}, ${time}`;
+  if (
+    isSameDay(
+      date,
+      now
+    )
+  ) {
+    return t(
+      'transactionList.today'
+    );
   }
 
-  if (isYesterday) {
-    return `${t('transactionList.yesterday')}, ${time}`;
+  const yesterday =
+    new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - 1
+    );
+
+  if (
+    isSameDay(
+      date,
+      yesterday
+    )
+  ) {
+    return t(
+      'transactionList.yesterday'
+    );
   }
 
-  return `${date.toLocaleDateString(
-    getDateLocale(language),
+  return date.toLocaleDateString(
+    getDateLocale(
+      language
+    ),
     {
       day: '2-digit',
       month: 'short',
+      year: 'numeric',
     }
-  )}, ${time}`;
+  );
 }
 
 function getScreenConfig(
@@ -252,10 +308,46 @@ function getCategoryTranslationKey(category) {
     Regalos: 'gifts',
     Reembolsos: 'refunds',
     Otros: 'other',
+    food: 'food',
+    transport: 'transport',
+    supermarket: 'supermarket',
+    services: 'services',
+    health: 'health',
+    education: 'education',
+    entertainment: 'entertainment',
+    clothing: 'clothing',
+    technology: 'technology',
+    salary: 'salary',
+    freelance: 'freelance',
+    investments: 'investments',
+    sales: 'sales',
+    gifts: 'gifts',
+    refunds: 'refunds',
+    other: 'other',
   };
 
   return keys[category] || 'other';
 }
+
+
+const CATEGORY_STORAGE_BY_KEY = {
+  food: 'Comida',
+  transport: 'Transporte',
+  supermarket: 'Supermercado',
+  services: 'Servicios',
+  health: 'Salud',
+  education: 'Educación',
+  entertainment: 'Entretenimiento',
+  clothing: 'Ropa',
+  technology: 'Tecnología',
+  salary: 'Salario',
+  freelance: 'Freelance',
+  investments: 'Inversiones',
+  sales: 'Ventas',
+  gifts: 'Regalos',
+  refunds: 'Reembolsos',
+  other: 'Otros',
+};
 
 function EmptyState({
   config,
@@ -414,6 +506,17 @@ const onRefresh = async () => {
   );
 };
 
+ const goToEditTransaction = (
+  transaction
+ ) => {
+  navigation.navigate(
+    'EditTransaction',
+    {
+      transaction,
+    }
+  );
+};
+
   const confirmDelete = (transaction) => {
     Alert.alert(
       t('transactionList.deleteTitle').replace('{item}', config.singular),
@@ -510,9 +613,8 @@ const sortedTransactions = [...filteredTransactions].sort(
   (first, second) => {
     switch (sortBy) {
       case 'oldest':
-        return (
-          new Date(first.date) -
-          new Date(second.date)
+        return first.date.localeCompare(
+          second.date
         );
 
       case 'highest':
@@ -522,9 +624,8 @@ const sortedTransactions = [...filteredTransactions].sort(
         return first.amount - second.amount;
 
       default:
-        return (
-          new Date(second.date) -
-          new Date(first.date)
+        return second.date.localeCompare(
+          first.date
         );
     }
   }
@@ -564,8 +665,21 @@ const categoryTotals =
   const getCategoryMeta = (
     category
   ) => {
+    const translationKey =
+      getCategoryTranslationKey(
+        category
+      );
+
+    const storageCategory =
+      CATEGORY_STORAGE_BY_KEY[
+        translationKey
+      ] ||
+      category;
+
     return (
-      config.categories[category] ||
+      config.categories[
+        storageCategory
+      ] ||
       config.categories.Otros
     );
   };
@@ -928,9 +1042,15 @@ const categoryTotals =
                   ]}
                   activeOpacity={0.75}
                   disabled={isDeleting}
+                  onPress={() =>
+                    goToEditTransaction(
+                      transaction
+                    )
+                  }
                   onLongPress={() =>
                     confirmDelete(transaction)
                   }
+                  delayLongPress={450}
                 >
                   <View
                     style={[
