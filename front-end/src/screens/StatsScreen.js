@@ -297,12 +297,14 @@ export default function StatsScreen({ navigation }) {
   const [selectedPeriod, setSelectedPeriod] = useState('currentMonth');
   const [selectedView, setSelectedView] = useState('overview');
   const [searchText, setSearchText] = useState('');
+  const [avatarError, setAvatarError] = useState(false);
 
   const loadStats = useCallback(async () => {
     try {
       setLoading(true);
       const userData = await getCurrentUser();
 
+      setAvatarError(false);
       setUser(userData);
 
       setCurrency(
@@ -516,6 +518,8 @@ export default function StatsScreen({ navigation }) {
     },
   ];
 
+  const avatarUrl = getAvatarUrl(user.profile_image_url);
+
   return (
     <View style={styles.flex}>
       <StatusBar
@@ -549,12 +553,13 @@ export default function StatsScreen({ navigation }) {
               onPress={() => navigation.navigate('Profile')}
               activeOpacity={0.8}
           >
-              {getAvatarUrl(user.profile_image_url) ? (
+              {avatarUrl && !avatarError ? (
                   <Image
                       source={{
-                          uri: getAvatarUrl(user.profile_image_url),
+                          uri: avatarUrl,
                       }}
                       style={styles.avatarImage}
+                      onError={() => setAvatarError(true)}
                   />
               ) : (
                   <View style={styles.avatarFallback}>

@@ -814,4 +814,87 @@ login: {
   },
 },
 
+scan: {
+  title: 'Escanear comprobante',
+  heroTitle: 'Cargá un ticket o comprobante',
+  heroText: 'Spendly analizará la imagen y completará automáticamente los datos del gasto para que puedas revisarlos antes de guardarlos.',
+  camera: 'Cámara',
+  cameraText: 'Sacá una foto clara del comprobante.',
+  gallery: 'Galería',
+  galleryText: 'Elegí una imagen guardada en tu dispositivo.',
+  change: 'Cambiar imagen',
+  remove: 'Eliminar',
+  analyze: 'Analizar comprobante',
+  analyzing: 'Analizando comprobante...',
+  reviewTitle: 'Revisá los datos detectados',
+  reviewText: 'Podés corregir cualquier dato antes de crear el gasto.',
+  saveExpense: 'Guardar gasto',
+  saving: 'Guardando gasto...',
+  startAgain: 'Escanear otro comprobante',
+  fields: {
+    amount: 'Monto',
+    description: 'Descripción',
+    category: 'Categoría',
+    date: 'Fecha',
+    currency: 'Moneda',
+    paymentMethod: 'Método de pago',
+  },
+  permissions: {
+    title: 'Permiso requerido',
+    camera: 'Necesitamos acceso a la cámara para sacar una foto.',
+    gallery: 'Necesitamos acceso a la galería para elegir una imagen.',
+  },
+  validation: {
+    amount: 'Ingresá un monto válido mayor a cero.',
+    description: 'Ingresá una descripción.',
+    date: 'La fecha debe tener el formato YYYY-MM-DD.',
+  },
+  errors: {
+    title: 'No se pudo procesar',
+    analyze: 'No se pudo analizar el comprobante.',
+    save: 'No se pudo guardar el gasto.',
+  },
+  success: {
+    title: 'Gasto registrado',
+    text: 'El gasto se creó correctamente a partir del comprobante.',
+  },
+},
+
+biometricUnlock: {
+  title: 'Desbloqueá Spendly',
+  subtitle:
+    'Usá Face ID, Touch ID o la autenticación del dispositivo para continuar.',
+  prompt: 'Desbloquear Spendly',
+  verifying: 'Verificando...',
+  retry: 'Volver a intentar',
+  failed:
+    'No pudimos verificar tu identidad. Intentá nuevamente.',
+  unavailable:
+    'La autenticación biométrica no está disponible o no está configurada.',
+},
+
+editTransaction: {
+  expenseTitle: 'Editar gasto',
+  incomeTitle: 'Editar ingreso',
+  heroTitle: 'Actualizá el movimiento',
+  heroText: 'Modificá los datos necesarios y guardá los cambios.',
+  amount: 'Monto',
+  paymentMethod: 'Método de pago',
+  date: 'Fecha',
+  currency: 'Moneda',
+  save: 'Guardar cambios',
+  saving: 'Guardando cambios...',
+  successTitle: 'Cambios guardados',
+  successText: 'La transacción se actualizó correctamente.',
+  missing: 'No pudimos encontrar la transacción que querés editar.',
+  errors: {
+    amount: 'Ingresá un monto válido mayor a cero.',
+    description: 'Ingresá una descripción.',
+    save: 'No se pudo actualizar la transacción.',
+  },
+},
+
+passwordRecovery: { common:{errorTitle:'No se pudo continuar'}, forgot:{title:'Recuperar contraseña',heading:'¿Olvidaste tu contraseña?',subtitle:'Ingresá el correo asociado a tu cuenta y te enviaremos un código de verificación.',emailLabel:'Correo electrónico',emailPlaceholder:'nombre@correo.com',send:'Enviar código',sending:'Enviando código...',securityNote:'Por seguridad, la respuesta será la misma aunque el correo no esté registrado.'}, verify:{title:'Verificar código',heading:'Ingresá el código',subtitle:'Escribí el código de 6 dígitos que enviamos a tu correo.',confirm:'Verificar código',verifying:'Verificando...',noCode:'¿No recibiste el código?',resend:'Reenviar',resending:'Reenviando...',resendIn:'Reenviar en {seconds}s',expiration:'El código vence en 10 minutos y admite un máximo de 5 intentos.',resentTitle:'Código reenviado',resentText:'Te enviamos un nuevo código de recuperación.'}, reset:{title:'Nueva contraseña',heading:'Creá una contraseña nueva',subtitle:'Elegí una contraseña segura que no hayas utilizado anteriormente.',passwordLabel:'Nueva contraseña',passwordPlaceholder:'Mínimo 8 caracteres',confirmLabel:'Confirmar contraseña',confirmPlaceholder:'Repetí la contraseña',requirements:'Debe tener al menos 8 caracteres. Para mayor seguridad, combiná mayúsculas, minúsculas, números y símbolos.',save:'Actualizar contraseña',saving:'Actualizando...',successTitle:'Contraseña actualizada',successText:'Tu contraseña fue actualizada correctamente. Todas las sesiones anteriores fueron cerradas.',goToLogin:'Ir a iniciar sesión'}, errors:{emailRequired:'Ingresá tu correo electrónico.',emailInvalid:'Ingresá un correo electrónico válido.',sendCode:'No se pudo enviar el código.',codeIncomplete:'Ingresá los 6 dígitos del código.',verifyCode:'No se pudo verificar el código.',resend:'No se pudo reenviar el código.',invalidRequest:'La solicitud de recuperación no es válida.',passwordLength:'La contraseña debe tener al menos 8 caracteres.',passwordMismatch:'Las contraseñas no coinciden.',reset:'No se pudo actualizar la contraseña.'}},
+
+
 };

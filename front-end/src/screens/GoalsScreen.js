@@ -69,6 +69,7 @@ export default function GoalsScreen({ navigation, route }) {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: '', description: '', target_amount: '', category: 'other', priority: 'medium', icon: '🎯', color: '#4ADE80' });
   const [movement, setMovement] = useState({ type: 'aporte', amount: '', note: '' });
+  const [avatarError, setAvatarError] = useState(false);
 
   const avatarUrl = getAvatarUrl(user.profile_image_url);
   const preferredCurrency = getCurrencyByCode(user.preferred_currency || 'ARS');
@@ -77,6 +78,7 @@ export default function GoalsScreen({ navigation, route }) {
     try {
       refresh ? setRefreshing(true) : setLoading(true);
       const [userData, goalData] = await Promise.all([getCurrentUser(), getGoals()]);
+      setAvatarError(false);
       setUser(userData);
       setGoals(Array.isArray(goalData) ? goalData : []);
     } catch (error) {
@@ -250,7 +252,19 @@ export default function GoalsScreen({ navigation, route }) {
         <View style={styles.header}>
           <View><Text style={styles.title}>{t('goals.title')}</Text><Text style={styles.subtitle}>{t('goals.subtitle')}</Text></View>
           <TouchableOpacity style={styles.avatarRing} onPress={() => navigation.navigate('Profile')}>
-            {avatarUrl ? <Image source={{ uri: avatarUrl }} style={styles.avatarImage} /> : <View style={styles.avatarFallback}><Text style={styles.avatarText}>{getInitials(user.full_name)}</Text></View>}
+            {avatarUrl && !avatarError ? (
+              <Image
+                source={{ uri: avatarUrl }}
+                style={styles.avatarImage}
+                onError={() => setAvatarError(true)}
+              />
+            ) : (
+              <View style={styles.avatarFallback}>
+                <Text style={styles.avatarText}>
+                  {getInitials(user.full_name)}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 

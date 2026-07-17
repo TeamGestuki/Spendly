@@ -802,4 +802,87 @@ login: {
   },
 },
 
+scan: {
+  title: 'Scan receipt',
+  heroTitle: 'Upload a receipt or proof of payment',
+  heroText: 'Spendly will analyze the image and automatically fill in the expense details for you to review before saving.',
+  camera: 'Camera',
+  cameraText: 'Take a clear photo of the receipt.',
+  gallery: 'Gallery',
+  galleryText: 'Choose an image stored on your device.',
+  change: 'Change image',
+  remove: 'Remove',
+  analyze: 'Analyze receipt',
+  analyzing: 'Analyzing receipt...',
+  reviewTitle: 'Review detected information',
+  reviewText: 'You can correct any information before creating the expense.',
+  saveExpense: 'Save expense',
+  saving: 'Saving expense...',
+  startAgain: 'Scan another receipt',
+  fields: {
+    amount: 'Amount',
+    description: 'Description',
+    category: 'Category',
+    date: 'Date',
+    currency: 'Currency',
+    paymentMethod: 'Payment method',
+  },
+  permissions: {
+    title: 'Permission required',
+    camera: 'Camera access is required to take a photo.',
+    gallery: 'Gallery access is required to choose an image.',
+  },
+  validation: {
+    amount: 'Enter a valid amount greater than zero.',
+    description: 'Enter a description.',
+    date: 'The date must use the YYYY-MM-DD format.',
+  },
+  errors: {
+    title: 'Could not process',
+    analyze: 'The receipt could not be analyzed.',
+    save: 'The expense could not be saved.',
+  },
+  success: {
+    title: 'Expense saved',
+    text: 'The expense was created successfully from the receipt.',
+  },
+},
+
+biometricUnlock: {
+  title: 'Unlock Spendly',
+  subtitle:
+    'Use Face ID, Touch ID, or your device authentication to continue.',
+  prompt: 'Unlock Spendly',
+  verifying: 'Verifying...',
+  retry: 'Try again',
+  failed:
+    'We could not verify your identity. Please try again.',
+  unavailable:
+    'Biometric authentication is unavailable or not configured.',
+},
+
+editTransaction: {
+  expenseTitle: 'Edit expense',
+  incomeTitle: 'Edit income',
+  heroTitle: 'Update the transaction',
+  heroText: 'Change the necessary information and save your updates.',
+  amount: 'Amount',
+  paymentMethod: 'Payment method',
+  date: 'Date',
+  currency: 'Currency',
+  save: 'Save changes',
+  saving: 'Saving changes...',
+  successTitle: 'Changes saved',
+  successText: 'The transaction was updated successfully.',
+  missing: 'We could not find the transaction you want to edit.',
+  errors: {
+    amount: 'Enter a valid amount greater than zero.',
+    description: 'Enter a description.',
+    save: 'The transaction could not be updated.',
+  },
+},
+
+passwordRecovery: { common:{errorTitle:'Could not continue'}, forgot:{title:'Recover password',heading:'Forgot your password?',subtitle:'Enter the email linked to your account and we will send a verification code.',emailLabel:'Email address',emailPlaceholder:'name@email.com',send:'Send code',sending:'Sending code...',securityNote:'For security, the response is the same even when the email is not registered.'}, verify:{title:'Verify code',heading:'Enter the code',subtitle:'Enter the 6-digit code sent to your email.',confirm:'Verify code',verifying:'Verifying...',noCode:'Did not receive the code?',resend:'Resend',resending:'Resending...',resendIn:'Resend in {seconds}s',expiration:'The code expires in 10 minutes and allows up to 5 attempts.',resentTitle:'Code resent',resentText:'A new recovery code was sent.'}, reset:{title:'New password',heading:'Create a new password',subtitle:'Choose a secure password that you have not used before.',passwordLabel:'New password',passwordPlaceholder:'At least 8 characters',confirmLabel:'Confirm password',confirmPlaceholder:'Repeat the password',requirements:'Use at least 8 characters. For better security, combine uppercase and lowercase letters, numbers, and symbols.',save:'Update password',saving:'Updating...',successTitle:'Password updated',successText:'Your password was updated successfully. All previous sessions were closed.',goToLogin:'Go to sign in'}, errors:{emailRequired:'Enter your email address.',emailInvalid:'Enter a valid email address.',sendCode:'The code could not be sent.',codeIncomplete:'Enter all 6 digits.',verifyCode:'The code could not be verified.',resend:'The code could not be resent.',invalidRequest:'The recovery request is invalid.',passwordLength:'The password must contain at least 8 characters.',passwordMismatch:'The passwords do not match.',reset:'The password could not be updated.'}},
+
+
 };
