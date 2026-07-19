@@ -82,3 +82,13 @@ def auth_headers(client):
 def second_auth_headers(client):
     token = _register_and_login(client, email="other@test.com", password="Other1234!", name="Other User")
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def admin_headers(client, db):
+    token = _register_and_login(client, email="admin@test.com", password="Admin1234!", name="Admin User")
+    from models.user import User
+    user = db.query(User).filter(User.email == "admin@test.com").first()
+    user.role = "admin"
+    db.commit()
+    return {"Authorization": f"Bearer {token}"}

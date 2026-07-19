@@ -157,3 +157,32 @@ def send_support_report_email(
         html_body,
         reply_to=user_email,
     )
+
+
+def send_admin_reply_email(
+    to_email: str,
+    user_name: str,
+    report_subject: str,
+    admin_response: str,
+    report_id: int,
+) -> bool:
+    subject = f"Respuesta a tu reporte: {report_subject}"
+
+    text_body = (
+        f"Hola {user_name}:\n\n"
+        f"El equipo de soporte respondió a tu reporte #{report_id}:\n\n"
+        f"{admin_response}\n\n"
+        f"Si tenés más consultas, podés crear un nuevo reporte desde la app.\n\n"
+        f"Spendly © 2026"
+    )
+
+    html_template = _load_template("admin_reply_email.html")
+    html_body = (
+        html_template
+        .replace("{user_name}", user_name)
+        .replace("{report_subject}", report_subject)
+        .replace("{admin_response}", admin_response)
+        .replace("{report_id}", str(report_id))
+    )
+
+    return send_email(to_email, subject, text_body, html_body)
