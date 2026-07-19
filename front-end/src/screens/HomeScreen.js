@@ -29,9 +29,7 @@ import {
   setPreferredCurrency as savePreferredCurrency,
   formatMoney,
 } from '../utils/currency';
-
-const API_BASE_URL =
-  'https://spendly-production-1793.up.railway.app';
+import { API_BASE_URL } from '../config';
 
 function getCategoryIcons(COLORS) {
   return {

@@ -4,12 +4,9 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '../config';
 
-const API_BASE_URL =
-  'https://spendly-production-1793.up.railway.app';
-
-const API_URL =
-  `${API_BASE_URL}/api/v1/transactions`;
+const API_URL = `${API_BASE_URL}/api/v1/transactions`;
 
 const parseResponse = async (response) => {
   const text = await response.text();
