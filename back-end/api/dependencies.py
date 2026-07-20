@@ -93,7 +93,24 @@ def get_current_user(
     if session.user_id != user.id:
         raise credentials_exception
 
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Tu cuenta está desactivada. Contactá al soporte.",
+        )
+
     session.last_seen_at = datetime.now(timezone.utc)
     db.commit()
 
     return user
+
+
+def get_current_admin(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Se requieren permisos de administrador",
+        )
+    return current_user

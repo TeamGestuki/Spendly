@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.orm import relationship
 from core.database import Base
 
@@ -14,9 +14,9 @@ class User(Base):
     profile_image_url = Column(String(255), nullable=True)
     preferred_currency = Column(String(3), default="ARS", nullable=False)
     role = Column(String(20), default="user", nullable=False)
+    last_heartbeat_at = Column(DateTime(timezone=True), nullable=True)
 
-    # Relaciones inversas (Un usuario tiene una lista de transacciones)
-    # No son relación que se ven en la base de datos
+    # Relaciones inversas
     transactions = relationship("Transaction", back_populates="owner")
     goals = relationship("Goal", back_populates="owner", cascade="all, delete-orphan")
     goal_movements = relationship(

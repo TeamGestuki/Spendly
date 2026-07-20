@@ -25,6 +25,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { getTransactions } from '../services/transactionService';
 import { getCurrentUser } from '../services/authService';
 import { getCurrencyByCode, formatMoney } from '../utils/currency';
+import { API_BASE_URL } from '../config';
 
 const PERIODS = [
   'currentMonth',
@@ -46,9 +47,6 @@ const LOCALES = {
   fr: 'fr-FR',
   de: 'de-DE',
 };
-
-const API_BASE_URL =
-  'https://spendly-production-1793.up.railway.app';
 
 function getInitials(fullName = '') {
   const parts = fullName

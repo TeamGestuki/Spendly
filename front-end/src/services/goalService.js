@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '../config';
 
-const API_URL = 'https://spendly-production-1793.up.railway.app/api/v1/goals';
+const API_URL = `${API_BASE_URL}/api/v1/goals`;
 
 async function token() {
   const value = await AsyncStorage.getItem('access_token');

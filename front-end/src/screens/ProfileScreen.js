@@ -35,8 +35,7 @@ import {
   uploadProfileAvatar,
   deleteProfileAvatar,
 } from '../services/authService';
-
-const API_BASE_URL = 'https://spendly-production-1793.up.railway.app';
+import { API_BASE_URL } from '../config';
 
 const LANGUAGE_TRANSLATION_KEYS = {
   es: 'spanish',

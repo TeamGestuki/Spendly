@@ -18,8 +18,8 @@ import {
   cancelGoalNotifications, scheduleGoalDeadlineNotification,
   sendGoalCompletedNotification, sendGoalProgressNotification,
 } from '../services/notificationService';
+import { API_BASE_URL } from '../config';
 
-const API_BASE_URL = 'https://spendly-production-1793.up.railway.app';
 const STATUSES = ['all', 'active', 'paused', 'completed', 'cancelled'];
 const PRIORITIES = ['low', 'medium', 'high'];
 const CATEGORIES = ['emergency', 'travel', 'home', 'education', 'vehicle', 'technology', 'health', 'other'];

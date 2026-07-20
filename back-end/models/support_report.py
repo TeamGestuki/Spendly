@@ -20,13 +20,15 @@ class SupportReport(Base):
     device_model = Column(String(150), nullable=True)
     status = Column(String(30), default="open", nullable=False)
     admin_response = Column(Text, nullable=True)
+    responded_by_admin_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    responded_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
     resolved_at = Column(DateTime(timezone=True), nullable=True)
 
-    # Relaciones inversas (Un usuario tiene una lista de transacciones)
-    # No son relación que se ven en la base de datos
-    user = relationship("User", backref="support_reports")
+    # Relaciones
+    user = relationship("User", backref="support_reports", foreign_keys=[user_id])
+    responded_by_admin = relationship("User", foreign_keys=[responded_by_admin_id])
 

@@ -66,5 +66,4 @@ back-end/pycache/
 /AGENTS.md
 /AGENTS.md
 /back-end/migrations
-/back-end/pytest.ini
-/back-end/tests
+/.opencode/plans

@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '../config';
 
-const API_BASE_URL = 'https://spendly-production-1793.up.railway.app';
-const SUPPORT_URL = `${API_BASE_URL}/api/v1/support`;
+const API_URL = `${API_BASE_URL}/api/v1/support`;
 
 async function authHeaders(hasBody = false) {
   const token = await AsyncStorage.getItem('access_token');
@@ -24,7 +24,7 @@ async function parseResponse(response) {
 }
 
 async function request(path = '', options = {}) {
-  const response = await fetch(`${SUPPORT_URL}${path}`, {
+  const response = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: { ...(await authHeaders(Boolean(options.body))), ...options.headers },
   });
