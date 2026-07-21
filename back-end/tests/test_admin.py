@@ -220,8 +220,10 @@ class TestTools:
         resp = client.get("/api/v1/admin/tools/health", headers=admin_headers)
         assert resp.status_code == 200
         data = resp.json()
-        assert data["api"] == "online"
-        assert data["database"] == "online"
+        assert data["status"] == "ok"
+        assert data["healthy"] is True
+        assert data["database"]["status"] == "ok"
+        assert data["database"]["connected"] is True
         assert "email_service" in data
         assert "server_time" in data
         assert "secret" not in str(data).lower()

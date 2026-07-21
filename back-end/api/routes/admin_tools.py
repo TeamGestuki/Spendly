@@ -146,11 +146,11 @@ def health_check(
     db: Session = Depends(get_db),
     admin: User = Depends(get_current_admin),
 ):
-    db_status = "online"
+    db_check = {"status": "ok", "connected": True}
     try:
         db.execute(text("SELECT 1"))
     except Exception:
-        db_status = "offline"
+        db_check = {"status": "offline", "connected": False}
         logger.warning("Health check: database is offline")
 
     smtp_configured = bool(os.getenv("SMTP_USER")) and bool(
@@ -158,7 +158,9 @@ def health_check(
     )
 
     return AdminSystemHealthResponse(
-        database=db_status,
+        status="ok",
+        healthy=db_check["connected"],
+        database=db_check,
         email_service={"configured": smtp_configured},
         environment=os.getenv("ENVIRONMENT", "development"),
         app_version="1.1.0",
