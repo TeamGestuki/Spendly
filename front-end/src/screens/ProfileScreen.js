@@ -173,6 +173,7 @@ export default function ProfileScreen({ navigation }) {
     email: '',
     profile_image_url: null,
     is_active: true,
+    role: 'user',
   });
 
   const avatarUrl = getAvatarUrl(user.profile_image_url);
@@ -204,6 +205,7 @@ export default function ProfileScreen({ navigation }) {
       email: data.email || '',
       profile_image_url: data.profile_image_url || null,
       is_active: data.is_active,
+      role: data.role || 'user',
     });
   } catch (error) {
     console.log('Error cargando usuario:', error.message);
@@ -454,6 +456,22 @@ export default function ProfileScreen({ navigation }) {
             isLast
           />
         </View>
+
+        {user.role === 'admin' && (
+          <>
+            <Text style={styles.sectionTitle}>Administración</Text>
+            <View style={styles.card}>
+              <SettingItem
+                icon="settings-outline"
+                iconColor={COLORS.accent}
+                label="Panel de administración"
+                value="Gestionar usuarios, reportes y herramientas"
+                onPress={() => navigation.navigate('Admin')}
+                isLast
+              />
+            </View>
+          </>
+        )}
 
         <Text style={styles.sectionTitle}>{t('profile.support')}</Text>
         <View style={styles.card}>

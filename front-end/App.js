@@ -42,6 +42,7 @@ import BiometricUnlockScreen from './src/screens/BiometricUnlockScreen';
 import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
 import VerifyResetCodeScreen from './src/screens/VerifyResetCodeScreen';
 import ResetPasswordScreen from './src/screens/ResetPasswordScreen';
+import AdminStackNavigator from './src/navigation/AdminStackNavigator';
 
 const Stack = createNativeStackNavigator();
 
@@ -326,6 +327,14 @@ export default function App() {
           <Stack.Screen 
             name="ReportProblem" 
             component={ReportProblemScreen} 
+          />
+
+          <Stack.Screen
+            name="Admin"
+            component={AdminStackNavigator}
+            options={{
+              gestureEnabled: false,
+            }}
           />
 
           <Stack.Screen
