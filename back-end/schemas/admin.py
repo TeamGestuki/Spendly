@@ -171,8 +171,9 @@ class AdminEmailTestResponse(BaseModel):
 
 
 class AdminSystemHealthResponse(BaseModel):
-    api: str = "online"
-    database: str = "online"
+    status: str = "ok"
+    healthy: bool = True
+    database: dict
     email_service: dict
     environment: str
     app_version: str
